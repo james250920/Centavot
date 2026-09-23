@@ -1,31 +1,88 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# Centavot
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+> *Tu dinero, bajo control. Siempre.*
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
+Centavot es una aplicación móvil (Android / iOS) con inteligencia artificial para
+independientes, comerciantes y emprendedores peruanos bajo los regímenes
+tributarios **RUS / RER**. Ayuda a ordenar el dinero del negocio y a llegar a
+la declaración ante SUNAT sin sorpresas — **sin pedir nunca credenciales bancarias**.
 
-### Running the apps
+Proyecto del curso *Proyecto Startup* — Universidad ESAN.
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+## Qué hace
 
-- Android app: `./gradlew :androidApp:assembleDebug`
-- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+- **Registro de gastos sin fricción** — por foto de boleta (OCR), texto libre o voz.
+- **Separación automática** entre gasto personal y gasto de negocio, con corrección manual.
+- **Alertas de tope de régimen** — aviso al cruzar el 80 %, 90 % y 100 % del tope RUS/RER.
+- **Reporte tributario pre-armado** para SUNAT, exportable (PDF/Excel) para compartir con el contador.
+- **Offline-first** — funciona con mala señal y sincroniza al recuperar conexión.
 
-### Running tests
+## Para quién
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+| Perfil | Dolor principal |
+|---|---|
+| **Carlos** — freelancer con RUC en RUS/RER | Miedo a pasarse del tope de su régimen y recibir una multa |
+| **Mari** — comerciante de mercado que cobra por Yape/Plin | Mezcla el dinero de la casa con el del negocio |
+| **Rosa** — emprendedora de provincia, cliente de caja municipal | Ninguna app está pensada para ella; prefiere hablar a escribir |
 
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
+## Estado del proyecto
 
----
+🚧 **Pre-producto.** El repositorio contiene hoy la plantilla base de Kotlin
+Multiplatform. La hoja de ruta técnica:
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+| Fase | Entregable |
+|---|---|
+| 0 | Concierge MVP — validación manual con usuarios reales (en curso) |
+| 1 | Núcleo KMP (`domain` + `data`), autenticación por teléfono + OTP, backend mínimo |
+| 2 | Registro por foto (OCR) y texto — Android primero |
+| 3 | Separación automática + reporte SUNAT |
+| 4 | Alertas de tope + notificaciones push |
+| 5 | Registro por voz, paridad iOS y piloto con una caja municipal |
+
+## Stack
+
+| Capa | Tecnología |
+|---|---|
+| UI | Compose Multiplatform |
+| Dominio y datos | Kotlin Multiplatform (Kotlin puro) |
+| Red | Ktor Client *(planificado)* |
+| Persistencia local | SQLDelight *(planificado)* |
+| Inyección de dependencias | Koin *(planificado)* |
+| Notificaciones | Firebase Cloud Messaging *(planificado)* |
+| Backend | Ktor Server + PostgreSQL, con OCR e IA (GLM Flash / DeepSeek Flash) *(planificado)* |
+
+## Estructura
+
+```
+androidApp/   Punto de entrada Android
+iosApp/       Punto de entrada iOS (Xcode)
+shared/       Código compartido entre plataformas
+  src/commonMain/   Lógica y UI comunes
+  src/androidMain/  Código específico de Android
+  src/iosMain/      Código específico de iOS
+```
+
+## Cómo ejecutar
+
+**Android**
+
+```bash
+./gradlew :androidApp:assembleDebug
+```
+
+**iOS** — abrir el directorio [`iosApp`](./iosApp) en Xcode y ejecutar desde ahí.
+
+También puedes usar las configuraciones de ejecución de Android Studio / IntelliJ.
+
+## Tests
+
+```bash
+./gradlew :shared:testAndroidHostTest     # tests en host Android
+./gradlew :shared:iosSimulatorArm64Test   # tests en simulador iOS
+```
+
+## Equipo
+
+- Sandro Fabrizio Enrique Avila Agurto
+- James Frank Mendoza Rios
+- Meyly Cielo Mendoza Cobeñas
