@@ -53,14 +53,56 @@ Multiplatform. La hoja de ruta técnica:
 
 ## Estructura
 
+En esta etapa el desarrollo se enfoca **solo en Android**. El código vive en
+`shared/` para poder reutilizarlo en iOS más adelante.
+
 ```
 androidApp/   Punto de entrada Android
-iosApp/       Punto de entrada iOS (Xcode)
+iosApp/       Punto de entrada iOS (Xcode) — pausado en esta etapa
 shared/       Código compartido entre plataformas
-  src/commonMain/   Lógica y UI comunes
+  src/commonMain/   Lógica y UI comunes (Clean Architecture, ver abajo)
   src/androidMain/  Código específico de Android
   src/iosMain/      Código específico de iOS
 ```
+
+### Clean Architecture
+
+`shared/src/commonMain/kotlin/com/app/centavot/`:
+
+```
+core/           Utilidades transversales
+  error/          Tipos de error de la app (AppError, Result)
+  util/           Helpers genéricos
+domain/         Reglas de negocio — Kotlin puro, sin frameworks
+  model/          Modelos: Gasto, RegimenTributario, ReporteSunat...
+  repository/     Interfaces de repositorio (se implementan en data)
+  usecase/        Un caso de uso por operación (RegistrarGasto, CalcularTope...)
+data/           Implementación de acceso a datos
+  local/          Base de datos local (SQLDelight), cola offline
+  remote/         Cliente de API (Ktor), DTOs
+  mapper/         Conversión DTO/Entity ↔ modelo de dominio
+  repository/     Implementaciones de las interfaces de domain
+presentation/   UI con Compose
+  screens/        Pantallas y sus ViewModels (una carpeta por pantalla)
+  components/     Componentes reutilizables
+  navigation/     Rutas y grafo de navegación
+  theme/          Colores, tipografía, tema
+di/             Módulos de inyección de dependencias (Koin)
+```
+
+**Reglas de dependencia**
+
+```
+presentation → domain, core
+data         → domain, core
+domain       → core
+core         → (nada)
+```
+
+- `domain` nunca importa nada de `data`, `presentation` ni de Android.
+- La UI nunca recibe DTOs ni entidades de base de datos, solo modelos de `domain`.
+- La lógica de negocio va en casos de uso, no en los ViewModels.
+- Los topes de RUS/RER vienen del backend; no se escriben fijos en el código.
 
 ## Cómo ejecutar
 
