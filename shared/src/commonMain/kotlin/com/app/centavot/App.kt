@@ -1,49 +1,30 @@
 package com.app.centavot
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
-
-import centavot.shared.generated.resources.Res
-import centavot.shared.generated.resources.compose_multiplatform
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.centavot.presentation.AppViewModel
+import com.app.centavot.presentation.EstadoApp
+import com.app.centavot.presentation.navigation.NavegacionPrincipal
+import com.app.centavot.presentation.screens.regimen.RegimenScreen
+import com.app.centavot.presentation.theme.CentavotTheme
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-@Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
+    CentavotTheme {
+        val viewModel = koinViewModel<AppViewModel>()
+        val estado by viewModel.estado.collectAsStateWithLifecycle()
+        when (estado) {
+            EstadoApp.CARGANDO -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
+            // Al guardar el régimen, el estado pasa a LISTA solo y se muestra la app.
+            EstadoApp.SIN_REGIMEN -> RegimenScreen(esPrimeraVez = true, onCerrar = {})
+            EstadoApp.LISTA -> NavegacionPrincipal()
         }
     }
 }

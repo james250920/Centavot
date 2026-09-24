@@ -27,8 +27,18 @@ Proyecto del curso *Proyecto Startup* — Universidad ESAN.
 
 ## Estado del proyecto
 
-🚧 **Pre-producto.** El repositorio contiene hoy la plantilla base de Kotlin
-Multiplatform. La hoja de ruta técnica:
+🚧 **MVP local (Android).** La app funciona sin backend: todo se guarda en el
+teléfono con Room. Incluye:
+
+- Elegir régimen (RUS Cat. 1, RUS Cat. 2 o RER) con topes referenciales.
+- Inicio con el % del tope usado, alertas 80/90/100 %, totales del mes y últimos gastos.
+- Registrar, editar y eliminar gastos (monto, negocio/personal, descripción, fecha).
+- Movimientos agrupados por día, con filtro por categoría.
+- Reporte mensual de gastos de negocio.
+
+Aún no incluye: foto de boleta (OCR), voz, exportar el reporte ni backend.
+
+Hoja de ruta técnica:
 
 | Fase | Entregable |
 |---|---|
@@ -43,11 +53,13 @@ Multiplatform. La hoja de ruta técnica:
 
 | Capa | Tecnología |
 |---|---|
-| UI | Compose Multiplatform |
+| UI | Compose Multiplatform + Material 3 |
+| Navegación | Navigation Compose (rutas tipadas) |
 | Dominio y datos | Kotlin Multiplatform (Kotlin puro) |
+| Persistencia local | Room (KMP) + SQLite |
+| Inyección de dependencias | Koin |
+| Fechas | kotlinx-datetime |
 | Red | Ktor Client *(planificado)* |
-| Persistencia local | SQLDelight *(planificado)* |
-| Inyección de dependencias | Koin *(planificado)* |
 | Notificaciones | Firebase Cloud Messaging *(planificado)* |
 | Backend | Ktor Server + PostgreSQL, con OCR e IA (GLM Flash / DeepSeek Flash) *(planificado)* |
 
@@ -71,19 +83,20 @@ shared/       Código compartido entre plataformas
 
 ```
 core/           Utilidades transversales
-  error/          Tipos de error de la app (AppError, Result)
-  util/           Helpers genéricos
+  error/          Tipos de error de la app (pendiente)
+  util/           Helpers genéricos (Reloj)
 domain/         Reglas de negocio — Kotlin puro, sin frameworks
-  model/          Modelos: Gasto, RegimenTributario, ReporteSunat...
+  model/          Modelos: Gasto, Monto, RegimenTributario, ProximidadTope, ReporteSunat
   repository/     Interfaces de repositorio (se implementan en data)
-  usecase/        Un caso de uso por operación (RegistrarGasto, CalcularTope...)
+  usecase/        Un caso de uso por operación (GuardarGasto, ObservarProximidadTope...)
 data/           Implementación de acceso a datos
-  local/          Base de datos local (SQLDelight), cola offline
-  remote/         Cliente de API (Ktor), DTOs
+  local/          Base de datos Room: entidades, DAOs, topes referenciales
+  remote/         Cliente de API (Ktor), DTOs (pendiente, sin backend aún)
   mapper/         Conversión DTO/Entity ↔ modelo de dominio
   repository/     Implementaciones de las interfaces de domain
 presentation/   UI con Compose
-  screens/        Pantallas y sus ViewModels (una carpeta por pantalla)
+  screens/        Pantallas y sus ViewModels: regimen, inicio, gasto,
+                  movimientos, reporte
   components/     Componentes reutilizables
   navigation/     Rutas y grafo de navegación
   theme/          Colores, tipografía, tema
@@ -102,7 +115,10 @@ core         → (nada)
 - `domain` nunca importa nada de `data`, `presentation` ni de Android.
 - La UI nunca recibe DTOs ni entidades de base de datos, solo modelos de `domain`.
 - La lógica de negocio va en casos de uso, no en los ViewModels.
-- Los topes de RUS/RER vienen del backend; no se escriben fijos en el código.
+- Los topes de RUS/RER vendrán del backend. Mientras tanto están en un solo
+  lugar (`data/local/TopesReferenciales.kt`), nunca en la lógica ni en la UI.
+
+La base de datos de Android se crea en `shared/src/androidMain` (`di/ModuloAndroid.kt`).
 
 ## Cómo ejecutar
 
@@ -119,7 +135,7 @@ También puedes usar las configuraciones de ejecución de Android Studio / Intel
 ## Tests
 
 ```bash
-./gradlew :shared:testAndroidHostTest     # tests en host Android
+./gradlew :shared:testAndroidHostTest     # tests en host Android (dominio y formato)
 ./gradlew :shared:iosSimulatorArm64Test   # tests en simulador iOS
 ```
 
