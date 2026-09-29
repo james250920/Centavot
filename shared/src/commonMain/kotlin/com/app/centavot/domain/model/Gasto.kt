@@ -10,6 +10,7 @@ data class Gasto(
     val estado: EstadoGasto,
     /** null mientras el gasto no está clasificado. */
     val categoria: Categoria? = null,
+    val subcategoria: SubcategoriaGasto? = null,
     val proveedor: String? = null,
     val descripcion: String? = null,
     /** Si es true, el backend no puede sobrescribir la categoría: el usuario siempre gana. */

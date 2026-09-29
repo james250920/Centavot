@@ -19,15 +19,22 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.app.centavot.presentation.components.Iconos
+import com.app.centavot.presentation.screens.actividad.ActividadScreen
+import com.app.centavot.presentation.screens.ajustes.AjustesScreen
+import com.app.centavot.presentation.screens.cobros.CobroScreen
+import com.app.centavot.presentation.screens.cobros.CobrosScreen
+import com.app.centavot.presentation.screens.cobros.ContactosScreen
 import com.app.centavot.presentation.screens.gasto.GastoScreen
 import com.app.centavot.presentation.screens.inicio.InicioScreen
 import com.app.centavot.presentation.screens.movimientos.MovimientosScreen
+import com.app.centavot.presentation.screens.notificaciones.NotificacionesScreen
 import com.app.centavot.presentation.screens.regimen.RegimenScreen
 import com.app.centavot.presentation.screens.reporte.ReporteScreen
 
 private enum class Pestana(val ruta: Any, val etiqueta: String, val icono: () -> ImageVector) {
     INICIO(RutaInicio, "Inicio", { Iconos.Inicio }),
     MOVIMIENTOS(RutaMovimientos, "Movimientos", { Iconos.Movimientos }),
+    COBROS(RutaCobros, "Cobros", { Iconos.Cobros }),
     REPORTE(RutaReporte, "Reporte", { Iconos.Reporte }),
 }
 
@@ -66,7 +73,10 @@ fun NavegacionPrincipal() {
                     onRegistrarGasto = { nav.navigate(RutaGasto()) },
                     onAbrirGasto = { nav.navigate(RutaGasto(it)) },
                     onVerMovimientos = { nav.irAPestana(RutaMovimientos) },
-                    onCambiarRegimen = { nav.navigate(RutaRegimen) },
+                    onVerCobros = { nav.irAPestana(RutaCobros) },
+                    onAbrirNotificaciones = { nav.navigate(RutaNotificaciones) },
+                    onAbrirActividad = { nav.navigate(RutaActividad) },
+                    onAbrirAjustes = { nav.navigate(RutaAjustes) },
                 )
             }
             composable<RutaMovimientos> {
@@ -74,6 +84,31 @@ fun NavegacionPrincipal() {
                     onAbrirGasto = { nav.navigate(RutaGasto(it)) },
                     onRegistrarGasto = { nav.navigate(RutaGasto()) },
                 )
+            }
+            composable<RutaCobros> {
+                CobrosScreen(
+                    onRegistrarCobro = { nav.navigate(RutaCobro) },
+                    onAbrirContactos = { nav.navigate(RutaContactos) },
+                )
+            }
+            composable<RutaCobro> {
+                CobroScreen(onCerrar = { nav.popBackStack() })
+            }
+            composable<RutaContactos> {
+                ContactosScreen(onCerrar = { nav.popBackStack() })
+            }
+            composable<RutaAjustes> {
+                AjustesScreen(
+                    esPrimeraVez = false,
+                    onCerrar = { nav.popBackStack() },
+                    onCambiarRegimen = { nav.navigate(RutaRegimen) },
+                )
+            }
+            composable<RutaActividad> {
+                ActividadScreen(onCerrar = { nav.popBackStack() })
+            }
+            composable<RutaNotificaciones> {
+                NotificacionesScreen(onCerrar = { nav.popBackStack() })
             }
             composable<RutaReporte> {
                 ReporteScreen(onAbrirGasto = { nav.navigate(RutaGasto(it)) })

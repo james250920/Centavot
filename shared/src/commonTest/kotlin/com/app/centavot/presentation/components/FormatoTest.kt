@@ -1,6 +1,7 @@
 package com.app.centavot.presentation.components
 
 import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.TasaAhorro
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.YearMonth
 import kotlin.test.Test
@@ -55,5 +56,16 @@ class FormatoTest {
         assertEquals("5 de agosto", LocalDate(2026, 8, 5).formatearRelativo(hoy))
         assertEquals("31 de diciembre de 2025", LocalDate(2025, 12, 31).formatearRelativo(hoy))
         assertEquals("Septiembre 2026", YearMonth(2026, 9).formatear())
+    }
+
+    @Test
+    fun parseaLaTasaDeAhorro() {
+        assertEquals(TasaAhorro(125), parsearTasa("12,5"))
+        assertEquals(TasaAhorro(1_000), parsearTasa("100"))
+        assertEquals(TasaAhorro.CERO, parsearTasa(""))
+        assertNull(parsearTasa("100.1"))
+        assertNull(parsearTasa("12.55"))
+        assertEquals("12.5 %", TasaAhorro(125).formatear())
+        assertEquals("10", TasaAhorro(100).comoTextoEditable())
     }
 }

@@ -2,8 +2,10 @@ package com.app.centavot.presentation.screens.reporte
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.centavot.core.util.CompartidorArchivos
 import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.ReporteSunat
+import com.app.centavot.domain.model.aCsv
 import com.app.centavot.domain.usecase.ObservarReporteUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +34,7 @@ data class ReporteUiState(
 class ReporteViewModel(
     observarReporte: ObservarReporteUseCase,
     private val reloj: Reloj,
+    private val compartidor: CompartidorArchivos,
 ) : ViewModel() {
 
     private val periodo = MutableStateFlow(reloj.hoy().yearMonth)
@@ -46,6 +49,12 @@ class ReporteViewModel(
         SharingStarted.WhileSubscribed(5_000),
         ReporteUiState(hoy = reloj.hoy(), periodo = reloj.hoy().yearMonth),
     )
+
+    /** Exporta el reporte del mes en CSV (se abre en Excel) para enviarlo al contador. */
+    fun exportar() {
+        val reporte = estado.value.reporte ?: return
+        compartidor.compartir("centavot-reporte-${reporte.periodo}.csv", reporte.aCsv(), "text/csv")
+    }
 
     fun mesAnterior() = periodo.update { it.minusMonth() }
 

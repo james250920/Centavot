@@ -41,7 +41,18 @@ fun ReporteScreen(
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Reporte SUNAT") }) }) { padding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Reporte SUNAT") },
+                actions = {
+                    IconButton(onClick = viewModel::exportar, enabled = estado.reporte?.gastos?.isNotEmpty() == true) {
+                        Icon(Iconos.Compartir, contentDescription = "Exportar reporte en Excel (CSV)")
+                    }
+                },
+            )
+        },
+    ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
@@ -96,7 +107,8 @@ fun ReporteScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(Iconos.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
-                        text = "Este resumen te ayuda a preparar tu declaración. Revísalo con tu contador antes de presentarla.",
+                        text = "Este resumen te ayuda a preparar tu declaración. Revísalo con tu contador antes de presentarla. " +
+                            "Con el botón de compartir lo envías en un archivo que se abre en Excel.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

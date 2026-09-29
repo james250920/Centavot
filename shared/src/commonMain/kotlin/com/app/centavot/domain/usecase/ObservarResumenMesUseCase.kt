@@ -21,6 +21,9 @@ class ObservarResumenMesUseCase(
                 totalNegocio = lista.filter { it.categoria == Categoria.NEGOCIO }.map { it.monto }.sumar(),
                 totalPersonal = lista.filter { it.categoria == Categoria.PERSONAL }.map { it.monto }.sumar(),
                 cantidadGastos = lista.size,
+                porSubcategoria = lista.groupBy { it.subcategoria }
+                    .map { (subcategoria, gastos) -> subcategoria to gastos.map { it.monto }.sumar() }
+                    .sortedByDescending { it.second },
             )
         }
     }

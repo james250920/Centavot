@@ -6,6 +6,9 @@ import com.app.centavot.domain.model.EstadoGasto
 import com.app.centavot.domain.model.Gasto
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.OrigenGasto
+import com.app.centavot.domain.model.SubcategoriaGasto
+import com.app.centavot.domain.model.enSoles
+import com.app.centavot.domain.repository.ActividadRepository
 import com.app.centavot.domain.repository.GastoRepository
 import kotlinx.datetime.LocalDate
 
@@ -14,6 +17,8 @@ class GuardarGastoUseCase(
     private val repositorio: GastoRepository,
     private val reloj: Reloj,
     private val generarId: () -> String,
+    private val actividades: ActividadRepository,
+    private val revisarAlertaTope: RevisarAlertaTopeUseCase,
 ) {
     sealed interface Resultado {
         data class Guardado(val gasto: Gasto) : Resultado
@@ -28,6 +33,7 @@ class GuardarGastoUseCase(
         categoria: Categoria,
         fecha: LocalDate,
         descripcion: String?,
+        subcategoria: SubcategoriaGasto? = null,
     ): Resultado {
         if (monto <= Monto.CERO) return Resultado.MontoInvalido
         if (fecha > reloj.hoy()) return Resultado.FechaFutura
@@ -49,12 +55,19 @@ class GuardarGastoUseCase(
             monto = monto,
             fecha = fecha,
             categoria = categoria,
+            subcategoria = subcategoria,
             descripcion = descripcionLimpia,
             estado = EstadoGasto.CONFIRMADO,
             // La categoría la eligió el usuario: el backend no debe cambiarla.
             corregidoManualmente = true,
         )
         repositorio.guardar(gasto)
+
+        val accion = if (idExistente == null) "Registraste" else "Editaste"
+        val tipo = if (categoria == Categoria.NEGOCIO) "de negocio" else "personal"
+        val nombre = descripcionLimpia?.let { " \"$it\"" }.orEmpty()
+        actividades.registrar("$accion un gasto $tipo$nombre de ${monto.enSoles()}.", reloj.ahora())
+        revisarAlertaTope()
         return Resultado.Guardado(gasto)
     }
 }

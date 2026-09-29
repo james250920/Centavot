@@ -85,7 +85,7 @@ fun RegimenScreen(
         ) {
             if (esPrimeraVez) {
                 Text(
-                    text = "Te damos la bienvenida a Centavot",
+                    text = "Último paso",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 32.dp),
