@@ -36,10 +36,13 @@ class PerfilYReporteTest {
 
         val lineas = reporte.aCsv().removePrefix("﻿").lines()
 
-        assertEquals("Reporte de gastos de negocio,2026-09", lineas[0])
-        assertEquals("Fecha,Descripción,Categoría,Proveedor,Monto (S/)", lineas[3])
-        assertEquals("2026-09-03,\"Recibo \"\"luz\"\"\",\"Luz, agua, internet\",,25.00", lineas[4])
-        assertEquals("2026-09-20,,,,1234.50", lineas[5])
-        assertEquals(",,,Total,1259.50", lineas[6])
+        assertEquals("Resumen del negocio,2026-09", lineas[0])
+        assertEquals("Ventas,0.00", lineas[2])
+        assertEquals("Compras y gastos,1259.50", lineas[3])
+        assertEquals("Ganancia,-1259.50", lineas[4])
+        assertEquals("Fecha,Descripción,Categoría,Proveedor,Monto (S/)", lineas[7])
+        assertEquals("2026-09-03,\"Recibo \"\"luz\"\"\",\"Luz, agua, internet\",,25.00", lineas[8])
+        assertEquals("2026-09-20,,,,1234.50", lineas[9])
+        assertEquals(",,,Total,1259.50", lineas[10])
     }
 }

@@ -17,7 +17,13 @@ data class RegimenTributario(
     val periodo: PeriodoTope,
     /** Nombre para mostrar, p. ej. "RUS · Categoría 1". */
     val nombre: String = tipo.name,
-)
+) {
+    /**
+     * En el Nuevo RUS el tope de la categoría aplica a lo que vendes **y** a lo que compras;
+     * en el RER solo cuenta lo que vendes en el año.
+     */
+    val controlaCompras: Boolean get() = tipo == TipoRegimen.RUS
+}
 
 /** Rango de fechas que cuenta para el tope, según el periodo del régimen. */
 fun PeriodoTope.rangoQueContiene(fecha: LocalDate): ClosedRange<LocalDate> = when (this) {

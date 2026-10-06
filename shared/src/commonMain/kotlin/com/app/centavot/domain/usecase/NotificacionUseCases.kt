@@ -6,7 +6,6 @@ import com.app.centavot.domain.model.Notificacion
 import com.app.centavot.domain.model.PeriodoTope
 import com.app.centavot.domain.model.enSoles
 import com.app.centavot.domain.repository.NotificacionRepository
-import com.app.centavot.domain.repository.RegimenRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
@@ -23,43 +22,44 @@ class MarcarNotificacionesLeidasUseCase(private val repositorio: NotificacionRep
 }
 
 /**
- * Deja un aviso en Notificaciones cuando los gastos de negocio cruzan el 80, 90 o
- * 100 % del tope (RF-07). Cada umbral se avisa una sola vez por periodo.
+ * Deja un aviso en Notificaciones cuando las ventas (o, en el Nuevo RUS, las compras) del
+ * negocio cruzan el 80, 90 o 100 % del tope (RF-07). Cada umbral se avisa una sola vez por
+ * periodo y por medida.
  */
 class RevisarAlertaTopeUseCase(
-    private val observarProximidad: ObservarProximidadTopeUseCase,
-    private val regimenes: RegimenRepository,
+    private val observarEstadoTope: ObservarEstadoTopeUseCase,
     private val notificaciones: NotificacionRepository,
     private val reloj: Reloj,
 ) {
     suspend operator fun invoke() {
-        val regimen = regimenes.observarRegimen().first() ?: return
-        val proximidad = observarProximidad().first() ?: return
-        val nivel = proximidad.nivelAlerta
-        if (nivel == NivelAlerta.NINGUNA) return
-
+        val estado = observarEstadoTope().first() ?: return
+        val regimen = estado.regimen
         val hoy = reloj.hoy()
         val (periodo, cuando) = when (regimen.periodo) {
             PeriodoTope.MENSUAL -> "${hoy.year}-${hoy.month.ordinal + 1}" to "este mes"
             PeriodoTope.ANUAL -> "${hoy.year}" to "este año"
         }
-        val llevas = "Llevas ${proximidad.acumulado.enSoles()} en gastos de negocio de un tope de " +
-            "${proximidad.tope.enSoles()} (${regimen.nombre})."
-        val (asunto, consejo) = when (nivel) {
-            NivelAlerta.AVISO_80 -> "Pasaste el 80 % de tu tope" to
-                "Te quedan ${proximidad.restante.enSoles()} $cuando."
-            NivelAlerta.AVISO_90 -> "Estás al 90 % de tu tope" to
-                "Te quedan ${proximidad.restante.enSoles()}. Consulta con tu contador."
-            else -> "Llegaste al tope de tu régimen" to
-                "Habla con tu contador para evitar una multa."
+        estado.medidas.forEach { (medida, proximidad) ->
+            val nivel = proximidad.nivelAlerta
+            if (nivel == NivelAlerta.NINGUNA) return@forEach
+            val llevas = "Llevas ${proximidad.acumulado.enSoles()} en ${medida.etiqueta} del negocio $cuando, " +
+                "de un tope de ${proximidad.tope.enSoles()} (${regimen.nombre})."
+            val (asunto, consejo) = when (nivel) {
+                NivelAlerta.AVISO_80 -> "Pasaste el 80 % de tu tope" to
+                    "Te quedan ${proximidad.restante.enSoles()} $cuando."
+                NivelAlerta.AVISO_90 -> "Estás al 90 % de tu tope" to
+                    "Te quedan ${proximidad.restante.enSoles()}. Consulta con tu contador."
+                else -> "Llegaste al tope de tu régimen" to
+                    "Habla con tu contador: puede que te toque cambiar de categoría o de régimen."
+            }
+            notificaciones.agregarSiNoExiste(
+                Notificacion(
+                    id = "tope-${regimen.tipo}-${regimen.tope.centimos}-${medida.name}-$periodo-${nivel.umbralPorcentaje}",
+                    asunto = asunto,
+                    mensaje = "$llevas $consejo",
+                    fechaHora = reloj.ahora(),
+                ),
+            )
         }
-        notificaciones.agregarSiNoExiste(
-            Notificacion(
-                id = "tope-${regimen.tipo}-${regimen.tope.centimos}-$periodo-${nivel.umbralPorcentaje}",
-                asunto = asunto,
-                mensaje = "$llevas $consejo",
-                fechaHora = reloj.ahora(),
-            ),
-        )
     }
 }

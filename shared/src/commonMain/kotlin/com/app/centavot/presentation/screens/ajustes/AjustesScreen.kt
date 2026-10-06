@@ -39,6 +39,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.centavot.domain.model.PeriodoTope
+import com.app.centavot.domain.model.ResumenUso
 import com.app.centavot.domain.model.Rubro
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.SelectorChips
@@ -114,12 +115,14 @@ fun AjustesScreen(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        text = "Cuéntanos un poco de ti. Todo se guarda solo en tu celular y nunca te pediremos claves del banco.",
+                        text = "Tu cuaderno, pero que suma solo. Cuéntanos un poco de ti para empezar.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
+
+            TarjetaPrivacidad()
 
             OutlinedTextField(
                 value = estado.nombre,
@@ -147,7 +150,13 @@ fun AjustesScreen(
 
             HorizontalDivider()
 
-            Text("Tus metas del mes", style = MaterialTheme.typography.titleMedium)
+            Text("Tu meta de ahorro", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = "Cuando registres tus ventas, la meta se calcula sobre lo que de verdad ganas. " +
+                    "Mientras tanto, usamos el ingreso que pongas aquí.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             OutlinedTextField(
                 value = estado.ingresoTexto,
@@ -156,7 +165,7 @@ fun AjustesScreen(
                 prefix = { Text("S/ ") },
                 placeholder = { Text("0.00") },
                 isError = estado.errorIngreso != null,
-                supportingText = { Text(estado.errorIngreso ?: "Lo que ganas o vendes en un mes normal, más o menos.") },
+                supportingText = { Text(estado.errorIngreso ?: "Lo que ganas en un mes normal, más o menos. Si tienes sueldo fijo, pon tu sueldo.") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                 modifier = Modifier.fillMaxWidth(),
@@ -198,6 +207,48 @@ fun AjustesScreen(
                         }
                         TextButton(onClick = onCambiarRegimen) { Text("Cambiar") }
                     }
+                }
+            }
+
+            estado.uso?.takeIf { !esPrimeraVez && it.primerUso != null }?.let { uso -> TarjetaUso(uso) }
+        }
+    }
+}
+
+/** Lo que la entrevista pidió dejar claro: sin banco, sin SUNAT, los datos son del usuario. */
+@Composable
+private fun TarjetaPrivacidad() {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+        Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Icon(Iconos.Candado, contentDescription = null)
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("Tus datos son tuyos", style = MaterialTheme.typography.titleSmall)
+                Text("• No pedimos tus claves ni tu cuenta del banco.", style = MaterialTheme.typography.bodyMedium)
+                Text("• No le enviamos nada a SUNAT. Los reportes solo los ves tú y a quien tú se los mandes.", style = MaterialTheme.typography.bodyMedium)
+                Text("• Todo se guarda solo en tu celular.", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+/** Indicadores de uso de la primera fase (se miden solo en este celular). */
+@Composable
+private fun TarjetaUso(uso: ResumenUso) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("Cómo vienes usando Centavot", style = MaterialTheme.typography.titleSmall)
+            val respuesta = uso.respuestasCuaderno.lastOrNull()?.let { if (it) "más fácil" else "todavía no" } ?: "sin responder"
+            listOf(
+                "Veces que usaste la app hoy" to "${uso.aperturasHoy} ${if (uso.aperturasHoy == 1) "vez" else "veces"}",
+                "Registros de hoy" to "${uso.registrosHoy}",
+                "Días con registros (últimos 7)" to "${uso.diasConRegistroUltimos7} de 7",
+                "Días con registros desde que empezaste" to "${uso.diasConRegistro} de ${uso.diasDesdePrimerUso + 1}",
+                "Registros por día (cuando registras)" to "${uso.registrosPorDiaActivo}",
+                "¿Más fácil que el cuaderno?" to respuesta,
+            ).forEach { (titulo, valor) ->
+                Row(Modifier.fillMaxWidth()) {
+                    Text(titulo, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                    Text(valor, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

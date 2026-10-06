@@ -6,6 +6,7 @@ import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.SubcategoriaGasto
+import com.app.centavot.domain.model.aplicaA
 import com.app.centavot.domain.usecase.EliminarGastoUseCase
 import com.app.centavot.domain.usecase.GuardarGastoUseCase
 import com.app.centavot.domain.usecase.ObtenerGastoUseCase
@@ -77,8 +78,10 @@ class GastoViewModel(
         if (esEntradaDeMontoValida(texto)) _estado.update { it.copy(montoTexto = texto, errorMonto = null) }
     }
 
-    fun onCategoriaElegida(categoria: Categoria) =
-        _estado.update { it.copy(categoria = categoria, errorCategoria = null) }
+    fun onCategoriaElegida(categoria: Categoria) = _estado.update {
+        // Si la subcategoría elegida no aplica a la nueva categoría, se quita.
+        it.copy(categoria = categoria, errorCategoria = null, subcategoria = it.subcategoria?.takeIf { s -> s.aplicaA(categoria) })
+    }
 
     fun onSubcategoriaElegida(subcategoria: SubcategoriaGasto?) = _estado.update { it.copy(subcategoria = subcategoria) }
 

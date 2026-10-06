@@ -1,11 +1,13 @@
 package com.app.centavot.domain.usecase
 
 import com.app.centavot.core.util.Reloj
+import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Cobro
 import com.app.centavot.domain.model.Contacto
 import com.app.centavot.domain.model.EstadoCobro
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.ResumenCobros
+import com.app.centavot.domain.model.TipoCobro
 import com.app.centavot.domain.model.enSoles
 import com.app.centavot.domain.repository.ActividadRepository
 import com.app.centavot.domain.repository.CobroRepository
@@ -20,6 +22,10 @@ class ObservarContactosUseCase(private val repositorio: CobroRepository) {
 
 class ObservarCobrosUseCase(private val repositorio: CobroRepository) {
     operator fun invoke(): Flow<List<Cobro>> = repositorio.observarCobros()
+}
+
+class ObtenerCobroUseCase(private val repositorio: CobroRepository) {
+    suspend operator fun invoke(id: String): Cobro? = repositorio.obtenerCobro(id)
 }
 
 class ObservarResumenCobrosUseCase(private val repositorio: CobroRepository) {
@@ -70,6 +76,7 @@ class EliminarContactoUseCase(
     }
 }
 
+/** Registra un cobro nuevo o edita uno pendiente ([idExistente]). */
 class RegistrarCobroUseCase(
     private val repositorio: CobroRepository,
     private val actividades: ActividadRepository,
@@ -81,20 +88,112 @@ class RegistrarCobroUseCase(
         data object MontoInvalido : Resultado
         data object MotivoVacio : Resultado
         data object FechaFutura : Resultado
+
+        /** El adelanto no puede ser negativo ni cubrir todo el monto (entonces ya no te debe). */
+        data object AdelantoInvalido : Resultado
+
+        /** Al editar, el nuevo monto debe ser mayor que lo que ya pagó (adelanto + abonos). */
+        data object MontoMenorQueLoPagado : Resultado
+
+        /** No existe o ya está cobrado (un cobro cerrado no se edita). */
+        data object NoEditable : Resultado
     }
 
-    suspend operator fun invoke(contacto: Contacto, motivo: String, monto: Monto, fecha: LocalDate): Resultado {
+    suspend operator fun invoke(
+        contacto: Contacto,
+        motivo: String,
+        monto: Monto,
+        fecha: LocalDate,
+        tipo: TipoCobro = TipoCobro.FIADO,
+        adelanto: Monto = Monto.CERO,
+        idExistente: String? = null,
+    ): Resultado {
         val motivoLimpio = motivo.trim()
         if (motivoLimpio.isEmpty()) return Resultado.MotivoVacio
         if (monto <= Monto.CERO) return Resultado.MontoInvalido
+        if (adelanto < Monto.CERO || adelanto >= monto) return Resultado.AdelantoInvalido
         if (fecha > reloj.hoy()) return Resultado.FechaFutura
-        val cobro = Cobro(generarId(), contacto, motivoLimpio, monto, fecha)
+
+        val existente = idExistente?.let { id ->
+            repositorio.obtenerCobro(id)?.takeIf { it.estaPendiente } ?: return Resultado.NoEditable
+        }
+        val abonado = existente?.abonado ?: Monto.CERO
+        if (adelanto + abonado >= monto) return Resultado.MontoMenorQueLoPagado
+
+        val cobro = existente?.copy(contacto = contacto, motivo = motivoLimpio, monto = monto, fecha = fecha, tipo = tipo, adelanto = adelanto)
+            ?: Cobro(generarId(), contacto, motivoLimpio, monto, fecha, tipo = tipo, adelanto = adelanto)
         repositorio.guardarCobro(cobro)
+
+        val queEs = if (tipo == TipoCobro.PEDIDO) "un pedido" else "un cobro"
+        val conAdelanto = if (adelanto > Monto.CERO) " con adelanto de ${adelanto.enSoles()}" else ""
+        val accion = if (existente == null) "Registraste" else "Editaste"
         actividades.registrar(
-            "Registraste un cobro a ${contacto.nombre} por ${monto.enSoles()} (\"$motivoLimpio\").",
+            "$accion $queEs a ${contacto.nombre} por ${monto.enSoles()}$conAdelanto (\"$motivoLimpio\").",
             reloj.ahora(),
         )
         return Resultado.Registrado(cobro)
+    }
+}
+
+/**
+ * Regla D1: un fiado o un pedido cuenta como venta **cuando se registra** (se entregó el producto
+ * o se tomó el pedido), no cuando se cobra. Si [contarComoVenta] es true, al crear el cobro se
+ * registra también la venta del negocio por el total, con la misma fecha y el motivo como
+ * descripción. Cobrar o abonar después no vuelve a sumar ventas, así nada se cuenta dos veces.
+ */
+class RegistrarCobroYVentaUseCase(
+    private val registrarCobro: RegistrarCobroUseCase,
+    private val guardarIngreso: GuardarIngresoUseCase,
+) {
+    suspend operator fun invoke(
+        contacto: Contacto,
+        motivo: String,
+        monto: Monto,
+        fecha: LocalDate,
+        tipo: TipoCobro,
+        adelanto: Monto,
+        idExistente: String?,
+        contarComoVenta: Boolean,
+    ): RegistrarCobroUseCase.Resultado {
+        val resultado = registrarCobro(contacto, motivo, monto, fecha, tipo, adelanto, idExistente)
+        if (resultado is RegistrarCobroUseCase.Resultado.Registrado && idExistente == null && contarComoVenta) {
+            guardarIngreso(null, monto, Categoria.NEGOCIO, fecha, resultado.cobro.motivo)
+        }
+        return resultado
+    }
+}
+
+/** Pago parcial de un fiado o pedido. Si cubre todo el saldo, el cobro queda cobrado. */
+class RegistrarAbonoUseCase(
+    private val repositorio: CobroRepository,
+    private val actividades: ActividadRepository,
+    private val reloj: Reloj,
+) {
+    sealed interface Resultado {
+        data class Abonado(val cobro: Cobro) : Resultado
+        data object MontoInvalido : Resultado
+        data object MayorQueElSaldo : Resultado
+        data object NoEncontrado : Resultado
+    }
+
+    suspend operator fun invoke(id: String, monto: Monto): Resultado {
+        val cobro = repositorio.obtenerCobro(id)?.takeIf { it.estaPendiente } ?: return Resultado.NoEncontrado
+        if (monto <= Monto.CERO) return Resultado.MontoInvalido
+        if (monto > cobro.saldo) return Resultado.MayorQueElSaldo
+
+        val conAbono = cobro.copy(abonado = cobro.abonado + monto)
+        val actualizado = if (conAbono.saldo == Monto.CERO) {
+            conAbono.copy(estado = EstadoCobro.COBRADO, fechaCobrado = reloj.hoy())
+        } else {
+            conAbono
+        }
+        repositorio.guardarCobro(actualizado)
+        val cierre = if (actualizado.estaPendiente) "Le falta ${actualizado.saldo.enSoles()}." else "Terminó de pagar."
+        actividades.registrar(
+            "${cobro.contacto.nombre} abonó ${monto.enSoles()} a \"${cobro.motivo}\". $cierre",
+            reloj.ahora(),
+        )
+        return Resultado.Abonado(actualizado)
     }
 }
 
@@ -109,7 +208,7 @@ class MarcarCobradoUseCase(
         if (!cobro.estaPendiente) return
         repositorio.guardarCobro(cobro.copy(estado = EstadoCobro.COBRADO, fechaCobrado = reloj.hoy()))
         actividades.registrar(
-            "${cobro.contacto.nombre} te pagó ${cobro.monto.enSoles()} (\"${cobro.motivo}\").",
+            "${cobro.contacto.nombre} te pagó ${cobro.saldo.enSoles()} (\"${cobro.motivo}\").",
             reloj.ahora(),
         )
     }

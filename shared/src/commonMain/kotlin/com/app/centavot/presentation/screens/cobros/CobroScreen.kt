@@ -3,6 +3,7 @@ package com.app.centavot.presentation.screens.cobros
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -35,17 +37,22 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.TipoCobro
 import com.app.centavot.presentation.components.CampoFecha
 import com.app.centavot.presentation.components.DialogoNuevoContacto
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.SelectorChips
+import com.app.centavot.presentation.components.formatear
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CobroScreen(
+    id: String?,
     onCerrar: () -> Unit,
-    viewModel: CobroViewModel = koinViewModel(),
+    viewModel: CobroViewModel = koinViewModel { parametersOf(id) },
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
 
@@ -56,7 +63,7 @@ fun CobroScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Registrar cobro") },
+                title = { Text(if (estado.esEdicion) "Editar cobro" else "Registrar cobro") },
                 navigationIcon = {
                     IconButton(onClick = onCerrar) { Icon(Iconos.Atras, contentDescription = "Volver") }
                 },
@@ -73,7 +80,7 @@ fun CobroScreen(
                     .padding(16.dp)
                     .height(56.dp),
             ) {
-                Text("Registrar cobro")
+                Text(if (estado.esEdicion) "Guardar cambios" else "Registrar cobro")
             }
         },
     ) { padding ->
@@ -84,6 +91,7 @@ fun CobroScreen(
             return@Scaffold
         }
 
+        val esPedido = estado.tipo == TipoCobro.PEDIDO
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -92,7 +100,26 @@ fun CobroScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("¿Quién te debe?", style = MaterialTheme.typography.titleSmall)
+                Text("¿Qué es?", style = MaterialTheme.typography.titleSmall)
+                SelectorChips(
+                    opciones = TipoCobro.entries,
+                    seleccionada = estado.tipo,
+                    etiqueta = { it.etiqueta },
+                    onSeleccionar = viewModel::onTipoElegido,
+                )
+                Text(
+                    text = if (esPedido) {
+                        "Un trabajo o pedido que te encargaron (zapatos, costura, menús). Anota el adelanto si te dieron uno."
+                    } else {
+                        "Lo que fiaste o prestaste a alguien."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(if (esPedido) "¿De quién es el pedido?" else "¿Quién te debe?", style = MaterialTheme.typography.titleSmall)
                 if (estado.contactos.isEmpty()) {
                     Text(
                         text = "Aún no tienes contactos. Agrega a la persona que te debe para registrar el cobro.",
@@ -124,7 +151,7 @@ fun CobroScreen(
             OutlinedTextField(
                 value = estado.montoTexto,
                 onValueChange = viewModel::onMontoCambiado,
-                label = { Text("Monto") },
+                label = { Text(if (esPedido) "Precio total del pedido" else "Monto") },
                 prefix = { Text("S/ ") },
                 placeholder = { Text("0.00") },
                 textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
@@ -135,11 +162,34 @@ fun CobroScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            if (estado.abonado > Monto.CERO) {
+                Text(
+                    text = "Ya te abonó ${estado.abonado.formatear()}. Esos abonos se mantienen.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            if (esPedido) {
+                OutlinedTextField(
+                    value = estado.adelantoTexto,
+                    onValueChange = viewModel::onAdelantoCambiado,
+                    label = { Text("Adelanto (opcional)") },
+                    prefix = { Text("S/ ") },
+                    placeholder = { Text("0.00") },
+                    isError = estado.errorAdelanto != null,
+                    supportingText = { Text(estado.errorAdelanto ?: "Lo que ya te pagó. Te deberá el resto.") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
             OutlinedTextField(
                 value = estado.motivo,
                 onValueChange = viewModel::onMotivoCambiado,
-                label = { Text("Motivo") },
-                placeholder = { Text("Ej. fiado de abarrotes, préstamo") },
+                label = { Text(if (esPedido) "¿Qué pidió?" else "Motivo") },
+                placeholder = { Text(if (esPedido) "Ej. arreglo de zapatos, 20 menús" else "Ej. fiado de abarrotes, préstamo") },
                 isError = estado.errorMotivo != null,
                 supportingText = estado.errorMotivo?.let { { Text(it) } },
                 singleLine = true,
@@ -147,8 +197,30 @@ fun CobroScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            if (!estado.esEdicion) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text("Contarlo como venta", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            text = if (estado.contarComoVenta) {
+                                "Se suma hoy a tus ventas y a tu tope. Cuando te pague no se vuelve a contar."
+                            } else {
+                                "No se suma a tus ventas. Úsalo si ya anotaste la venta o si es un préstamo de plata."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = estado.contarComoVenta,
+                        onCheckedChange = viewModel::onContarComoVenta,
+                        modifier = Modifier.padding(start = 12.dp),
+                    )
+                }
+            }
+
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("¿Desde cuándo te debe?", style = MaterialTheme.typography.titleSmall)
+                Text(if (esPedido) "¿Cuándo te lo pidió?" else "¿Desde cuándo te debe?", style = MaterialTheme.typography.titleSmall)
                 CampoFecha(estado.fecha, estado.hoy, viewModel::onFechaElegida, estado.errorFecha)
             }
         }

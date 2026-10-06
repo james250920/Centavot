@@ -13,6 +13,7 @@ import com.app.centavot.fakes.FakeActividadRepository
 import com.app.centavot.fakes.FakeGastoRepository
 import com.app.centavot.fakes.FakeNotificacionRepository
 import com.app.centavot.fakes.FakeRegimenRepository
+import com.app.centavot.fakes.FakeUsoRepository
 import com.app.centavot.fakes.revisarAlertaTope
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
@@ -29,12 +30,14 @@ class GuardarGastoUseCaseTest {
     private val regimenes = FakeRegimenRepository(RegimenTributario(TipoRegimen.RUS, Monto.soles(5_000), PeriodoTope.MENSUAL))
     private val actividades = FakeActividadRepository()
     private val notificaciones = FakeNotificacionRepository()
+    private val uso = FakeUsoRepository()
     private var creados = 0
     private val guardar = GuardarGastoUseCase(
         repositorio,
         reloj = { hoy },
         generarId = { if (creados++ == 0) "nuevo-id" else "nuevo-id-$creados" },
         actividades = actividades,
+        uso = uso,
         revisarAlertaTope = revisarAlertaTope(repositorio, regimenes, notificaciones, reloj = { hoy }),
     )
 
@@ -124,5 +127,13 @@ class GuardarGastoUseCaseTest {
         guardar(null, Monto.soles(6_000), Categoria.PERSONAL, hoy, null)
 
         assertTrue(notificaciones.notificaciones.value.isEmpty())
+    }
+
+    @Test
+    fun soloLosGastosNuevosCuentanComoRegistroDeUso() = runTest {
+        val gasto = assertIs<GuardarGastoUseCase.Resultado.Guardado>(guardar(null, Monto(100), Categoria.NEGOCIO, hoy, null)).gasto
+        guardar(gasto.id, Monto(200), Categoria.NEGOCIO, hoy, null)
+
+        assertEquals(1, uso.eventos.value.size)
     }
 }

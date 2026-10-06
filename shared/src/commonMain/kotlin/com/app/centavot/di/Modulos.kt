@@ -6,12 +6,16 @@ import com.app.centavot.data.local.CentavotDatabase
 import com.app.centavot.data.repository.ActividadRepositoryImpl
 import com.app.centavot.data.repository.CobroRepositoryImpl
 import com.app.centavot.data.repository.GastoRepositoryImpl
+import com.app.centavot.data.repository.IngresoRepositoryImpl
+import com.app.centavot.data.repository.UsoRepositoryImpl
 import com.app.centavot.data.repository.NotificacionRepositoryImpl
 import com.app.centavot.data.repository.PerfilRepositoryImpl
 import com.app.centavot.data.repository.RegimenRepositoryImpl
 import com.app.centavot.domain.repository.ActividadRepository
 import com.app.centavot.domain.repository.CobroRepository
 import com.app.centavot.domain.repository.GastoRepository
+import com.app.centavot.domain.repository.IngresoRepository
+import com.app.centavot.domain.repository.UsoRepository
 import com.app.centavot.domain.repository.NotificacionRepository
 import com.app.centavot.domain.repository.PerfilRepository
 import com.app.centavot.domain.repository.RegimenRepository
@@ -23,6 +27,9 @@ import com.app.centavot.domain.usecase.GuardarGastoUseCase
 import com.app.centavot.domain.usecase.GuardarPerfilUseCase
 import com.app.centavot.domain.usecase.GuardarRegimenUseCase
 import com.app.centavot.domain.usecase.MarcarCobradoUseCase
+import com.app.centavot.domain.usecase.ObtenerCobroUseCase
+import com.app.centavot.domain.usecase.RegistrarAbonoUseCase
+import com.app.centavot.domain.usecase.RegistrarCobroYVentaUseCase
 import com.app.centavot.domain.usecase.MarcarNotificacionesLeidasUseCase
 import com.app.centavot.domain.usecase.ObservarActividadesUseCase
 import com.app.centavot.domain.usecase.ObservarCobrosUseCase
@@ -31,7 +38,18 @@ import com.app.centavot.domain.usecase.ObservarGastosUseCase
 import com.app.centavot.domain.usecase.ObservarNoLeidasUseCase
 import com.app.centavot.domain.usecase.ObservarNotificacionesUseCase
 import com.app.centavot.domain.usecase.ObservarPerfilUseCase
-import com.app.centavot.domain.usecase.ObservarProximidadTopeUseCase
+import com.app.centavot.domain.usecase.ObservarEstadoTopeUseCase
+import com.app.centavot.domain.usecase.EliminarIngresoUseCase
+import com.app.centavot.domain.usecase.GuardarIngresoUseCase
+import com.app.centavot.domain.usecase.ObservarGastosDelMesUseCase
+import com.app.centavot.domain.usecase.ObservarHistorialUseCase
+import com.app.centavot.domain.usecase.ObservarIngresosUseCase
+import com.app.centavot.domain.usecase.ObservarResumenPeriodoUseCase
+import com.app.centavot.domain.usecase.ObservarResumenUsoUseCase
+import com.app.centavot.domain.usecase.ObservarVentasFrecuentesUseCase
+import com.app.centavot.domain.usecase.ObtenerIngresoUseCase
+import com.app.centavot.domain.usecase.RegistrarAperturaUseCase
+import com.app.centavot.domain.usecase.ResponderEncuestaCuadernoUseCase
 import com.app.centavot.domain.usecase.ObservarRegimenUseCase
 import com.app.centavot.domain.usecase.ObservarReporteUseCase
 import com.app.centavot.domain.usecase.ObservarResumenCobrosUseCase
@@ -52,6 +70,7 @@ import com.app.centavot.presentation.screens.movimientos.MovimientosViewModel
 import com.app.centavot.presentation.screens.notificaciones.NotificacionesViewModel
 import com.app.centavot.presentation.screens.regimen.RegimenViewModel
 import com.app.centavot.presentation.screens.reporte.ReporteViewModel
+import com.app.centavot.presentation.screens.venta.VentaViewModel
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -59,7 +78,8 @@ import org.koin.dsl.module
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-// La base de datos (CentavotDatabase) y el CompartidorArchivos los registra cada plataforma, p. ej. moduloAndroid.
+// La base de datos (CentavotDatabase), el CompartidorArchivos y el AbridorEnlaces los registra cada plataforma,
+// p. ej. moduloAndroid.
 
 val moduloData = module {
     single { get<CentavotDatabase>().gastoDao() }
@@ -68,12 +88,16 @@ val moduloData = module {
     single { get<CentavotDatabase>().cobroDao() }
     single { get<CentavotDatabase>().actividadDao() }
     single { get<CentavotDatabase>().notificacionDao() }
+    single { get<CentavotDatabase>().ingresoDao() }
+    single { get<CentavotDatabase>().eventoUsoDao() }
     single<GastoRepository> { GastoRepositoryImpl(get()) }
     single<RegimenRepository> { RegimenRepositoryImpl(get()) }
     single<PerfilRepository> { PerfilRepositoryImpl(get()) }
     single<CobroRepository> { CobroRepositoryImpl(get()) }
     single<ActividadRepository> { ActividadRepositoryImpl(get()) }
     single<NotificacionRepository> { NotificacionRepositoryImpl(get()) }
+    single<IngresoRepository> { IngresoRepositoryImpl(get()) }
+    single<UsoRepository> { UsoRepositoryImpl(get()) }
 }
 
 @OptIn(ExperimentalUuidApi::class)
@@ -81,14 +105,25 @@ private val generarId: () -> String = { Uuid.random().toString() }
 
 val moduloDomain = module {
     single<Reloj> { RelojSistema }
-    factory { GuardarGastoUseCase(get(), get(), generarId, get(), get()) }
+    factory { GuardarGastoUseCase(get(), get(), generarId, get(), get(), get()) }
+    factory { GuardarIngresoUseCase(get(), get(), generarId, get(), get(), get()) }
+    factoryOf(::ObtenerIngresoUseCase)
+    factoryOf(::EliminarIngresoUseCase)
+    factoryOf(::ObservarIngresosUseCase)
+    factoryOf(::ObservarVentasFrecuentesUseCase)
+    factoryOf(::ObservarResumenPeriodoUseCase)
+    factoryOf(::ObservarHistorialUseCase)
+    factoryOf(::ObservarGastosDelMesUseCase)
+    factoryOf(::RegistrarAperturaUseCase)
+    factoryOf(::ObservarResumenUsoUseCase)
+    factoryOf(::ResponderEncuestaCuadernoUseCase)
     factoryOf(::ObtenerGastoUseCase)
     factoryOf(::EliminarGastoUseCase)
     factoryOf(::ObservarGastosUseCase)
     factoryOf(::ObservarRegimenUseCase)
     factoryOf(::GuardarRegimenUseCase)
     factoryOf(::ObtenerOpcionesRegimenUseCase)
-    factoryOf(::ObservarProximidadTopeUseCase)
+    factoryOf(::ObservarEstadoTopeUseCase)
     factoryOf(::ObservarResumenMesUseCase)
     factoryOf(::ObservarReporteUseCase)
     factoryOf(::RevisarAlertaTopeUseCase)
@@ -101,6 +136,9 @@ val moduloDomain = module {
     factoryOf(::EliminarContactoUseCase)
     factory { RegistrarCobroUseCase(get(), get(), get(), generarId) }
     factoryOf(::MarcarCobradoUseCase)
+    factoryOf(::RegistrarAbonoUseCase)
+    factoryOf(::RegistrarCobroYVentaUseCase)
+    factoryOf(::ObtenerCobroUseCase)
     factoryOf(::EliminarCobroUseCase)
     factoryOf(::ObservarActividadesUseCase)
     factoryOf(::ObservarNotificacionesUseCase)
@@ -116,11 +154,12 @@ val moduloPresentation = module {
     viewModelOf(::ReporteViewModel)
     viewModelOf(::AjustesViewModel)
     viewModelOf(::CobrosViewModel)
-    viewModelOf(::CobroViewModel)
     viewModelOf(::ContactosViewModel)
     viewModelOf(::ActividadViewModel)
     viewModelOf(::NotificacionesViewModel)
     viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get()) }
+    viewModel { (id: String?) -> VentaViewModel(id, get(), get(), get(), get(), get()) }
+    viewModel { (id: String?) -> CobroViewModel(id, get(), get(), get(), get(), get()) }
 }
 
 val modulosComunes = listOf(moduloData, moduloDomain, moduloPresentation)

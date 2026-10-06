@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Perfil
 import com.app.centavot.domain.model.RegimenTributario
+import com.app.centavot.domain.model.ResumenUso
 import com.app.centavot.domain.model.Rubro
 import com.app.centavot.domain.usecase.GuardarPerfilUseCase
 import com.app.centavot.domain.usecase.ObservarPerfilUseCase
 import com.app.centavot.domain.usecase.ObservarRegimenUseCase
+import com.app.centavot.domain.usecase.ObservarResumenUsoUseCase
 import com.app.centavot.presentation.components.comoTextoEditable
 import com.app.centavot.presentation.components.esEntradaDeMontoValida
 import com.app.centavot.presentation.components.esEntradaDeTasaValida
@@ -29,6 +31,7 @@ data class AjustesUiState(
     val ingresoTexto: String = "",
     val tasaTexto: String = "",
     val regimen: RegimenTributario? = null,
+    val uso: ResumenUso? = null,
     val errorNombre: String? = null,
     val errorRubro: String? = null,
     val errorIngreso: String? = null,
@@ -42,6 +45,7 @@ class AjustesViewModel(
     private val observarPerfil: ObservarPerfilUseCase,
     private val observarRegimen: ObservarRegimenUseCase,
     private val guardarPerfil: GuardarPerfilUseCase,
+    private val observarResumenUso: ObservarResumenUsoUseCase,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(AjustesUiState())
@@ -63,6 +67,9 @@ class AjustesViewModel(
         // El régimen puede cambiar mientras la pantalla está abierta (pantalla "Tu régimen").
         viewModelScope.launch {
             observarRegimen().collect { regimen -> _estado.update { it.copy(regimen = regimen) } }
+        }
+        viewModelScope.launch {
+            observarResumenUso().collect { uso -> _estado.update { it.copy(uso = uso) } }
         }
     }
 

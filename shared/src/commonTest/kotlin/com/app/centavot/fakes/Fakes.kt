@@ -12,7 +12,11 @@ import com.app.centavot.domain.repository.CobroRepository
 import com.app.centavot.domain.repository.GastoRepository
 import com.app.centavot.domain.repository.NotificacionRepository
 import com.app.centavot.domain.repository.RegimenRepository
-import com.app.centavot.domain.usecase.ObservarProximidadTopeUseCase
+import com.app.centavot.domain.model.EventoUso
+import com.app.centavot.domain.model.Ingreso
+import com.app.centavot.domain.repository.IngresoRepository
+import com.app.centavot.domain.repository.UsoRepository
+import com.app.centavot.domain.usecase.ObservarEstadoTopeUseCase
 import com.app.centavot.domain.usecase.RevisarAlertaTopeUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,10 +95,34 @@ class FakeCobroRepository : CobroRepository {
     override suspend fun eliminarCobro(id: String) = cobros.update { lista -> lista.filterNot { it.id == id } }
 }
 
+class FakeIngresoRepository(iniciales: List<Ingreso> = emptyList()) : IngresoRepository {
+    val ingresos = MutableStateFlow(iniciales)
+
+    override fun observarIngresos(): Flow<List<Ingreso>> = ingresos.map { it.sortedByDescending(Ingreso::fecha) }
+
+    override fun observarIngresosEntre(desde: LocalDate, hasta: LocalDate): Flow<List<Ingreso>> =
+        observarIngresos().map { lista -> lista.filter { it.fecha in desde..hasta } }
+
+    override suspend fun obtener(id: String): Ingreso? = ingresos.value.firstOrNull { it.id == id }
+
+    override suspend fun guardar(ingreso: Ingreso) = ingresos.update { lista -> lista.filterNot { it.id == ingreso.id } + ingreso }
+
+    override suspend fun eliminar(id: String) = ingresos.update { lista -> lista.filterNot { it.id == id } }
+}
+
+class FakeUsoRepository : UsoRepository {
+    val eventos = MutableStateFlow<List<EventoUso>>(emptyList())
+
+    override fun observar(): Flow<List<EventoUso>> = eventos
+
+    override suspend fun registrar(evento: EventoUso) = eventos.update { it + evento }
+}
+
 /** Alerta de tope armada con fakes, para los casos de uso que la necesitan. */
 fun revisarAlertaTope(
     gastos: GastoRepository,
     regimenes: RegimenRepository,
     notificaciones: NotificacionRepository,
     reloj: Reloj,
-) = RevisarAlertaTopeUseCase(ObservarProximidadTopeUseCase(gastos, regimenes, reloj), regimenes, notificaciones, reloj)
+    ingresos: IngresoRepository = FakeIngresoRepository(),
+) = RevisarAlertaTopeUseCase(ObservarEstadoTopeUseCase(ingresos, gastos, regimenes, reloj), notificaciones, reloj)

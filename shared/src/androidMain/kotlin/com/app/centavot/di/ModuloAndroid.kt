@@ -1,5 +1,7 @@
 package com.app.centavot.di
 
+import com.app.centavot.core.util.AbridorEnlaces
+import com.app.centavot.core.util.AbridorEnlacesAndroid
 import com.app.centavot.core.util.CompartidorArchivos
 import com.app.centavot.core.util.CompartidorArchivosAndroid
 import com.app.centavot.data.local.crearDatabase
@@ -10,4 +12,5 @@ import org.koin.dsl.module
 val moduloAndroid = module {
     single { crearDatabase(crearDatabaseBuilder(androidContext())) }
     single<CompartidorArchivos> { CompartidorArchivosAndroid(androidContext()) }
+    single<AbridorEnlaces> { AbridorEnlacesAndroid(androidContext()) }
 }

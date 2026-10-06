@@ -56,6 +56,7 @@ fun DialogoNuevoContacto(
                     value = telefono,
                     onValueChange = { nuevo -> telefono = nuevo.filter { it.isDigit() || it == '+' || it == ' ' }.take(MAX_TELEFONO) },
                     label = { Text("Celular (opcional)") },
+                    supportingText = { Text("Para recordarle por WhatsApp lo que te debe.") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
                     modifier = Modifier.fillMaxWidth(),

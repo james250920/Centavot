@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.centavot.domain.model.SubcategoriaGasto
+import com.app.centavot.domain.model.para
 import com.app.centavot.presentation.components.CampoFecha
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.SelectorChips
@@ -137,7 +138,7 @@ fun GastoScreen(
 
             Seccion(titulo = "¿En qué? (opcional)") {
                 SelectorChips(
-                    opciones = SubcategoriaGasto.entries,
+                    opciones = SubcategoriaGasto.para(estado.categoria),
                     seleccionada = estado.subcategoria,
                     etiqueta = { it.etiqueta },
                     onSeleccionar = viewModel::onSubcategoriaElegida,

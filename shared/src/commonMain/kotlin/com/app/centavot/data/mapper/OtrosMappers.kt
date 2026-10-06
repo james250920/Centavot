@@ -15,6 +15,7 @@ import com.app.centavot.domain.model.Notificacion
 import com.app.centavot.domain.model.Perfil
 import com.app.centavot.domain.model.Rubro
 import com.app.centavot.domain.model.TasaAhorro
+import com.app.centavot.domain.model.TipoCobro
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 
@@ -44,6 +45,9 @@ fun CobroConContacto.toDomain() = Cobro(
     fecha = LocalDate.parse(cobro.fecha),
     estado = EstadoCobro.valueOf(cobro.estado),
     fechaCobrado = cobro.fechaCobrado?.let(LocalDate::parse),
+    tipo = TipoCobro.valueOf(cobro.tipo),
+    adelanto = Monto(cobro.adelantoCentimos),
+    abonado = Monto(cobro.abonadoCentimos),
 )
 
 fun Cobro.toEntity() = CobroEntity(
@@ -54,6 +58,9 @@ fun Cobro.toEntity() = CobroEntity(
     fecha = fecha.toString(),
     estado = estado.name,
     fechaCobrado = fechaCobrado?.toString(),
+    tipo = tipo.name,
+    adelantoCentimos = adelanto.centimos,
+    abonadoCentimos = abonado.centimos,
 )
 
 fun ActividadEntity.toDomain() = Actividad(id = id, descripcion = descripcion, fechaHora = LocalDateTime.parse(fechaHora))

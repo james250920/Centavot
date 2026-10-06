@@ -1,5 +1,6 @@
 package com.app.centavot.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -36,6 +37,12 @@ data class CobroEntity(
     val fecha: String,
     val estado: String,
     val fechaCobrado: String?,
+    /** v3: FIADO o PEDIDO. Los cobros de la v2 quedan como FIADO. */
+    @ColumnInfo(defaultValue = "FIADO") val tipo: String = "FIADO",
+    /** v3: lo que ya pagó por adelantado. */
+    @ColumnInfo(defaultValue = "0") val adelantoCentimos: Long = 0,
+    /** v3: suma de los abonos (pagos parciales). */
+    @ColumnInfo(defaultValue = "0") val abonadoCentimos: Long = 0,
 )
 
 data class CobroConContacto(

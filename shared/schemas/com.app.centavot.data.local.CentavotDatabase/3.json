@@ -1,0 +1,491 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "f83ed80ea1f8709c1bdbc3bed156ea89",
+    "entities": [
+      {
+        "tableName": "gastos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `montoCentimos` INTEGER NOT NULL, `fecha` TEXT NOT NULL, `origen` TEXT NOT NULL, `estado` TEXT NOT NULL, `categoria` TEXT, `subcategoria` TEXT, `proveedor` TEXT, `descripcion` TEXT, `corregidoManualmente` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "montoCentimos",
+            "columnName": "montoCentimos",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fecha",
+            "columnName": "fecha",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "origen",
+            "columnName": "origen",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoria",
+            "columnName": "categoria",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "subcategoria",
+            "columnName": "subcategoria",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "proveedor",
+            "columnName": "proveedor",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "descripcion",
+            "columnName": "descripcion",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "corregidoManualmente",
+            "columnName": "corregidoManualmente",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_gastos_fecha",
+            "unique": false,
+            "columnNames": [
+              "fecha"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gastos_fecha` ON `${TABLE_NAME}` (`fecha`)"
+          }
+        ]
+      },
+      {
+        "tableName": "regimen",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `tipo` TEXT NOT NULL, `nombre` TEXT NOT NULL, `topeCentimos` INTEGER NOT NULL, `periodo` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "topeCentimos",
+            "columnName": "topeCentimos",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "periodo",
+            "columnName": "periodo",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "perfil",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nombre` TEXT NOT NULL, `rubro` TEXT, `ingresoMensualCentimos` INTEGER NOT NULL, `tasaAhorroDecimas` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rubro",
+            "columnName": "rubro",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "ingresoMensualCentimos",
+            "columnName": "ingresoMensualCentimos",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tasaAhorroDecimas",
+            "columnName": "tasaAhorroDecimas",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "contactos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `nombre` TEXT NOT NULL, `telefono` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "telefono",
+            "columnName": "telefono",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "cobros",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `contactoId` TEXT NOT NULL, `motivo` TEXT NOT NULL, `montoCentimos` INTEGER NOT NULL, `fecha` TEXT NOT NULL, `estado` TEXT NOT NULL, `fechaCobrado` TEXT, `tipo` TEXT NOT NULL DEFAULT 'FIADO', `adelantoCentimos` INTEGER NOT NULL DEFAULT 0, `abonadoCentimos` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`), FOREIGN KEY(`contactoId`) REFERENCES `contactos`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contactoId",
+            "columnName": "contactoId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "motivo",
+            "columnName": "motivo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "montoCentimos",
+            "columnName": "montoCentimos",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fecha",
+            "columnName": "fecha",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaCobrado",
+            "columnName": "fechaCobrado",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'FIADO'"
+          },
+          {
+            "fieldPath": "adelantoCentimos",
+            "columnName": "adelantoCentimos",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "abonadoCentimos",
+            "columnName": "abonadoCentimos",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_cobros_contactoId",
+            "unique": false,
+            "columnNames": [
+              "contactoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cobros_contactoId` ON `${TABLE_NAME}` (`contactoId`)"
+          },
+          {
+            "name": "index_cobros_fecha",
+            "unique": false,
+            "columnNames": [
+              "fecha"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cobros_fecha` ON `${TABLE_NAME}` (`fecha`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "contactos",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "contactoId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "actividades",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `descripcion` TEXT NOT NULL, `fechaHora` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descripcion",
+            "columnName": "descripcion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHora",
+            "columnName": "fechaHora",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_actividades_fechaHora",
+            "unique": false,
+            "columnNames": [
+              "fechaHora"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_actividades_fechaHora` ON `${TABLE_NAME}` (`fechaHora`)"
+          }
+        ]
+      },
+      {
+        "tableName": "notificaciones",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `asunto` TEXT, `mensaje` TEXT NOT NULL, `fechaHora` TEXT NOT NULL, `leida` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "asunto",
+            "columnName": "asunto",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "mensaje",
+            "columnName": "mensaje",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHora",
+            "columnName": "fechaHora",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "leida",
+            "columnName": "leida",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "ingresos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `montoCentimos` INTEGER NOT NULL, `fecha` TEXT NOT NULL, `categoria` TEXT NOT NULL, `descripcion` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "montoCentimos",
+            "columnName": "montoCentimos",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fecha",
+            "columnName": "fecha",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoria",
+            "columnName": "categoria",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descripcion",
+            "columnName": "descripcion",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_ingresos_fecha",
+            "unique": false,
+            "columnNames": [
+              "fecha"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ingresos_fecha` ON `${TABLE_NAME}` (`fecha`)"
+          }
+        ]
+      },
+      {
+        "tableName": "eventos_uso",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `tipo` TEXT NOT NULL, `fechaHora` TEXT NOT NULL, `valor` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHora",
+            "columnName": "fechaHora",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "valor",
+            "columnName": "valor",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_eventos_uso_fechaHora",
+            "unique": false,
+            "columnNames": [
+              "fechaHora"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_eventos_uso_fechaHora` ON `${TABLE_NAME}` (`fechaHora`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f83ed80ea1f8709c1bdbc3bed156ea89')"
+    ]
+  }
+}
