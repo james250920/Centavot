@@ -1,11 +1,13 @@
 package com.app.centavot.presentation.components
 
 import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.TasaAhorro
+import com.app.centavot.domain.model.enSoles
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.minus
-import kotlin.math.abs
 
 private val MESES = listOf(
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -13,16 +15,12 @@ private val MESES = listOf(
 )
 
 private val REGEX_MONTO = Regex("""\d{1,9}(\.\d{0,2})?""")
+private val REGEX_TASA = Regex("""\d{1,3}(\.\d?)?""")
+private val REGEX_ENTRADA_TASA = Regex("""\d{0,3}([.,]\d?)?""")
 private val REGEX_ENTRADA_MONTO = Regex("""\d{0,9}([.,]\d{0,2})?""")
 
 /** "S/ 1,234.50" */
-fun Monto.formatear(): String {
-    val valor = abs(centimos)
-    val soles = (valor / 100).toString().reversed().chunked(3).joinToString(",").reversed()
-    val cent = (valor % 100).toString().padStart(2, '0')
-    val signo = if (centimos < 0) "-" else ""
-    return "${signo}S/ $soles.$cent"
-}
+fun Monto.formatear(): String = enSoles()
 
 /** Texto para precargar el campo de monto al editar: "12.5" → "12.50", "12.00" → "12". */
 fun Monto.comoTextoEditable(): String {
@@ -57,3 +55,28 @@ fun LocalDate.formatearRelativo(hoy: LocalDate): String = when (this) {
         if (year != hoy.year) append(" de $year")
     }
 }
+
+/** "Hoy, 16:13" o "12 de septiembre, 09:05". */
+fun LocalDateTime.formatear(hoy: LocalDate): String {
+    val hora = "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
+    return "${date.formatearRelativo(hoy)}, $hora"
+}
+
+/** "12.5 %" */
+fun TasaAhorro.formatear(): String = "${comoTextoEditable()} %"
+
+/** "12.5", "10" */
+fun TasaAhorro.comoTextoEditable(): String =
+    if (decimas % 10 == 0) (decimas / 10).toString() else "${decimas / 10}.${decimas % 10}"
+
+/** "12,5" → 12.5 %; null si no es un número entre 0 y 100 con un decimal como máximo. */
+fun parsearTasa(texto: String): TasaAhorro? {
+    val limpio = texto.trim().replace(',', '.').ifEmpty { "0" }
+    if (!REGEX_TASA.matches(limpio)) return null
+    val partes = limpio.split('.')
+    val decimas = partes[0].toInt() * 10 + (partes.getOrNull(1)?.takeIf { it.isNotEmpty() }?.toInt() ?: 0)
+    return if (decimas in 0..TasaAhorro.MAXIMA) TasaAhorro(decimas) else null
+}
+
+/** Deja escribir solo un porcentaje con hasta un decimal. */
+fun esEntradaDeTasaValida(texto: String): Boolean = REGEX_ENTRADA_TASA.matches(texto)

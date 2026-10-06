@@ -23,10 +23,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.app.centavot.domain.model.EstadoTope
+import com.app.centavot.domain.model.MedidaTope
 import com.app.centavot.domain.model.NivelAlerta
 import com.app.centavot.domain.model.PeriodoTope
 import com.app.centavot.domain.model.ProximidadTope
-import com.app.centavot.domain.model.RegimenTributario
 
 private data class EstiloAlerta(
     val color: Color,
@@ -38,12 +39,13 @@ private data class EstiloAlerta(
 
 @Composable
 fun TarjetaTope(
-    proximidad: ProximidadTope,
-    regimen: RegimenTributario,
+    estado: EstadoTope,
     modifier: Modifier = Modifier,
 ) {
     val colores = MaterialTheme.colorScheme
+    val regimen = estado.regimen
     val periodo = if (regimen.periodo == PeriodoTope.MENSUAL) "este mes" else "este año"
+    val (medida, proximidad) = estado.principal
     val restante = proximidad.restante.formatear()
     val estilo = when (proximidad.nivelAlerta) {
         NivelAlerta.NINGUNA -> EstiloAlerta(
@@ -52,15 +54,15 @@ fun TarjetaTope(
         )
         NivelAlerta.AVISO_80 -> EstiloAlerta(
             colores.tertiary, colores.tertiaryContainer, colores.onTertiaryContainer, Iconos.Aviso,
-            "Ya pasaste el 80 % de tu tope. Te quedan $restante $periodo.",
+            "Tus ${medida.etiqueta} ya pasaron el 80 % del tope. Te quedan $restante $periodo.",
         )
         NivelAlerta.AVISO_90 -> EstiloAlerta(
             colores.tertiary, colores.tertiaryContainer, colores.onTertiaryContainer, Iconos.Aviso,
-            "Estás muy cerca del tope: te quedan $restante. Consulta con tu contador.",
+            "Tus ${medida.etiqueta} están muy cerca del tope: te quedan $restante. Consulta con tu contador.",
         )
         NivelAlerta.TOPE_ALCANZADO -> EstiloAlerta(
             colores.error, colores.errorContainer, colores.onErrorContainer, Iconos.Aviso,
-            "Llegaste al tope de tu régimen. Habla con tu contador para evitar una multa.",
+            "Tus ${medida.etiqueta} llegaron al tope. Habla con tu contador: puede que te toque cambiar de categoría.",
         )
     }
 
@@ -70,39 +72,13 @@ fun TarjetaTope(
     ) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
-                text = "Tope de tu régimen · ${regimen.nombre}",
+                text = "Tope de tu régimen · ${regimen.nombre} · ${proximidad.tope.formatear()} ${if (regimen.periodo == PeriodoTope.MENSUAL) "al mes" else "al año"}",
                 style = MaterialTheme.typography.labelLarge,
                 color = colores.onSurfaceVariant,
             )
-            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "${proximidad.porcentaje} %",
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold,
-                    color = estilo.color,
-                )
-                Text(
-                    text = "usado $periodo",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = colores.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 6.dp),
-                )
+            estado.medidas.forEach { (cual, valor) ->
+                BarraTope(cual, valor, periodo, if (cual == medida) estilo.color else colores.primary)
             }
-            LinearProgressIndicator(
-                progress = { (proximidad.porcentaje / 100f).coerceIn(0f, 1f) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(10.dp)
-                    .semantics { contentDescription = "${proximidad.porcentaje} por ciento del tope usado" },
-                color = estilo.color,
-                trackColor = colores.surfaceVariant,
-                strokeCap = StrokeCap.Round,
-            )
-            Text(
-                text = "${proximidad.acumulado.formatear()} en gastos de negocio de ${proximidad.tope.formatear()}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = colores.onSurfaceVariant,
-            )
             Surface(color = estilo.fondo, contentColor = estilo.texto, shape = MaterialTheme.shapes.medium) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(12.dp),
@@ -114,5 +90,37 @@ fun TarjetaTope(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BarraTope(medida: MedidaTope, proximidad: ProximidadTope, periodo: String, color: Color) {
+    val colores = MaterialTheme.colorScheme
+    val nombre = medida.etiqueta.replaceFirstChar { it.uppercase() }
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "${proximidad.porcentaje} %",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = color,
+            )
+            Text(
+                text = "$nombre $periodo: ${proximidad.acumulado.formatear()}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = colores.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+        }
+        LinearProgressIndicator(
+            progress = { (proximidad.porcentaje / 100f).coerceIn(0f, 1f) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .semantics { contentDescription = "$nombre: ${proximidad.porcentaje} por ciento del tope usado" },
+            color = color,
+            trackColor = colores.surfaceVariant,
+            strokeCap = StrokeCap.Round,
+        )
     }
 }

@@ -23,3 +23,28 @@ data class ProximidadTope(
     val nivelAlerta: NivelAlerta
         get() = NivelAlerta.entries.last { porcentaje >= it.umbralPorcentaje }
 }
+
+/** Qué se compara con el tope del régimen. */
+enum class MedidaTope(val etiqueta: String) {
+    VENTAS("ventas"),
+    COMPRAS("compras"),
+}
+
+/**
+ * Situación del negocio frente al tope de su régimen. En el Nuevo RUS se vigilan las ventas
+ * y las compras del mes; en el RER, las ventas del año.
+ */
+data class EstadoTope(
+    val regimen: RegimenTributario,
+    val ventas: ProximidadTope,
+    /** null si el régimen no pone tope a las compras. */
+    val compras: ProximidadTope? = null,
+) {
+    val medidas: List<Pair<MedidaTope, ProximidadTope>>
+        get() = listOfNotNull(MedidaTope.VENTAS to ventas, compras?.let { MedidaTope.COMPRAS to it })
+
+    /** La medida que está más cerca del tope: es la que decide el aviso. */
+    val principal: Pair<MedidaTope, ProximidadTope> get() = medidas.maxBy { it.second.porcentaje }
+
+    val nivelAlerta: NivelAlerta get() = principal.second.nivelAlerta
+}

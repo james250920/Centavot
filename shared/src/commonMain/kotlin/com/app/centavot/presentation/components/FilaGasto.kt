@@ -38,6 +38,9 @@ fun FilaGasto(
         supportingContent = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 EtiquetaCategoria(gasto.categoria)
+                gasto.subcategoria?.let {
+                    Text(it.etiqueta, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
                 if (mostrarFecha) {
                     Text(gasto.fecha.formatearRelativo(hoy), style = MaterialTheme.typography.bodySmall)
                 }

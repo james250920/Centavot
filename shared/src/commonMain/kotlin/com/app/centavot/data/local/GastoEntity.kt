@@ -13,6 +13,7 @@ data class GastoEntity(
     val origen: String,
     val estado: String,
     val categoria: String?,
+    val subcategoria: String? = null,
     val proveedor: String?,
     val descripcion: String?,
     val corregidoManualmente: Boolean,

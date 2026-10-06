@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.centavot.domain.model.PeriodoTope
 import com.app.centavot.domain.model.RegimenTributario
+import com.app.centavot.domain.model.TipoRegimen
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.formatear
 import org.koin.compose.viewmodel.koinViewModel
@@ -85,7 +86,7 @@ fun RegimenScreen(
         ) {
             if (esPrimeraVez) {
                 Text(
-                    text = "Te damos la bienvenida a Centavot",
+                    text = "Último paso",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 32.dp),
@@ -93,7 +94,8 @@ fun RegimenScreen(
             }
             Text("¿En qué régimen tributario estás?", style = MaterialTheme.typography.titleLarge)
             Text(
-                text = "Lo usamos para avisarte antes de que llegues a tu tope y armar tu reporte para SUNAT.",
+                text = "Lo usamos para avisarte antes de que llegues a tu tope y armar el resumen para tu contador. " +
+                    "No le enviamos nada a SUNAT.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -111,7 +113,8 @@ fun RegimenScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 8.dp)) {
                 Icon(Iconos.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
-                    text = "Montos referenciales de SUNAT. Si no sabes tu categoría, revísala en tu Clave SOL o pregúntale a tu contador.",
+                    text = "Montos referenciales de SUNAT. Si no sabes tu categoría, revísala en tu Clave SOL o pregúntale a tu " +
+                        "contador. Si estás en el RMT o aún no tienes RUC, elige la opción más parecida: por ahora el tope es solo una guía.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -146,7 +149,20 @@ private fun OpcionRegimen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = colores.onSurfaceVariant,
                 )
+                Text(
+                    text = regimen.paraQuien(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colores.onSurfaceVariant,
+                )
             }
         }
     }
+}
+
+/** Explicación en palabras simples. Ojo: el RER también es para negocios pequeños, no para empresas grandes. */
+private fun RegimenTributario.paraQuien(): String = when (tipo) {
+    TipoRegimen.RUS -> "Para bodegas, puestos y negocios pequeños que dan boletas. " +
+        "El tope cuenta lo que vendes y también lo que compras en el mes."
+    TipoRegimen.RER -> "Para pequeñas empresas que dan facturas (no es para empresas grandes). " +
+        "El tope cuenta lo que vendes en el año."
 }

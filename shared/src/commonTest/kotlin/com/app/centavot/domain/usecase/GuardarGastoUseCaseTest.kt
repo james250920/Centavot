@@ -5,7 +5,16 @@ import com.app.centavot.domain.model.EstadoGasto
 import com.app.centavot.domain.model.Gasto
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.OrigenGasto
+import com.app.centavot.domain.model.PeriodoTope
+import com.app.centavot.domain.model.RegimenTributario
+import com.app.centavot.domain.model.SubcategoriaGasto
+import com.app.centavot.domain.model.TipoRegimen
+import com.app.centavot.fakes.FakeActividadRepository
 import com.app.centavot.fakes.FakeGastoRepository
+import com.app.centavot.fakes.FakeNotificacionRepository
+import com.app.centavot.fakes.FakeRegimenRepository
+import com.app.centavot.fakes.FakeUsoRepository
+import com.app.centavot.fakes.revisarAlertaTope
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
@@ -18,7 +27,19 @@ class GuardarGastoUseCaseTest {
 
     private val hoy = LocalDate(2026, 9, 23)
     private val repositorio = FakeGastoRepository()
-    private val guardar = GuardarGastoUseCase(repositorio, reloj = { hoy }, generarId = { "nuevo-id" })
+    private val regimenes = FakeRegimenRepository(RegimenTributario(TipoRegimen.RUS, Monto.soles(5_000), PeriodoTope.MENSUAL))
+    private val actividades = FakeActividadRepository()
+    private val notificaciones = FakeNotificacionRepository()
+    private val uso = FakeUsoRepository()
+    private var creados = 0
+    private val guardar = GuardarGastoUseCase(
+        repositorio,
+        reloj = { hoy },
+        generarId = { if (creados++ == 0) "nuevo-id" else "nuevo-id-$creados" },
+        actividades = actividades,
+        uso = uso,
+        revisarAlertaTope = revisarAlertaTope(repositorio, regimenes, notificaciones, reloj = { hoy }),
+    )
 
     @Test
     fun registraUnGastoNuevoConfirmado() = runTest {
@@ -78,5 +99,41 @@ class GuardarGastoUseCaseTest {
             GuardarGastoUseCase.Resultado.NoEncontrado,
             guardar("no-existe", Monto(100), Categoria.NEGOCIO, hoy, null),
         )
+    }
+
+    @Test
+    fun guardaLaSubcategoriaYLoAnotaEnActividad() = runTest {
+        val resultado = guardar(null, Monto.soles(25), Categoria.PERSONAL, hoy, "Cena", SubcategoriaGasto.ALIMENTACION)
+
+        assertEquals(SubcategoriaGasto.ALIMENTACION, assertIs<GuardarGastoUseCase.Resultado.Guardado>(resultado).gasto.subcategoria)
+        assertEquals("Registraste un gasto personal \"Cena\" de S/ 25.00.", actividades.actividades.value.single().descripcion)
+    }
+
+    @Test
+    fun avisaUnaSolaVezAlCruzarEl80PorCientoDelTope() = runTest {
+        guardar(null, Monto.soles(3_000), Categoria.NEGOCIO, hoy, null)
+        assertTrue(notificaciones.notificaciones.value.isEmpty())
+
+        guardar(null, Monto.soles(1_100), Categoria.NEGOCIO, hoy, null)
+        guardar(null, Monto.soles(10), Categoria.NEGOCIO, hoy, null)
+
+        val aviso = notificaciones.notificaciones.value.single()
+        assertEquals("Pasaste el 80 % de tu tope", aviso.asunto)
+        assertTrue("Te quedan S/ 900.00" in aviso.mensaje)
+    }
+
+    @Test
+    fun losGastosPersonalesNoDisparanAlertas() = runTest {
+        guardar(null, Monto.soles(6_000), Categoria.PERSONAL, hoy, null)
+
+        assertTrue(notificaciones.notificaciones.value.isEmpty())
+    }
+
+    @Test
+    fun soloLosGastosNuevosCuentanComoRegistroDeUso() = runTest {
+        val gasto = assertIs<GuardarGastoUseCase.Resultado.Guardado>(guardar(null, Monto(100), Categoria.NEGOCIO, hoy, null)).gasto
+        guardar(gasto.id, Monto(200), Categoria.NEGOCIO, hoy, null)
+
+        assertEquals(1, uso.eventos.value.size)
     }
 }

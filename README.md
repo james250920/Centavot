@@ -11,7 +11,7 @@ Proyecto del curso *Proyecto Startup* — Universidad ESAN.
 
 ## Qué hace
 
-- **Registro de gastos sin fricción** — por foto de boleta (OCR), texto libre o voz.
+- **Registro de ventas y gastos sin fricción** — en uno o dos toques; a futuro también por foto del cuaderno (OCR) o voz.
 - **Separación automática** entre gasto personal y gasto de negocio, con corrección manual.
 - **Alertas de tope de régimen** — aviso al cruzar el 80 %, 90 % y 100 % del tope RUS/RER.
 - **Reporte tributario pre-armado** para SUNAT, exportable (PDF/Excel) para compartir con el contador.
@@ -21,22 +21,36 @@ Proyecto del curso *Proyecto Startup* — Universidad ESAN.
 
 | Perfil | Dolor principal |
 |---|---|
-| **Carlos** — freelancer con RUC en RUS/RER | Miedo a pasarse del tope de su régimen y recibir una multa |
+| **Carlos** — oficio o servicio con RUC (taller, costura) | Pedidos y adelantos desordenados; miedo a pasarse del tope |
 | **Mari** — comerciante de mercado que cobra por Yape/Plin | Mezcla el dinero de la casa con el del negocio |
 | **Rosa** — emprendedora de provincia, cliente de caja municipal | Ninguna app está pensada para ella; prefiere hablar a escribir |
 
 ## Estado del proyecto
 
 🚧 **MVP local (Android).** La app funciona sin backend: todo se guarda en el
-teléfono con Room. Incluye:
+teléfono con Room. Incluye lo que salió de la entrevista de validación con
+Julio Quispe (octubre 2026): la app tiene que reemplazar **el cuaderno y la
+calculadora** del comerciante, que vende muchas veces al día.
 
-- Elegir régimen (RUS Cat. 1, RUS Cat. 2 o RER) con topes referenciales.
-- Inicio con el % del tope usado, alertas 80/90/100 %, totales del mes y últimos gastos.
-- Registrar, editar y eliminar gastos (monto, negocio/personal, descripción, fecha).
-- Movimientos agrupados por día, con filtro por categoría.
-- Reporte mensual de gastos de negocio.
+- **Venta rápida:** montos de un toque (S/ 1, 2, 5, 10, 20, 50) y "ventas frecuentes"
+  que se registran con un solo toque. La pantalla queda abierta para anotar la siguiente.
+- **Tu caja:** vendido, gastado y ganancia de **hoy, la semana o el mes**.
+- Gastos de negocio o personales, con subcategoría (incluye sueldos del personal).
+- **Tope del régimen corregido:** en el Nuevo RUS cuenta lo que vendes **y** lo que
+  compras en el mes; en el RER, lo que vendes en el año. Alertas al 80/90/100 %.
+- **Cobros:** fiados, préstamos y **pedidos con adelanto**; **abonos** (pagos parciales),
+  edición, y opción de **contarlo como venta** al registrarlo (cobrar después no lo duplica);
+  recordatorio por **WhatsApp** (enlace `wa.me`, lo envía el propio usuario, sin costo de API).
+- **Movimientos:** ventas y gastos juntos, con filtros por tipo y por **fechas**.
+- **Reportes:** resumen del negocio para el contador (ventas, compras y ganancia),
+  **gráfico de líneas** de los últimos 6 meses con lecturas simples (mejor y peor mes),
+  gastos personales y "me deben". Todo se exporta en CSV para Excel.
+- **Privacidad visible:** sin banco, nada se envía a SUNAT, todo queda en el celular.
+- **Indicadores de uso** guardados solo en el teléfono: aperturas, registros por día,
+  días con registros y la pregunta "¿te resulta más fácil que tu cuaderno?" (a los 7 y 30 días).
+- Guía "Cómo usar Centavot" para la capacitación inicial.
 
-Aún no incluye: foto de boleta (OCR), voz, exportar el reporte ni backend.
+Aún no incluye: foto del cuaderno o de boletas (OCR), voz, PDF, backend ni login.
 
 Hoja de ruta técnica:
 

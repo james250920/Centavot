@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.SubcategoriaGasto
+import com.app.centavot.domain.model.aplicaA
 import com.app.centavot.domain.usecase.EliminarGastoUseCase
 import com.app.centavot.domain.usecase.GuardarGastoUseCase
 import com.app.centavot.domain.usecase.ObtenerGastoUseCase
@@ -26,6 +28,7 @@ data class GastoUiState(
     val cargando: Boolean = false,
     val montoTexto: String = "",
     val categoria: Categoria? = null,
+    val subcategoria: SubcategoriaGasto? = null,
     val descripcion: String = "",
     val errorMonto: String? = null,
     val errorCategoria: String? = null,
@@ -64,6 +67,7 @@ class GastoViewModel(
                 cargando = false,
                 montoTexto = gasto.monto.comoTextoEditable(),
                 categoria = gasto.categoria,
+                subcategoria = gasto.subcategoria,
                 descripcion = gasto.descripcion.orEmpty(),
                 fecha = gasto.fecha,
             )
@@ -74,8 +78,12 @@ class GastoViewModel(
         if (esEntradaDeMontoValida(texto)) _estado.update { it.copy(montoTexto = texto, errorMonto = null) }
     }
 
-    fun onCategoriaElegida(categoria: Categoria) =
-        _estado.update { it.copy(categoria = categoria, errorCategoria = null) }
+    fun onCategoriaElegida(categoria: Categoria) = _estado.update {
+        // Si la subcategoría elegida no aplica a la nueva categoría, se quita.
+        it.copy(categoria = categoria, errorCategoria = null, subcategoria = it.subcategoria?.takeIf { s -> s.aplicaA(categoria) })
+    }
+
+    fun onSubcategoriaElegida(subcategoria: SubcategoriaGasto?) = _estado.update { it.copy(subcategoria = subcategoria) }
 
     fun onDescripcionCambiada(texto: String) =
         _estado.update { it.copy(descripcion = texto.take(MAX_DESCRIPCION)) }
@@ -98,7 +106,7 @@ class GastoViewModel(
 
         viewModelScope.launch {
             _estado.update { it.copy(guardando = true) }
-            val resultado = guardarGasto(id, monto, categoria, actual.fecha, actual.descripcion)
+            val resultado = guardarGasto(id, monto, categoria, actual.fecha, actual.descripcion, actual.subcategoria)
             _estado.update {
                 when (resultado) {
                     is GuardarGastoUseCase.Resultado.Guardado,

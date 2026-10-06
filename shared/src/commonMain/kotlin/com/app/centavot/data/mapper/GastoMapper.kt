@@ -6,6 +6,7 @@ import com.app.centavot.domain.model.EstadoGasto
 import com.app.centavot.domain.model.Gasto
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.OrigenGasto
+import com.app.centavot.domain.model.SubcategoriaGasto
 import kotlinx.datetime.LocalDate
 
 fun GastoEntity.toDomain() = Gasto(
@@ -15,6 +16,7 @@ fun GastoEntity.toDomain() = Gasto(
     origen = OrigenGasto.valueOf(origen),
     estado = EstadoGasto.valueOf(estado),
     categoria = categoria?.let(Categoria::valueOf),
+    subcategoria = subcategoria?.let(SubcategoriaGasto::valueOf),
     proveedor = proveedor,
     descripcion = descripcion,
     corregidoManualmente = corregidoManualmente,
@@ -27,6 +29,7 @@ fun Gasto.toEntity() = GastoEntity(
     origen = origen.name,
     estado = estado.name,
     categoria = categoria?.name,
+    subcategoria = subcategoria?.name,
     proveedor = proveedor,
     descripcion = descripcion,
     corregidoManualmente = corregidoManualmente,

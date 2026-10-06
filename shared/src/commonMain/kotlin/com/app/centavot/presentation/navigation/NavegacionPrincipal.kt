@@ -3,6 +3,7 @@ package com.app.centavot.presentation.navigation
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -19,16 +20,26 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.app.centavot.presentation.components.Iconos
+import com.app.centavot.presentation.components.Movimiento
+import com.app.centavot.presentation.screens.ayuda.AyudaScreen
+import com.app.centavot.presentation.screens.venta.VentaScreen
+import com.app.centavot.presentation.screens.actividad.ActividadScreen
+import com.app.centavot.presentation.screens.ajustes.AjustesScreen
+import com.app.centavot.presentation.screens.cobros.CobroScreen
+import com.app.centavot.presentation.screens.cobros.CobrosScreen
+import com.app.centavot.presentation.screens.cobros.ContactosScreen
 import com.app.centavot.presentation.screens.gasto.GastoScreen
 import com.app.centavot.presentation.screens.inicio.InicioScreen
 import com.app.centavot.presentation.screens.movimientos.MovimientosScreen
+import com.app.centavot.presentation.screens.notificaciones.NotificacionesScreen
 import com.app.centavot.presentation.screens.regimen.RegimenScreen
 import com.app.centavot.presentation.screens.reporte.ReporteScreen
 
 private enum class Pestana(val ruta: Any, val etiqueta: String, val icono: () -> ImageVector) {
     INICIO(RutaInicio, "Inicio", { Iconos.Inicio }),
     MOVIMIENTOS(RutaMovimientos, "Movimientos", { Iconos.Movimientos }),
-    REPORTE(RutaReporte, "Reporte", { Iconos.Reporte }),
+    COBROS(RutaCobros, "Cobros", { Iconos.Cobros }),
+    REPORTE(RutaReporte, "Reportes", { Iconos.Reporte }),
 }
 
 @Composable
@@ -49,7 +60,10 @@ fun NavegacionPrincipal() {
                             selected = pestana == pestanaActual,
                             onClick = { nav.irAPestana(pestana.ruta) },
                             icon = { Icon(pestana.icono(), contentDescription = null) },
-                            label = { Text(pestana.etiqueta) },
+                            label = {
+                                // Una sola línea y estilo más pequeño: "Movimientos" no se parte con texto grande.
+                                Text(pestana.etiqueta, style = MaterialTheme.typography.labelSmall, maxLines = 1, softWrap = false)
+                            },
                         )
                     }
                 }
@@ -63,29 +77,75 @@ fun NavegacionPrincipal() {
         ) {
             composable<RutaInicio> {
                 InicioScreen(
+                    onRegistrarVenta = { nav.navigate(RutaVenta()) },
                     onRegistrarGasto = { nav.navigate(RutaGasto()) },
-                    onAbrirGasto = { nav.navigate(RutaGasto(it)) },
+                    onAbrirMovimiento = { nav.abrirMovimiento(it) },
                     onVerMovimientos = { nav.irAPestana(RutaMovimientos) },
-                    onCambiarRegimen = { nav.navigate(RutaRegimen) },
+                    onVerCobros = { nav.irAPestana(RutaCobros) },
+                    onAbrirNotificaciones = { nav.navigate(RutaNotificaciones) },
+                    onAbrirActividad = { nav.navigate(RutaActividad) },
+                    onAbrirAjustes = { nav.navigate(RutaAjustes) },
+                    onAbrirAyuda = { nav.navigate(RutaAyuda) },
                 )
             }
             composable<RutaMovimientos> {
                 MovimientosScreen(
-                    onAbrirGasto = { nav.navigate(RutaGasto(it)) },
+                    onAbrirMovimiento = { nav.abrirMovimiento(it) },
+                    onRegistrarVenta = { nav.navigate(RutaVenta()) },
                     onRegistrarGasto = { nav.navigate(RutaGasto()) },
                 )
             }
+            composable<RutaCobros> {
+                CobrosScreen(
+                    onRegistrarCobro = { nav.navigate(RutaCobro()) },
+                    onEditarCobro = { nav.navigate(RutaCobro(it)) },
+                    onAbrirContactos = { nav.navigate(RutaContactos) },
+                )
+            }
+            composable<RutaCobro> { entrada ->
+                CobroScreen(id = entrada.toRoute<RutaCobro>().id, onCerrar = { nav.popBackStack() })
+            }
+            composable<RutaContactos> {
+                ContactosScreen(onCerrar = { nav.popBackStack() })
+            }
+            composable<RutaAjustes> {
+                AjustesScreen(
+                    esPrimeraVez = false,
+                    onCerrar = { nav.popBackStack() },
+                    onCambiarRegimen = { nav.navigate(RutaRegimen) },
+                )
+            }
+            composable<RutaActividad> {
+                ActividadScreen(onCerrar = { nav.popBackStack() })
+            }
+            composable<RutaNotificaciones> {
+                NotificacionesScreen(onCerrar = { nav.popBackStack() })
+            }
             composable<RutaReporte> {
-                ReporteScreen(onAbrirGasto = { nav.navigate(RutaGasto(it)) })
+                ReporteScreen(
+                    onAbrirGasto = { nav.navigate(RutaGasto(it)) },
+                    onAbrirVenta = { nav.navigate(RutaVenta(it)) },
+                )
             }
             composable<RutaGasto> { entrada ->
                 GastoScreen(id = entrada.toRoute<RutaGasto>().id, onCerrar = { nav.popBackStack() })
+            }
+            composable<RutaVenta> { entrada ->
+                VentaScreen(id = entrada.toRoute<RutaVenta>().id, onCerrar = { nav.popBackStack() })
+            }
+            composable<RutaAyuda> {
+                AyudaScreen(onCerrar = { nav.popBackStack() })
             }
             composable<RutaRegimen> {
                 RegimenScreen(esPrimeraVez = false, onCerrar = { nav.popBackStack() })
             }
         }
     }
+}
+
+private fun NavHostController.abrirMovimiento(movimiento: Movimiento) = when (movimiento) {
+    is Movimiento.Entrada -> navigate(RutaVenta(movimiento.id))
+    is Movimiento.Salida -> navigate(RutaGasto(movimiento.id))
 }
 
 private fun NavHostController.irAPestana(ruta: Any) = navigate(ruta) {
