@@ -43,3 +43,6 @@ data class RutaVenta(val id: String? = null)
 
 @Serializable
 data object RutaAyuda
+
+@Serializable
+data object RutaPrivacidad

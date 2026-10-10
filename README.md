@@ -45,7 +45,9 @@ calculadora** del comerciante, que vende muchas veces al día.
 - **Reportes:** resumen del negocio para el contador (ventas, compras y ganancia),
   **gráfico de líneas** de los últimos 6 meses con lecturas simples (mejor y peor mes),
   gastos personales y "me deben". Todo se exporta en CSV para Excel.
-- **Privacidad visible:** sin banco, nada se envía a SUNAT, todo queda en el celular.
+- **Privacidad (Ley 29733):** aviso de privacidad con consentimiento antes de usar la app,
+  **"Exportar todos mis datos"** (un archivo para Excel) y **"Borrar todos mis datos"** en Ajustes.
+  Sin banco, nada se envía a SUNAT ni a un servidor, y **sin respaldo automático en la nube**.
 - **Indicadores de uso** guardados solo en el teléfono: aperturas, registros por día,
   días con registros y la pregunta "¿te resulta más fácil que tu cuaderno?" (a los 7 y 30 días).
 - Guía "Cómo usar Centavot" para la capacitación inicial.

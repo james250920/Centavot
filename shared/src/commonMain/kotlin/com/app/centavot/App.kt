@@ -14,6 +14,7 @@ import com.app.centavot.presentation.AppViewModel
 import com.app.centavot.presentation.EstadoApp
 import com.app.centavot.presentation.navigation.NavegacionPrincipal
 import com.app.centavot.presentation.screens.ajustes.AjustesScreen
+import com.app.centavot.presentation.screens.privacidad.AvisoPrivacidadScreen
 import com.app.centavot.presentation.screens.regimen.RegimenScreen
 import com.app.centavot.presentation.theme.CentavotTheme
 import org.koin.compose.viewmodel.koinViewModel
@@ -27,6 +28,7 @@ fun App() {
         when (estado) {
             EstadoApp.CARGANDO -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
             // Al guardar el perfil y luego el régimen, el estado avanza solo hasta LISTA.
+            EstadoApp.SIN_CONSENTIMIENTO -> AvisoPrivacidadScreen(onAceptar = viewModel::aceptarAvisoPrivacidad)
             EstadoApp.SIN_PERFIL -> AjustesScreen(esPrimeraVez = true, onCerrar = {}, onCambiarRegimen = {})
             EstadoApp.SIN_REGIMEN -> RegimenScreen(esPrimeraVez = true, onCerrar = {})
             EstadoApp.LISTA -> NavegacionPrincipal()

@@ -7,6 +7,9 @@ import com.app.centavot.domain.model.Perfil
 import com.app.centavot.domain.model.RegimenTributario
 import com.app.centavot.domain.model.ResumenUso
 import com.app.centavot.domain.model.Rubro
+import com.app.centavot.core.util.CompartidorArchivos
+import com.app.centavot.domain.usecase.BorrarTodosLosDatosUseCase
+import com.app.centavot.domain.usecase.ExportarTodosLosDatosUseCase
 import com.app.centavot.domain.usecase.GuardarPerfilUseCase
 import com.app.centavot.domain.usecase.ObservarPerfilUseCase
 import com.app.centavot.domain.usecase.ObservarRegimenUseCase
@@ -38,6 +41,8 @@ data class AjustesUiState(
     val errorTasa: String? = null,
     val guardando: Boolean = false,
     val terminado: Boolean = false,
+    val confirmandoBorrado: Boolean = false,
+    val trabajandoConDatos: Boolean = false,
 )
 
 /** Perfil (nombre y rubro) y ajustes financieros (ingreso mensual y tasa de ahorro). */
@@ -46,6 +51,9 @@ class AjustesViewModel(
     private val observarRegimen: ObservarRegimenUseCase,
     private val guardarPerfil: GuardarPerfilUseCase,
     private val observarResumenUso: ObservarResumenUsoUseCase,
+    private val exportarTodos: ExportarTodosLosDatosUseCase,
+    private val borrarTodos: BorrarTodosLosDatosUseCase,
+    private val compartidor: CompartidorArchivos,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(AjustesUiState())
@@ -83,6 +91,29 @@ class AjustesViewModel(
 
     fun onTasaCambiada(texto: String) {
         if (esEntradaDeTasaValida(texto)) _estado.update { it.copy(tasaTexto = texto, errorTasa = null) }
+    }
+
+    /** Arma el archivo con todos los datos y abre el menú de compartir (WhatsApp, Drive, correo). */
+    fun exportarTodosMisDatos() {
+        if (_estado.value.trabajandoConDatos) return
+        viewModelScope.launch {
+            _estado.update { it.copy(trabajandoConDatos = true) }
+            val archivo = exportarTodos()
+            compartidor.compartir(archivo.nombre, archivo.contenido, "text/csv")
+            _estado.update { it.copy(trabajandoConDatos = false) }
+        }
+    }
+
+    fun pedirBorrado() = _estado.update { it.copy(confirmandoBorrado = true) }
+
+    fun cancelarBorrado() = _estado.update { it.copy(confirmandoBorrado = false) }
+
+    /** Borra todo. La app vuelve sola al aviso de privacidad y al registro inicial. */
+    fun confirmarBorrado() {
+        viewModelScope.launch {
+            _estado.update { it.copy(confirmandoBorrado = false, trabajandoConDatos = true) }
+            borrarTodos()
+        }
     }
 
     fun guardar() {

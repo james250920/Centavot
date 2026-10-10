@@ -15,7 +15,16 @@ enum class TipoEventoUso {
 
     /** Respuesta a "¿te resulta más fácil que tu cuaderno?"; el valor es SI o NO. */
     ENCUESTA_CUADERNO,
+
+    /** El usuario aceptó el aviso de privacidad; el valor es la versión del aviso que aceptó. */
+    CONSENTIMIENTO_PRIVACIDAD,
 }
+
+/**
+ * Versión vigente del aviso de privacidad. Si el aviso cambia, se sube la versión y la app
+ * vuelve a pedir el consentimiento (Ley 29733).
+ */
+const val VERSION_AVISO_PRIVACIDAD = "2026-10"
 
 /** Registro anónimo de uso, guardado solo en el teléfono, para medir si la app sirve. */
 data class EventoUso(val tipo: TipoEventoUso, val fechaHora: LocalDateTime, val valor: String? = null)

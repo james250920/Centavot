@@ -22,6 +22,7 @@ import androidx.navigation.toRoute
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.Movimiento
 import com.app.centavot.presentation.screens.ayuda.AyudaScreen
+import com.app.centavot.presentation.screens.privacidad.AvisoPrivacidadScreen
 import com.app.centavot.presentation.screens.venta.VentaScreen
 import com.app.centavot.presentation.screens.actividad.ActividadScreen
 import com.app.centavot.presentation.screens.ajustes.AjustesScreen
@@ -113,6 +114,7 @@ fun NavegacionPrincipal() {
                     esPrimeraVez = false,
                     onCerrar = { nav.popBackStack() },
                     onCambiarRegimen = { nav.navigate(RutaRegimen) },
+                    onVerPrivacidad = { nav.navigate(RutaPrivacidad) },
                 )
             }
             composable<RutaActividad> {
@@ -132,6 +134,9 @@ fun NavegacionPrincipal() {
             }
             composable<RutaVenta> { entrada ->
                 VentaScreen(id = entrada.toRoute<RutaVenta>().id, onCerrar = { nav.popBackStack() })
+            }
+            composable<RutaPrivacidad> {
+                AvisoPrivacidadScreen(onCerrar = { nav.popBackStack() })
             }
             composable<RutaAyuda> {
                 AyudaScreen(onCerrar = { nav.popBackStack() })

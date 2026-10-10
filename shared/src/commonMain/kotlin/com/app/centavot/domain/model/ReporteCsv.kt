@@ -88,3 +88,68 @@ private fun Monto.enDecimal(): String {
 private fun fila(vararg celdas: String): String = celdas.joinToString(",") { celda ->
     if (celda.any { it == ',' || it == '"' || it == '\n' }) "\"${celda.replace("\"", "\"\"")}\"" else celda
 }
+
+/** Todo lo que la app guarda del usuario, en un solo archivo por secciones (derecho de acceso). */
+fun exportarTodoCsv(
+    perfil: Perfil?,
+    regimen: RegimenTributario?,
+    ingresos: List<Ingreso>,
+    gastos: List<Gasto>,
+    contactos: List<Contacto>,
+    cobros: List<Cobro>,
+    actividades: List<Actividad>,
+    generado: kotlinx.datetime.LocalDateTime,
+): String = csv {
+    appendLine(fila("Mis datos en Centavot", generado.toString()))
+    appendLine(fila("Este archivo tiene todo lo que Centavot guarda en tu celular."))
+    appendLine()
+    appendLine(fila("PERFIL"))
+    appendLine(fila("Nombre", "Rubro", "Ingreso mensual (S/)", "Ahorro (%)", "Régimen", "Tope (S/)"))
+    appendLine(
+        fila(
+            perfil?.nombre.orEmpty(),
+            perfil?.rubro?.etiqueta.orEmpty(),
+            perfil?.ingresoMensual?.enDecimal().orEmpty(),
+            perfil?.tasaAhorro?.let { "${it.decimas / 10}.${it.decimas % 10}" }.orEmpty(),
+            regimen?.nombre.orEmpty(),
+            regimen?.tope?.enDecimal().orEmpty(),
+        ),
+    )
+    appendLine()
+    appendLine(fila("VENTAS E INGRESOS (${ingresos.size})"))
+    appendLine(fila("Fecha", "Tipo", "Descripción", "Monto (S/)"))
+    ingresos.sortedBy { it.fecha }.forEach {
+        appendLine(fila(it.fecha.toString(), if (it.esDeNegocio) "Venta" else "Ingreso personal", it.descripcion.orEmpty(), it.monto.enDecimal()))
+    }
+    appendLine()
+    appendLine(fila("GASTOS (${gastos.size})"))
+    appendLine(fila("Fecha", "Tipo", "Categoría", "Descripción", "Monto (S/)"))
+    gastos.sortedBy { it.fecha }.forEach {
+        val tipo = when (it.categoria) {
+            Categoria.NEGOCIO -> "Negocio"
+            Categoria.PERSONAL -> "Personal"
+            null -> "Sin clasificar"
+        }
+        appendLine(fila(it.fecha.toString(), tipo, it.subcategoria?.etiqueta.orEmpty(), it.descripcion.orEmpty(), it.monto.enDecimal()))
+    }
+    appendLine()
+    appendLine(fila("CONTACTOS (${contactos.size})"))
+    appendLine(fila("Nombre", "Celular"))
+    contactos.forEach { appendLine(fila(it.nombre, it.telefono.orEmpty())) }
+    appendLine()
+    appendLine(fila("COBROS (${cobros.size})"))
+    appendLine(fila("Desde", "Quién", "Tipo", "Motivo", "Monto (S/)", "Adelanto (S/)", "Abonos (S/)", "Falta (S/)", "Estado", "Cobrado el"))
+    cobros.sortedBy { it.fecha }.forEach {
+        appendLine(
+            fila(
+                it.fecha.toString(), it.contacto.nombre, it.tipo.etiqueta, it.motivo, it.monto.enDecimal(),
+                it.adelanto.enDecimal(), it.abonado.enDecimal(), it.saldo.enDecimal(),
+                if (it.estaPendiente) "Pendiente" else "Cobrado", it.fechaCobrado?.toString().orEmpty(),
+            ),
+        )
+    }
+    appendLine()
+    appendLine(fila("HISTORIAL DE ACTIVIDAD (${actividades.size})"))
+    appendLine(fila("Fecha y hora", "Qué pasó"))
+    actividades.sortedBy { it.fechaHora }.forEach { appendLine(fila(it.fechaHora.toString(), it.descripcion)) }
+}

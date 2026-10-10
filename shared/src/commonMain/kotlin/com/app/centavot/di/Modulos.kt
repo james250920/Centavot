@@ -4,6 +4,7 @@ import com.app.centavot.core.util.Reloj
 import com.app.centavot.core.util.RelojSistema
 import com.app.centavot.data.local.CentavotDatabase
 import com.app.centavot.data.repository.ActividadRepositoryImpl
+import com.app.centavot.data.repository.DatosRepositoryImpl
 import com.app.centavot.data.repository.CobroRepositoryImpl
 import com.app.centavot.data.repository.GastoRepositoryImpl
 import com.app.centavot.data.repository.IngresoRepositoryImpl
@@ -13,13 +14,18 @@ import com.app.centavot.data.repository.PerfilRepositoryImpl
 import com.app.centavot.data.repository.RegimenRepositoryImpl
 import com.app.centavot.domain.repository.ActividadRepository
 import com.app.centavot.domain.repository.CobroRepository
+import com.app.centavot.domain.repository.DatosRepository
 import com.app.centavot.domain.repository.GastoRepository
 import com.app.centavot.domain.repository.IngresoRepository
 import com.app.centavot.domain.repository.UsoRepository
 import com.app.centavot.domain.repository.NotificacionRepository
 import com.app.centavot.domain.repository.PerfilRepository
 import com.app.centavot.domain.repository.RegimenRepository
+import com.app.centavot.domain.usecase.AceptarAvisoPrivacidadUseCase
 import com.app.centavot.domain.usecase.AgregarContactoUseCase
+import com.app.centavot.domain.usecase.BorrarTodosLosDatosUseCase
+import com.app.centavot.domain.usecase.ExportarTodosLosDatosUseCase
+import com.app.centavot.domain.usecase.ObservarConsentimientoUseCase
 import com.app.centavot.domain.usecase.EliminarCobroUseCase
 import com.app.centavot.domain.usecase.EliminarContactoUseCase
 import com.app.centavot.domain.usecase.EliminarGastoUseCase
@@ -90,6 +96,7 @@ val moduloData = module {
     single { get<CentavotDatabase>().notificacionDao() }
     single { get<CentavotDatabase>().ingresoDao() }
     single { get<CentavotDatabase>().eventoUsoDao() }
+    single { get<CentavotDatabase>().datosDao() }
     single<GastoRepository> { GastoRepositoryImpl(get()) }
     single<RegimenRepository> { RegimenRepositoryImpl(get()) }
     single<PerfilRepository> { PerfilRepositoryImpl(get()) }
@@ -98,6 +105,7 @@ val moduloData = module {
     single<NotificacionRepository> { NotificacionRepositoryImpl(get()) }
     single<IngresoRepository> { IngresoRepositoryImpl(get()) }
     single<UsoRepository> { UsoRepositoryImpl(get()) }
+    single<DatosRepository> { DatosRepositoryImpl(get()) }
 }
 
 @OptIn(ExperimentalUuidApi::class)
@@ -117,6 +125,10 @@ val moduloDomain = module {
     factoryOf(::RegistrarAperturaUseCase)
     factoryOf(::ObservarResumenUsoUseCase)
     factoryOf(::ResponderEncuestaCuadernoUseCase)
+    factoryOf(::ObservarConsentimientoUseCase)
+    factoryOf(::AceptarAvisoPrivacidadUseCase)
+    factoryOf(::ExportarTodosLosDatosUseCase)
+    factoryOf(::BorrarTodosLosDatosUseCase)
     factoryOf(::ObtenerGastoUseCase)
     factoryOf(::EliminarGastoUseCase)
     factoryOf(::ObservarGastosUseCase)

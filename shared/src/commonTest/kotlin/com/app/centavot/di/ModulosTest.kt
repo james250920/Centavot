@@ -4,6 +4,7 @@ import com.app.centavot.core.util.AbridorEnlaces
 import com.app.centavot.core.util.CompartidorArchivos
 import com.app.centavot.domain.repository.ActividadRepository
 import com.app.centavot.domain.repository.CobroRepository
+import com.app.centavot.domain.repository.DatosRepository
 import com.app.centavot.domain.repository.GastoRepository
 import com.app.centavot.domain.repository.IngresoRepository
 import com.app.centavot.domain.repository.NotificacionRepository
@@ -67,6 +68,7 @@ class ModulosTest {
         single<ActividadRepository> { FakeActividadRepository() }
         single<NotificacionRepository> { FakeNotificacionRepository() }
         single<UsoRepository> { FakeUsoRepository() }
+        single<DatosRepository> { DatosRepository { } }
         single<CompartidorArchivos> { CompartidorArchivos { _, _, _ -> } }
         single<AbridorEnlaces> { AbridorEnlaces { } }
     }

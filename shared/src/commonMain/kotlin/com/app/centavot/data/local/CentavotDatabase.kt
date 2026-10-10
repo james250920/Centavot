@@ -36,6 +36,7 @@ abstract class CentavotDatabase : RoomDatabase() {
     abstract fun notificacionDao(): NotificacionDao
     abstract fun ingresoDao(): IngresoDao
     abstract fun eventoUsoDao(): EventoUsoDao
+    abstract fun datosDao(): DatosDao
 }
 
 // Room genera la implementación de cada plataforma.

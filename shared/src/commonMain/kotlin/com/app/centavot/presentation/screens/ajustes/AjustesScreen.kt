@@ -14,6 +14,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.centavot.domain.model.PeriodoTope
 import com.app.centavot.domain.model.ResumenUso
 import com.app.centavot.domain.model.Rubro
+import com.app.centavot.presentation.components.DialogoConfirmar
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.SelectorChips
 import com.app.centavot.presentation.components.formatear
@@ -59,6 +62,7 @@ fun AjustesScreen(
     esPrimeraVez: Boolean,
     onCerrar: () -> Unit,
     onCambiarRegimen: () -> Unit,
+    onVerPrivacidad: () -> Unit = {},
     viewModel: AjustesViewModel = koinViewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -211,6 +215,57 @@ fun AjustesScreen(
             }
 
             estado.uso?.takeIf { !esPrimeraVez && it.primerUso != null }?.let { uso -> TarjetaUso(uso) }
+
+            if (!esPrimeraVez) {
+                TarjetaTusDatos(
+                    trabajando = estado.trabajandoConDatos,
+                    onVerPrivacidad = onVerPrivacidad,
+                    onExportar = viewModel::exportarTodosMisDatos,
+                    onBorrar = viewModel::pedirBorrado,
+                )
+            }
+        }
+    }
+
+    if (estado.confirmandoBorrado) {
+        DialogoConfirmar(
+            titulo = "¿Borrar todos tus datos?",
+            mensaje = "Se borrarán de este celular tus ventas, gastos, cobros, contactos, tu perfil y tu historial. " +
+                "No se puede deshacer. Si quieres guardar una copia, primero usa \"Exportar todos mis datos\".",
+            textoConfirmar = "Borrar todo",
+            onConfirmar = viewModel::confirmarBorrado,
+            onCancelar = viewModel::cancelarBorrado,
+        )
+    }
+}
+
+/** Derechos sobre los datos (Ley 29733): leer el aviso, llevarse los datos y borrarlos. */
+@Composable
+private fun TarjetaTusDatos(
+    trabajando: Boolean,
+    onVerPrivacidad: () -> Unit,
+    onExportar: () -> Unit,
+    onBorrar: () -> Unit,
+) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Tus datos", style = MaterialTheme.typography.titleSmall)
+            Text(
+                "Todo está solo en este celular y no se copia a la nube. Para no perderlo si cambias de celular, " +
+                    "exporta tus datos y guárdalos donde quieras.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            OutlinedButton(onClick = onVerPrivacidad, modifier = Modifier.fillMaxWidth()) { Text("Ver aviso de privacidad") }
+            OutlinedButton(onClick = onExportar, enabled = !trabajando, modifier = Modifier.fillMaxWidth()) {
+                Text("Exportar todos mis datos")
+            }
+            OutlinedButton(
+                onClick = onBorrar,
+                enabled = !trabajando,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+            ) { Text("Borrar todos mis datos") }
         }
     }
 }
