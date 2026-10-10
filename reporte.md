@@ -346,3 +346,233 @@ TalkBack) y más espacio entre secciones que dentro de ellas:
 Todo se probó en un Samsung Galaxy A15 (Android 16) con una copia de prueba aparte, en tema oscuro,
 tema claro (paso 4) y texto grande (paso 6). Puntaje de la revisión UX/UI: **28/40** al inicio,
 **31/40** tras los pasos 1–6; los pasos 7–9 resuelven los tres P2 que quedaban.
+
+---
+
+# Ronda 2 · Modos y menos texto
+
+Cambios desde el 10 de octubre por la tarde. Cada paso se registra aquí al terminarlo, con su
+verificación, para saber en qué nos quedamos.
+
+| # | Paso | Motivo | Estado |
+|---|---|---|---|
+| 10 | Modo personal o negocio | Reunión con asesores de negocio: no mezclar lo personal con el negocio | ✅ |
+| 11 | Inicio con menos texto | "Veo mucho texto": tarjetas con párrafos y frases repetidas | ✅ |
+| 12 | Régimen con menos texto | La misma explicación repetida en cada opción | ✅ |
+| 13 | Bienvenida y Ajustes con menos texto | Una explicación debajo de cada sección y de cada campo | ✅ |
+| 14 | Cobros con menos texto | Ayudas largas en el formulario y en la lista vacía | ✅ |
+| 15 | Venta, gasto y retiro con menos texto | Ayudas que repiten lo que ya dice el campo | ✅ |
+| 16 | Reportes con menos texto | Notas largas encima de los números | ✅ |
+| 17 | Ayuda más corta | 402 palabras: la pantalla con más texto | ✅ |
+
+**Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
+título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
+el texto legal del aviso de privacidad (Ley 29733).
+
+---
+
+## Paso 10 · Modo personal o negocio
+
+**Motivo.** En una reunión con personas con experiencia en negocios se recomendó separar lo personal
+de lo del negocio: hay quienes solo quieren llevar su presupuesto, y mostrar las dos cosas junta
+demasiada información.
+
+**Qué se hizo.**
+- **Registro:** aviso de privacidad → solo el **nombre** y **Mi plata personal** o **Mi negocio**.
+  El régimen se pide solo en modo negocio. Rubro, ingreso mensual y % de ahorro pasan a Ajustes.
+- **Cada modo ve solo lo suyo, con las mismas funciones:**
+
+| | Negocio | Personal |
+|---|---|---|
+| Entrada | Venta | Ingreso |
+| Gastos | Subcategorías de negocio | Subcategorías de casa |
+| Cobros | Fiados y pedidos | Préstamos |
+| Inicio | "Tu caja" y "Mi negocio" (tope) | "Tu plata" y "Mi mes" |
+| Reportes | Negocio y Me deben | Mi plata y Me deben |
+
+- El selector "Negocio / Personal" desapareció de los formularios: lo pone el modo.
+- **Cambiar de modo** desde la etiqueta de arriba en Inicio o desde Ajustes; no se borra nada.
+- **"Saqué para la casa"**: retiro que resta de la caja ("Queda en caja") sin bajar la ganancia, y
+  aparece como ingreso "De tu negocio" en lo personal.
+- Base de datos v4 (`perfil.modo`, `ingresos.retiroDelNegocio`, `cobros.categoria`); quien ya usaba
+  la app queda en modo negocio.
+
+**Verificación.** 99 tests. En el teléfono: registro en los dos modos, cambio de modo, volver a lo
+personal desde el régimen, retiro, préstamo personal, reportes y migración v3 → v4 de los datos de
+demostración. PR #8 (fusionado).
+
+---
+
+## Paso 11 · Inicio con menos texto
+
+**Problema.** Inicio tenía párrafos dentro de las tarjetas y repetía lo mismo en dos lugares (el
+porcentaje del tope estaba en la barra y otra vez en el mensaje).
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Pregunta del cuaderno | Título "Una pregunta rápida" + "¿Te resulta más fácil llevar tus cuentas con Centavot que con tu cuaderno y la calculadora?" | "¿Es más fácil que tu cuaderno?" y los dos botones |
+| Primera vez (sin movimientos) | "Empieza en 3 pasos", tres pasos numerados, una nota sobre el cuaderno y tres enlaces | Una frase ("Toca Venta cada vez que vendas y Gasto cuando pagues algo.") y "Ayuda". Los botones grandes ya están arriba |
+| Constancia | "Anotaste 3 de los últimos 7 días. Anotar cada día hace que tus cuentas cuadren." | "Anotaste 3 de los últimos 7 días." |
+| Aviso del tope en "Hoy" | "Tus ventas van en 84 % de tu tope" | "Ventas: 84 % del tope" |
+| Tarjeta del tope | "Tope de tu régimen · RUS · Categoría 2 · S/ 8,000.00 al mes" y "Tus ventas ya pasaron el 80 % del tope. Te quedan S/ 1,250.30 este mes." | "RUS · Categoría 2 · tope S/ 8,000.00 al mes" y "En ventas te quedan S/ 1,250.30 este mes." (el 84 % ya está en la barra) |
+| Meta de ahorro sin definir | "Toca aquí para definir cuánto quieres ahorrar" | "Toca para definir tu meta" |
+
+**Verificación.** En el teléfono con los datos de demostración: "Hoy" y "Mi negocio" (tope al 84 %).
+99 tests, 0 fallas.
+
+**Archivos.** `InicioScreen.kt`, `TarjetaTope.kt`.
+
+---
+
+## Paso 12 · Régimen con menos texto
+
+**Problema.** Cada opción tenía una explicación de dos líneas, y la de las dos categorías del RUS era
+la misma. Debajo había un párrafo de cuatro líneas sobre montos referenciales, la Clave SOL y el RMT.
+
+**Qué se hizo.**
+- Título único: "¿En qué régimen estás?" (antes "Para tu negocio" + "¿En qué régimen tributario
+  estás?") y una línea: "Para avisarte antes de llegar a tu tope. No le enviamos nada a SUNAT."
+- Cada opción en dos líneas: nombre y "Tope S/ 8,000.00 al mes · das boletas". El comprobante
+  ("boletas" o "facturas") es lo que más distingue al RUS del RER para quien no sabe en cuál está.
+- Las explicaciones pasan a **"¿No sabes cuál elegir?"**, que se abre al tocarla: qué cuenta el tope en
+  cada régimen, dónde ver la categoría y qué hacer en el RMT o sin RUC.
+- Nuevo componente **`AyudaPlegable`** (pregunta que se toca para ver la respuesta), para usarlo en los
+  siguientes pasos.
+
+**Verificación.** En el teléfono, desde Ajustes → Cambiar: tres opciones de dos líneas y la ayuda
+plegable que abre y cierra. 99 tests, 0 fallas.
+
+**Archivos.** `RegimenScreen.kt`, `AyudaPlegable.kt` (nuevo).
+
+---
+
+## Paso 13 · Bienvenida y Ajustes con menos texto
+
+**Problema.** La bienvenida no entraba en una pantalla: la segunda opción de modo quedaba cortada.
+En Ajustes, cada sección y cada campo tenían una explicación de dos líneas, y "Tus datos" repetía
+que todo se guarda en el celular.
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Bienvenida | "Tu cuaderno, pero que suma solo. Dinos tu nombre y para qué la usarás." | "Tu cuaderno, pero que suma solo." |
+| Modo (registro) | "Solo verás lo de tu elección. Puedes cambiarlo cuando quieras desde Inicio o aquí." | "Puedes cambiarlo cuando quieras." |
+| Modo (Ajustes y hoja de Inicio) | "Al cambiar no se borra nada: lo del otro modo vuelve a aparecer cuando regreses a él." | "Al cambiar no se borra nada." |
+| Opciones de modo | "Tu presupuesto: sueldo, gastos de la casa, a quién le prestaste y cuánto ahorras." / "Tu bodega o puesto: ventas, compras, fiados, el tope de tu régimen y el resumen para tu contador." | "Tu sueldo, los gastos de la casa y tu ahorro." / "Ventas, compras, fiados y el tope de tu régimen." |
+| Meta de ahorro | Párrafo de dos líneas sobre cómo se calcula | Plegado en **"¿Cómo se calcula?"** |
+| Ingreso mensual | "Lo que ganas en un mes normal, más o menos. Si tienes sueldo fijo, pon tu sueldo." | "Lo que ganas en un mes normal." |
+| Porcentaje | "Entre 0 y 100, con un decimal como máximo." | "Entre 0 y 100." (el error sigue diciendo qué corregir) |
+| Tu actividad | "Todo lo que registraste, cobraste o eliminaste, con fecha y hora." | "Todo lo que hiciste, con fecha y hora." |
+| Tus datos | "Todo está solo en este celular y no se copia a la nube. Para no perderlo si cambias de celular, exporta tus datos y guárdalos donde quieras." | "No se copia a la nube. Si cambias de celular, exporta tus datos para no perderlos." |
+
+**Verificación.** En el teléfono con una instalación limpia: la bienvenida entra completa (nombre,
+las dos opciones y "Continuar"); en modo personal, la tarjeta de primera vez es una sola línea con
+"Ayuda"; en Ajustes, "¿Cómo se calcula?" abre y cierra. 99 tests, 0 fallas.
+
+**Archivos.** `AjustesScreen.kt`, `SelectorModo.kt`, `InicioScreen.kt`.
+
+---
+
+## Paso 14 · Cobros con menos texto
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Formulario: "¿Qué es?" | Debajo de "Fiado o préstamo / Pedido": "Un trabajo o pedido que te encargaron (zapatos, costura, menús). Anota el adelanto si te dieron uno." | Sin texto: las dos opciones se explican solas y el campo "Adelanto" aparece al elegir Pedido |
+| Sin contactos | "Aún no tienes contactos. Agrega a la persona que te debe para registrar el cobro." | "Aún no tienes contactos." y el botón "Agregar contacto" |
+| Adelanto | "Lo que ya te pagó. Te deberá el resto." | "Lo que ya te pagó." |
+| Contarlo como venta | "Se suma hoy a tus ventas y a tu tope. Cuando te pague no se vuelve a contar." / "No se suma a tus ventas. Úsalo si ya anotaste la venta o si es un préstamo de plata." | "Se suma a tus ventas. Al cobrar no se vuelve a sumar." / "No se suma. Úsalo si ya anotaste la venta o si prestaste plata." |
+| Lista vacía | Tres frases (qué anotar, "Cobrar", WhatsApp, "así no se te olvida nadie") | Negocio: "Anota lo que fías y los pedidos por cobrar." Personal: "Anota la plata que prestaste." |
+| Contactos vacío | "Agrega a las personas a las que les fías o prestas para llevar la cuenta de lo que te deben." | "Agrega a quienes les fías o prestas." |
+
+**Verificación.** En el teléfono con los datos de demostración: formulario de pedido con los
+detalles abiertos (adelanto, "Contarlo como venta" y fecha). 99 tests, 0 fallas.
+
+**Archivos.** `CobroScreen.kt`, `CobrosScreen.kt`, `ContactosScreen.kt`.
+
+---
+
+## Paso 15 · Venta, gasto y retiro con menos texto
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Ventas frecuentes | "Tus ventas frecuentes (un toque y listo)" | "Tus ventas frecuentes" (lo mismo con los ingresos) |
+| Nombre de la venta o el ingreso | "Con nombre, la próxima vez aparece arriba para un toque." | "Con nombre, la próxima vez es un toque." |
+| Saqué para la casa | "Se resta de tu caja y aparece como ingreso en tu plata personal." | Sin ayuda: la caja lo muestra al guardar ("Sacaste para la casa", "Queda en caja") |
+| Eliminar venta, ingreso o retiro | "Úsalo solo si lo registraste por error. Ya no se contará en tus totales ni en tu tope, y quedará anotado en tu actividad." | "Ya no contará en tus totales ni en tu tope." (sin "ni en tu tope" si no es venta) |
+| Eliminar gasto | Lo mismo que arriba | "Ya no contará en tus totales ni en tu tope." (en lo personal, sin el tope) |
+
+**Verificación.** En el teléfono: venta y "Saqué para la casa" con los detalles abiertos. 99 tests, 0 fallas.
+
+**Archivos.** `VentaScreen.kt`, `GastoScreen.kt`.
+
+---
+
+## Paso 16 · Reportes con menos texto
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Nota bajo el resumen | "Centavot no declara ni envía nada a SUNAT: este resumen es tuyo. Revísalo con tu contador antes de declarar. Con el botón de compartir lo envías en un archivo que se abre en Excel." | "No se envía a SUNAT. Revísalo con tu contador antes de declarar." (el botón "Enviar al contador" ya está arriba) |
+| Lectura del mes flojo | "El mes más flojo fue julio 2026: S/ 4,300.00. Si se repite cada año, prepárate con tiempo." | "Tu mes más flojo fue julio 2026: S/ 4,300.00." |
+| Variación | "Este mes vas vendiendo 6 % menos que el mes pasado." | "Este mes vendes 6 % menos que el pasado." |
+| Sin régimen | "Ve a Ajustes para elegir tu régimen y ver este resumen." | "Está en Ajustes." (bajo el título "Elige tu régimen") |
+| Mi plata | "Este reporte es solo para ti: no es para SUNAT." | "Solo para ti: no es para SUNAT." |
+| Me deben vacío | "Cuando fíes o tengas pedidos por cobrar, aparecerán aquí." | Según el modo: "Aquí aparecen los fiados y pedidos por cobrar." / "Aquí aparece la plata que prestaste." |
+
+Se mantuvo "(línea continua)" y "(punteada)" en la leyenda del gráfico: sin eso, las dos líneas solo
+se distinguen por el color.
+
+**Verificación.** En el teléfono: resumen, nota de una línea, gráfico y lecturas. 99 tests, 0 fallas.
+
+**Archivos.** `ReporteScreen.kt`.
+
+---
+
+## Paso 17 · Ayuda más corta
+
+**Problema.** Era la pantalla con más texto: siete tarjetas numeradas con dos o tres líneas cada una,
+más una tarjeta sobre el cuaderno y otra sobre la privacidad.
+
+**Qué se hizo.**
+- Los pasos pasan de tarjetas a una **lista**: ícono, título y una línea. Sin números (no es una
+  secuencia que haya que seguir en orden).
+- Cada paso, en una línea. Ej. negocio: "Anota cada venta · Ponle nombre y la próxima vez es un
+  toque."; "Tu tope · Te avisamos antes de que llegues."; personal: "Tu ahorro · En «Mi mes», según
+  tu meta de Ajustes."
+- Cambio de modo: "¿También tienes negocio? · Toca «Mi plata personal» arriba en Inicio. No se borra nada."
+- Intro: "Tu cuaderno, pero que suma solo." (antes con "Úsalo varias veces al día, cada vez que
+  vendas o gastes").
+- Cuaderno: "Al cerrar el día, pasa aquí los totales." (antes tres frases). Privacidad: "Sin banco
+  ni SUNAT. Todo queda en tu celular."
+
+**Verificación.** En el teléfono, modo negocio: los siete pasos entran casi en una pantalla.
+99 tests, 0 fallas.
+
+**Archivos.** `AyudaScreen.kt`.
+
+---
+
+## Resumen de la ronda 2 (pasos 11–17)
+
+Palabras de interfaz en el código de cada pantalla (incluye mensajes de error y las ayudas
+plegadas, que no se ven hasta tocarlas):
+
+| Pantalla | Antes | Después |
+|---|---|---|
+| Ayuda | 402 | 166 |
+| Ajustes y bienvenida | 326 | 262 |
+| Inicio | 290 | 173 |
+| Reportes | 188 | 147 |
+| Registrar cobro | 152 | 101 |
+| Lista de cobros | 138 | 105 |
+| Régimen | 126 | 97 (la mitad, plegada) |
+| Venta, ingreso y retiro | 132 | 92 |
+| **Total** | **1,754** | **1,143 (−35 %)** |
+
+- La bienvenida entra en una pantalla y la tarjeta de primera vez es una sola línea.
+- Nuevo componente `AyudaPlegable`: las explicaciones que solo necesita quien tiene la duda quedan a
+  un toque ("¿No sabes cuál elegir?", "¿Cómo se calcula?").
+- No se tocó el aviso de privacidad (texto legal, Ley 29733) ni los mensajes de error, que siguen
+  diciendo qué corregir.
+- 99 tests. Todo se probó en el teléfono con una copia aparte (`com.app.centavot.prueba`).
+
+**Dónde nos quedamos.** Rama `ux/menos-texto`, un commit por paso, sin subir. Siguiente: decidir si se
+sube y se fusiona, y actualizar las capturas.

@@ -229,8 +229,7 @@ fun VentaScreen(
     if (estado.confirmandoEliminar) {
         DialogoConfirmar(
             titulo = "¿Eliminar ${if (estado.tipo == TipoEntrada.VENTA) "esta" else "este"} ${estado.tipo.nombre}?",
-            mensaje = "Úsalo solo si lo registraste por error. Ya no se contará en tus totales" +
-                (if (estado.tipo == TipoEntrada.VENTA) " ni en tu tope" else "") + ", y quedará anotado en tu actividad.",
+            mensaje = "Ya no contará en tus totales" + (if (estado.tipo == TipoEntrada.VENTA) " ni en tu tope." else "."),
             textoConfirmar = "Eliminar",
             onConfirmar = viewModel::confirmarEliminar,
             onCancelar = viewModel::cancelarEliminar,
@@ -265,10 +264,10 @@ private fun textosDe(tipo: TipoEntrada): TextosEntrada = when (tipo) {
         tituloEditar = "Editar venta",
         guardar = "Guardar venta",
         monto = "¿Cuánto vendiste?",
-        frecuentes = "Tus ventas frecuentes (un toque y listo)",
+        frecuentes = "Tus ventas frecuentes",
         descripcion = "¿Qué vendiste? (opcional)",
         ejemplo = "Ej. gaseosa, menú, arreglo de zapatos",
-        ayudaDescripcion = "Con nombre, la próxima vez aparece arriba para un toque.",
+        ayudaDescripcion = "Con nombre, la próxima vez es un toque.",
         articulo = "la",
     )
     TipoEntrada.INGRESO -> TextosEntrada(
@@ -276,10 +275,10 @@ private fun textosDe(tipo: TipoEntrada): TextosEntrada = when (tipo) {
         tituloEditar = "Editar ingreso",
         guardar = "Guardar ingreso",
         monto = "¿Cuánto te entró?",
-        frecuentes = "Tus ingresos frecuentes (un toque y listo)",
+        frecuentes = "Tus ingresos frecuentes",
         descripcion = "¿De qué es? (opcional)",
         ejemplo = "Ej. sueldo, propina, cachuelo",
-        ayudaDescripcion = "Con nombre, la próxima vez aparece arriba para un toque.",
+        ayudaDescripcion = "Con nombre, la próxima vez es un toque.",
         articulo = "el",
     )
     TipoEntrada.RETIRO -> TextosEntrada(
@@ -290,7 +289,7 @@ private fun textosDe(tipo: TipoEntrada): TextosEntrada = when (tipo) {
         frecuentes = "",
         descripcion = "¿Para qué? (opcional)",
         ejemplo = "Ej. mercado, pasajes, colegio",
-        ayudaDescripcion = "Se resta de tu caja y aparece como ingreso en tu plata personal.",
+        ayudaDescripcion = null,
         articulo = "el",
     )
 }
