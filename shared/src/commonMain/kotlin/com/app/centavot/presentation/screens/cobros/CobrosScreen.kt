@@ -119,13 +119,7 @@ fun CobrosScreen(
         if (estado.cobros.isEmpty()) {
             EstadoVacio(
                 titulo = "Nadie te debe por ahora",
-                mensaje = if (estado.modo == Modo.NEGOCIO) {
-                    "Anota aquí lo que fías y los pedidos por cobrar. Marca \"Cobrar\" cuando te paguen, " +
-                        "o recuérdaselo por WhatsApp. Así no se te olvida nadie."
-                } else {
-                    "Anota aquí la plata que prestaste. Marca \"Cobrar\" cuando te la devuelvan, " +
-                        "o recuérdaselo por WhatsApp. Así no se te olvida nadie."
-                },
+                mensaje = if (estado.modo == Modo.NEGOCIO) "Anota lo que fías y los pedidos por cobrar." else "Anota la plata que prestaste.",
                 modifier = Modifier.padding(padding),
             ) {
                 Button(onClick = onRegistrarCobro, modifier = Modifier.padding(top = 8.dp)) {

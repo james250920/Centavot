@@ -65,7 +65,7 @@ fun ContactosScreen(
             }
             estado.contactos.isEmpty() -> EstadoVacio(
                 titulo = "Aún no tienes contactos",
-                mensaje = "Agrega a las personas a las que les fías o prestas para llevar la cuenta de lo que te deben.",
+                mensaje = "Agrega a quienes les fías o prestas.",
                 modifier = Modifier.padding(padding),
             ) {
                 Button(onClick = viewModel::pedirAgregar, modifier = Modifier.padding(top = 8.dp)) { Text("Agregar contacto") }

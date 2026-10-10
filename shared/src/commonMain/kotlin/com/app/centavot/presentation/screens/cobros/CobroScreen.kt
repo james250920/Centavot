@@ -124,22 +124,13 @@ fun CobroScreen(
                         ) { Text(tipo.etiqueta) }
                     }
                 }
-                Text(
-                    text = if (esPedido) {
-                        "Un trabajo o pedido que te encargaron (zapatos, costura, menús). Anota el adelanto si te dieron uno."
-                    } else {
-                        "Lo que fiaste o prestaste a alguien."
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(if (esPedido) "¿De quién es el pedido?" else "¿Quién te debe?", style = MaterialTheme.typography.titleSmall)
                 if (estado.contactos.isEmpty()) {
                     Text(
-                        text = "Aún no tienes contactos. Agrega a la persona que te debe para registrar el cobro.",
+                        text = "Aún no tienes contactos.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -195,7 +186,7 @@ fun CobroScreen(
                     prefix = { Text("S/ ") },
                     placeholder = { Text("0.00") },
                     isError = estado.errorAdelanto != null,
-                    supportingText = { Text(estado.errorAdelanto ?: "Lo que ya te pagó. Te deberá el resto.") },
+                    supportingText = { Text(estado.errorAdelanto ?: "Lo que ya te pagó.") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                     modifier = Modifier.fillMaxWidth(),
@@ -246,9 +237,9 @@ fun CobroScreen(
                             Text("Contarlo como venta", style = MaterialTheme.typography.titleSmall)
                             Text(
                                 text = if (estado.contarComoVenta) {
-                                    "Se suma hoy a tus ventas y a tu tope. Cuando te pague no se vuelve a contar."
+                                    "Se suma a tus ventas. Al cobrar no se vuelve a sumar."
                                 } else {
-                                    "No se suma a tus ventas. Úsalo si ya anotaste la venta o si es un préstamo de plata."
+                                    "No se suma. Úsalo si ya anotaste la venta o si prestaste plata."
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -360,7 +360,7 @@ verificación, para saber en qué nos quedamos.
 | 11 | Inicio con menos texto | "Veo mucho texto": tarjetas con párrafos y frases repetidas | ✅ |
 | 12 | Régimen con menos texto | La misma explicación repetida en cada opción | ✅ |
 | 13 | Bienvenida y Ajustes con menos texto | Una explicación debajo de cada sección y de cada campo | ✅ |
-| 14 | Cobros con menos texto | Ayudas largas en el formulario y en la lista vacía | ⏳ |
+| 14 | Cobros con menos texto | Ayudas largas en el formulario y en la lista vacía | ✅ |
 | 15 | Venta, gasto y retiro con menos texto | Ayudas que repiten lo que ya dice el campo | ⏳ |
 | 16 | Reportes con menos texto | Notas largas encima de los números | ⏳ |
 | 17 | Ayuda más corta | 402 palabras: la pantalla con más texto | ⏳ |
@@ -469,3 +469,21 @@ las dos opciones y "Continuar"); en modo personal, la tarjeta de primera vez es 
 "Ayuda"; en Ajustes, "¿Cómo se calcula?" abre y cierra. 99 tests, 0 fallas.
 
 **Archivos.** `AjustesScreen.kt`, `SelectorModo.kt`, `InicioScreen.kt`.
+
+---
+
+## Paso 14 · Cobros con menos texto
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Formulario: "¿Qué es?" | Debajo de "Fiado o préstamo / Pedido": "Un trabajo o pedido que te encargaron (zapatos, costura, menús). Anota el adelanto si te dieron uno." | Sin texto: las dos opciones se explican solas y el campo "Adelanto" aparece al elegir Pedido |
+| Sin contactos | "Aún no tienes contactos. Agrega a la persona que te debe para registrar el cobro." | "Aún no tienes contactos." y el botón "Agregar contacto" |
+| Adelanto | "Lo que ya te pagó. Te deberá el resto." | "Lo que ya te pagó." |
+| Contarlo como venta | "Se suma hoy a tus ventas y a tu tope. Cuando te pague no se vuelve a contar." / "No se suma a tus ventas. Úsalo si ya anotaste la venta o si es un préstamo de plata." | "Se suma a tus ventas. Al cobrar no se vuelve a sumar." / "No se suma. Úsalo si ya anotaste la venta o si prestaste plata." |
+| Lista vacía | Tres frases (qué anotar, "Cobrar", WhatsApp, "así no se te olvida nadie") | Negocio: "Anota lo que fías y los pedidos por cobrar." Personal: "Anota la plata que prestaste." |
+| Contactos vacío | "Agrega a las personas a las que les fías o prestas para llevar la cuenta de lo que te deben." | "Agrega a quienes les fías o prestas." |
+
+**Verificación.** En el teléfono con los datos de demostración: formulario de pedido con los
+detalles abiertos (adelanto, "Contarlo como venta" y fecha). 99 tests, 0 fallas.
+
+**Archivos.** `CobroScreen.kt`, `CobrosScreen.kt`, `ContactosScreen.kt`.
