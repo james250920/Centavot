@@ -12,7 +12,7 @@ y datos de demostración, en un Samsung Galaxy A15 con Android 16.
 | 3 | Confirmación y deshacer al guardar | [P2] Gasto, cobro y abono se cierran sin decir nada | ✅ |
 | 4 | Colores con un solo significado | [P2] Ámbar para alertas y para cosas neutras | ✅ |
 | 5 | Barra superior de Inicio | [P2] 4 íconos sin texto | ✅ |
-| 6 | Detalles finales | [P3] Montos, gráfico, compartir y controles distintos | ⏳ |
+| 6 | Detalles finales | [P3] Montos, gráfico, compartir y controles distintos | ✅ |
 
 ---
 
@@ -186,3 +186,61 @@ ambiguo era el reloj.
 - **83 tests, 0 fallas.**
 
 **Archivos.** `InicioScreen.kt`, `AjustesScreen.kt` (`FilaActividad`), `NavegacionPrincipal.kt`.
+
+---
+
+## Paso 6 · Detalles finales
+
+**Problema.** El monto se pedía de tres formas ("¿Cuánto vendiste?", "Monto" en Gasto y en Cobro);
+Gasto abría el teclado solo y tapaba "¿Para qué fue?", que es obligatorio; "Fiado / Pedido" usaba
+chips y "Negocio / Personal" botones segmentados para la misma clase de elección; el gráfico no
+tenía montos en el eje; y compartir en Reportes era un ícono sin texto.
+
+**Qué se hizo.**
+- **Montos con la misma forma:** pregunta en lenguaje del comerciante, prefijo "S/" y "0.00" de
+  ejemplo en los tres: **"¿Cuánto vendiste?"**, **"¿Cuánto gastaste?"** y **"¿Cuánto te debe?"**
+  (en un pedido sigue "Precio total del pedido").
+- **Gasto ya no abre el teclado solo**, igual que Venta: se ven el monto y "¿Para qué fue?" sin
+  cerrar nada.
+- **"Fiado o préstamo / Pedido"** pasa a botones segmentados, como "Negocio / Personal".
+- **Reportes:** el ícono de compartir pasa a botón con texto: **"Enviar al contador"** en Negocio y
+  **"Compartir"** en Personal y Me deben.
+- **Gráfico "Cómo te fue mes a mes":**
+  - montos en el eje, en soles redondos, alineados con las tres líneas guía: *S/ 7,200 · S/ 3,600 · S/ 0*;
+  - **defecto corregido** que no estaba en la revisión: los puntos se dibujaban de borde a borde y
+    no quedaban sobre la etiqueta de su mes (el primero caía a la izquierda de "may"). Ahora cada
+    punto va al centro de la columna de su mes.
+
+**Sobre la observación del paso 3.** El campo "Motivo" de "Registrar cobro" no estaba roto: queda
+debajo del monto y la tecla "siguiente" del teclado lleva a él. No se cambió.
+
+**Verificación.**
+- 2 tests nuevos (`GraficoTest`): montos del eje redondeados. **85 tests, 0 fallas.**
+- En el teléfono: el eje muestra S/ 7,200, S/ 3,600 y S/ 0 con los puntos sobre sus meses;
+  "Enviar al contador" en Negocio y "Compartir" en Me deben; Gasto abre sin teclado; "Registrar
+  cobro" con los botones segmentados y "¿Cuánto te debe?".
+- **Texto grande del sistema (130 %)** en Inicio, Cobros, el gráfico y Registrar venta: todo se lee
+  sin cortes. En Cobros, WhatsApp pasa a una segunda línea, como se espera con ese tamaño, sin tapar
+  nada. El teléfono volvió a 100 %.
+
+**Archivos.** `GastoScreen.kt`, `CobroScreen.kt`, `ReporteScreen.kt`, `GraficoLineas.kt`
+(`etiquetasEje`), `GraficoTest.kt` (nuevo).
+
+---
+
+## Resumen
+
+| | Antes | Después |
+|---|---|---|
+| Decisiones visibles al registrar una venta | ~15 | 3 grupos (frecuentes, monto, "Cambiar detalles") |
+| Acciones visibles por cobro | 5, con el tacho junto a WhatsApp | 3 + menú ⋮ (Editar y Eliminar con texto) |
+| Botón que tapa contenido en Cobros | Sí | No en reposo; el "+" solo aparece al bajar |
+| Confirmación al guardar | Solo en Venta | Gasto, venta, cobro, cobrar y abonar, con **Deshacer** |
+| Significados del ámbar | 6 | 1 (avisos de tope) |
+| Íconos sin texto arriba en Inicio | 4 | 3 reconocibles (avisos, ayuda, ajustes) |
+| Formas de pedir un monto | 3 | 1 |
+| Tests | 75 | 85 |
+
+Todo se probó en un Samsung Galaxy A15 (Android 16) con una copia de prueba aparte, en tema oscuro,
+tema claro (paso 4) y texto grande (paso 6). La revisión UX/UI puede volver a correrse para comparar
+con el puntaje inicial de 28/40.

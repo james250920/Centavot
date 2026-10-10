@@ -28,11 +28,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -99,11 +96,6 @@ fun GastoScreen(
             return@Scaffold
         }
 
-        val enfocarMonto = remember { FocusRequester() }
-        LaunchedEffect(Unit) {
-            if (!estado.esEdicion) enfocarMonto.requestFocus()
-        }
-
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -114,7 +106,7 @@ fun GastoScreen(
             OutlinedTextField(
                 value = estado.montoTexto,
                 onValueChange = viewModel::onMontoCambiado,
-                label = { Text("Monto") },
+                label = { Text("¿Cuánto gastaste?") },
                 prefix = { Text("S/ ") },
                 placeholder = { Text("0.00") },
                 textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
@@ -122,7 +114,7 @@ fun GastoScreen(
                 supportingText = estado.errorMonto?.let { { Text(it) } },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
-                modifier = Modifier.fillMaxWidth().focusRequester(enfocarMonto),
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Seccion(titulo = "¿Para qué fue?") {

@@ -1,5 +1,8 @@
 package com.app.centavot.presentation.components
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +32,18 @@ import com.app.centavot.domain.model.Historial
 import com.app.centavot.domain.model.Monto
 
 /** "ene", "feb"… para el eje del gráfico. */
+/** Ancho de la columna de montos a la izquierda del gráfico. */
+private val ANCHO_EJE = 64.dp
+
+/**
+ * Montos del eje vertical, de arriba abajo (máximo, mitad y cero), en soles redondeados y sin
+ * decimales para que se lean de un vistazo: "S/ 7,200", "S/ 3,600", "S/ 0".
+ */
+fun etiquetasEje(maximoCentimos: Long): List<String> {
+    fun redondo(centimos: Long) = Monto.soles((centimos + 50) / 100).formatear().removeSuffix(".00")
+    return listOf(redondo(maximoCentimos), redondo(maximoCentimos / 2), redondo(0))
+}
+
 private val MESES_CORTOS = listOf("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
 
 /**
@@ -46,42 +61,55 @@ fun GraficoLineas(historial: Historial, modifier: Modifier = Modifier) {
     }
 
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Canvas(
-            Modifier
-                .fillMaxWidth()
-                .height(140.dp)
-                .semantics { contentDescription = "Ventas y gastos por mes. $descripcion" },
-        ) {
-            val pasos = (historial.meses.size - 1).coerceAtLeast(1)
-            fun punto(i: Int, valor: Monto) = Offset(
-                x = size.width * i / pasos,
-                y = size.height - size.height * valor.centimos / maximo,
-            )
-            listOf(0f, 0.5f, 1f).forEach { fraccion ->
-                val y = size.height * fraccion
-                drawLine(colorGuia, Offset(0f, y), Offset(size.width, y), strokeWidth = 1.dp.toPx())
-            }
-            fun linea(valores: List<Monto>, color: Color, punteada: Boolean) {
-                val camino = Path()
-                valores.forEachIndexed { i, valor ->
-                    val p = punto(i, valor)
-                    if (i == 0) camino.moveTo(p.x, p.y) else camino.lineTo(p.x, p.y)
+        Row(Modifier.fillMaxWidth().height(140.dp)) {
+            // Montos del eje: alineados con las tres líneas guía (arriba, mitad y abajo).
+            Column(
+                Modifier.width(ANCHO_EJE).fillMaxHeight(),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                etiquetasEje(maximo).forEach { etiqueta ->
+                    Text(etiqueta, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                drawPath(
-                    camino,
-                    color,
-                    style = Stroke(
-                        width = 3.dp.toPx(),
-                        cap = StrokeCap.Round,
-                        pathEffect = if (punteada) PathEffect.dashPathEffect(floatArrayOf(12f, 10f)) else null,
-                    ),
-                )
-                valores.forEachIndexed { i, valor -> drawCircle(color, radius = 4.dp.toPx(), center = punto(i, valor)) }
             }
-            linea(historial.meses.map { it.gastosNegocio }, colorGastos, punteada = true)
-            linea(historial.meses.map { it.ventas }, colorVentas, punteada = false)
+            Canvas(
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .semantics { contentDescription = "Ventas y gastos por mes. $descripcion" },
+            ) {
+                val n = historial.meses.size.coerceAtLeast(1)
+                // Cada punto va al centro de la columna de su mes, igual que la etiqueta de abajo.
+                fun punto(i: Int, valor: Monto) = Offset(
+                    x = size.width * (i + 0.5f) / n,
+                    y = size.height - size.height * valor.centimos / maximo,
+                )
+                listOf(0f, 0.5f, 1f).forEach { fraccion ->
+                    val y = size.height * fraccion
+                    drawLine(colorGuia, Offset(0f, y), Offset(size.width, y), strokeWidth = 1.dp.toPx())
+                }
+                fun linea(valores: List<Monto>, color: Color, punteada: Boolean) {
+                    val camino = Path()
+                    valores.forEachIndexed { i, valor ->
+                        val p = punto(i, valor)
+                        if (i == 0) camino.moveTo(p.x, p.y) else camino.lineTo(p.x, p.y)
+                    }
+                    drawPath(
+                        camino,
+                        color,
+                        style = Stroke(
+                            width = 3.dp.toPx(),
+                            cap = StrokeCap.Round,
+                            pathEffect = if (punteada) PathEffect.dashPathEffect(floatArrayOf(12f, 10f)) else null,
+                        ),
+                    )
+                    valores.forEachIndexed { i, valor -> drawCircle(color, radius = 4.dp.toPx(), center = punto(i, valor)) }
+                }
+                linea(historial.meses.map { it.gastosNegocio }, colorGastos, punteada = true)
+                linea(historial.meses.map { it.ventas }, colorVentas, punteada = false)
+            }
         }
         Row(Modifier.fillMaxWidth()) {
+            Spacer(Modifier.width(ANCHO_EJE))
             historial.meses.forEach { mes ->
                 Text(
                     text = MESES_CORTOS[mes.mes.month.ordinal],
