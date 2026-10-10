@@ -1,5 +1,11 @@
 package com.app.centavot.presentation.screens.cobros
 
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.selection.toggleable
+import com.app.centavot.presentation.components.DetallesPlegables
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SegmentedButton
@@ -204,31 +210,50 @@ fun CobroScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            if (!estado.esEdicion) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text("Contarlo como venta", style = MaterialTheme.typography.titleSmall)
-                        Text(
-                            text = if (estado.contarComoVenta) {
-                                "Se suma hoy a tus ventas y a tu tope. Cuando te pague no se vuelve a contar."
-                            } else {
-                                "No se suma a tus ventas. Úsalo si ya anotaste la venta o si es un préstamo de plata."
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            // Lo habitual (se suma a las ventas, desde hoy) queda plegado con su resumen.
+            var detallesAbiertos by rememberSaveable(estado.esEdicion, estado.cargando) {
+                mutableStateOf(estado.detallesAbiertosAlInicio())
+            }
+            LaunchedEffect(estado.errorFecha) { if (estado.errorFecha != null) detallesAbiertos = true }
+            DetallesPlegables(
+                abiertos = detallesAbiertos,
+                resumen = resumenDetallesCobro(estado.esEdicion, estado.contarComoVenta, estado.fecha, estado.hoy),
+                onCambiar = { detallesAbiertos = !detallesAbiertos },
+            ) {
+                if (!estado.esEdicion) {
+                    // Toda la fila es el interruptor: se puede tocar el texto, no solo el switch.
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.toggleable(
+                            value = estado.contarComoVenta,
+                            role = Role.Switch,
+                            onValueChange = viewModel::onContarComoVenta,
+                        ),
+                    ) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text("Contarlo como venta", style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                text = if (estado.contarComoVenta) {
+                                    "Se suma hoy a tus ventas y a tu tope. Cuando te pague no se vuelve a contar."
+                                } else {
+                                    "No se suma a tus ventas. Úsalo si ya anotaste la venta o si es un préstamo de plata."
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = estado.contarComoVenta,
+                            onCheckedChange = null,
+                            modifier = Modifier.padding(start = 12.dp),
                         )
                     }
-                    Switch(
-                        checked = estado.contarComoVenta,
-                        onCheckedChange = viewModel::onContarComoVenta,
-                        modifier = Modifier.padding(start = 12.dp),
-                    )
                 }
-            }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(if (esPedido) "¿Cuándo te lo pidió?" else "¿Desde cuándo te debe?", style = MaterialTheme.typography.titleSmall)
-                CampoFecha(estado.fecha, estado.hoy, viewModel::onFechaElegida, estado.errorFecha)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(if (esPedido) "¿Cuándo te lo pidió?" else "¿Desde cuándo te debe?", style = MaterialTheme.typography.titleSmall)
+                    CampoFecha(estado.fecha, estado.hoy, viewModel::onFechaElegida, estado.errorFecha)
+                }
             }
         }
     }

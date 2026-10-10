@@ -1,5 +1,7 @@
 package com.app.centavot.presentation.screens.ajustes
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
 import androidx.compose.foundation.layout.heightIn
 import com.app.centavot.presentation.components.LogoCentavot
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +24,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -87,7 +88,7 @@ fun AjustesScreen(
         },
         bottomBar = {
             Button(
-                onClick = viewModel::guardar,
+                onClick = { viewModel.guardar(avisar = !esPrimeraVez) },
                 enabled = !estado.guardando && !estado.cargando,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -112,7 +113,7 @@ fun AjustesScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            verticalArrangement = Arrangement.spacedBy(32.dp),
         ) {
             if (esPrimeraVez) {
                 Column(Modifier.padding(top = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -130,105 +131,112 @@ fun AjustesScreen(
                 }
             }
 
-            TarjetaPrivacidad()
+            // En el registro inicial la privacidad va antes de pedir datos; después, en "Tus datos".
+            if (esPrimeraVez) TarjetaPrivacidad()
 
-            OutlinedTextField(
-                value = estado.nombre,
-                onValueChange = viewModel::onNombreCambiado,
-                label = { Text("¿Cómo te llamas?") },
-                isError = estado.errorNombre != null,
-                supportingText = estado.errorNombre?.let { { Text(it) } },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("¿A qué se dedica tu negocio?", style = MaterialTheme.typography.titleSmall)
-                SelectorChips(
-                    opciones = Rubro.entries,
-                    seleccionada = estado.rubro,
-                    etiqueta = { it.etiqueta },
-                    onSeleccionar = viewModel::onRubroElegido,
+            SeccionAjustes("Tu perfil") {
+                OutlinedTextField(
+                    value = estado.nombre,
+                    onValueChange = viewModel::onNombreCambiado,
+                    label = { Text("¿Cómo te llamas?") },
+                    isError = estado.errorNombre != null,
+                    supportingText = estado.errorNombre?.let { { Text(it) } },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
+                    modifier = Modifier.fillMaxWidth(),
                 )
-                estado.errorRubro?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-                }
-            }
 
-            HorizontalDivider()
-
-            Text("Tu meta de ahorro", style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = "Cuando registres tus ventas, la meta se calcula sobre lo que de verdad ganas. " +
-                    "Mientras tanto, usamos el ingreso que pongas aquí.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            OutlinedTextField(
-                value = estado.ingresoTexto,
-                onValueChange = viewModel::onIngresoCambiado,
-                label = { Text(if (esPrimeraVez) "Ingreso mensual (opcional)" else "Ingreso mensual") },
-                prefix = { Text("S/ ") },
-                placeholder = { Text("0.00") },
-                isError = estado.errorIngreso != null,
-                supportingText = { Text(estado.errorIngreso ?: "Lo que ganas en un mes normal, más o menos. Si tienes sueldo fijo, pon tu sueldo.") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            val meta = parsearMonto(estado.ingresoTexto.ifBlank { "0" })?.let { ingreso ->
-                parsearTasa(estado.tasaTexto)?.let { tasa -> Perfil("", null, ingreso, tasa).metaAhorro }
-            }
-            OutlinedTextField(
-                value = estado.tasaTexto,
-                onValueChange = viewModel::onTasaCambiada,
-                label = { Text("¿Qué porcentaje quieres ahorrar?") },
-                suffix = { Text("%") },
-                placeholder = { Text("10") },
-                isError = estado.errorTasa != null,
-                supportingText = {
-                    Text(
-                        estado.errorTasa
-                            ?: meta?.takeIf { it.centimos > 0 }?.let { "Tu meta de ahorro será ${it.formatear()} al mes." }
-                            ?: "Entre 0 y 100, con un decimal como máximo.",
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("¿A qué se dedica tu negocio?", style = MaterialTheme.typography.titleSmall)
+                    SelectorChips(
+                        opciones = Rubro.entries,
+                        seleccionada = estado.rubro,
+                        etiqueta = { it.etiqueta },
+                        onSeleccionar = viewModel::onRubroElegido,
                     )
-                },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth(),
-            )
+                    estado.errorRubro?.let {
+                        Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                    }
+                }
+
+            }
+
+            SeccionAjustes(
+                titulo = "Tu meta de ahorro",
+                descripcion = "Cuando registres tus ventas, la meta se calcula sobre lo que de verdad ganas. " +
+                    "Mientras tanto, usamos el ingreso que pongas aquí.",
+            ) {
+                OutlinedTextField(
+                    value = estado.ingresoTexto,
+                    onValueChange = viewModel::onIngresoCambiado,
+                    label = { Text(if (esPrimeraVez) "Ingreso mensual (opcional)" else "Ingreso mensual") },
+                    prefix = { Text("S/ ") },
+                    placeholder = { Text("0.00") },
+                    isError = estado.errorIngreso != null,
+                    supportingText = { Text(estado.errorIngreso ?: "Lo que ganas en un mes normal, más o menos. Si tienes sueldo fijo, pon tu sueldo.") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                val meta = parsearMonto(estado.ingresoTexto.ifBlank { "0" })?.let { ingreso ->
+                    parsearTasa(estado.tasaTexto)?.let { tasa -> Perfil("", null, ingreso, tasa).metaAhorro }
+                }
+                OutlinedTextField(
+                    value = estado.tasaTexto,
+                    onValueChange = viewModel::onTasaCambiada,
+                    label = { Text("¿Qué porcentaje quieres ahorrar?") },
+                    suffix = { Text("%") },
+                    placeholder = { Text("10") },
+                    isError = estado.errorTasa != null,
+                    supportingText = {
+                        Text(
+                            estado.errorTasa
+                                ?: meta?.takeIf { it.centimos > 0 }?.let { "Tu meta de ahorro será ${it.formatear()} al mes." }
+                                ?: "Entre 0 y 100, con un decimal como máximo.",
+                        )
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+            }
 
             estado.regimen?.takeIf { !esPrimeraVez }?.let { regimen ->
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-                    Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text("Régimen tributario", style = MaterialTheme.typography.labelLarge)
-                            val periodo = if (regimen.periodo == PeriodoTope.MENSUAL) "al mes" else "al año"
-                            Text(
-                                text = "${regimen.nombre} · tope ${regimen.tope.formatear()} $periodo",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                SeccionAjustes("Tu régimen") {
+                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+                        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                val periodo = if (regimen.periodo == PeriodoTope.MENSUAL) "al mes" else "al año"
+                                Text(regimen.nombre, style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    text = "Tope: ${regimen.tope.formatear()} $periodo",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            TextButton(onClick = onCambiarRegimen) { Text("Cambiar") }
                         }
-                        TextButton(onClick = onCambiarRegimen) { Text("Cambiar") }
                     }
                 }
             }
 
-            if (!esPrimeraVez) FilaActividad(onAbrirActividad)
-
-            estado.uso?.takeIf { !esPrimeraVez && it.primerUso != null }?.let { uso -> TarjetaUso(uso) }
-
             if (!esPrimeraVez) {
-                TarjetaTusDatos(
-                    trabajando = estado.trabajandoConDatos,
-                    onVerPrivacidad = onVerPrivacidad,
-                    onExportar = viewModel::exportarTodosMisDatos,
-                    onBorrar = viewModel::pedirBorrado,
-                )
+                SeccionAjustes("Cómo vienes usando Centavot") {
+                    FilaActividad(onAbrirActividad)
+                    estado.uso?.takeIf { it.primerUso != null }?.let { uso -> TarjetaUso(uso) }
+                }
+
+                SeccionAjustes("Tus datos") {
+                    TarjetaPrivacidad()
+                    TarjetaTusDatos(
+                        trabajando = estado.trabajandoConDatos,
+                        onVerPrivacidad = onVerPrivacidad,
+                        onExportar = viewModel::exportarTodosMisDatos,
+                        onBorrar = viewModel::pedirBorrado,
+                    )
+                }
             }
         }
     }
@@ -255,7 +263,6 @@ private fun TarjetaTusDatos(
 ) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Tus datos", style = MaterialTheme.typography.titleSmall)
             Text(
                 "Todo está solo en este celular y no se copia a la nube. Para no perderlo si cambias de celular, " +
                     "exporta tus datos y guárdalos donde quieras.",
@@ -273,6 +280,20 @@ private fun TarjetaTusDatos(
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
             ) { Text("Borrar todos mis datos") }
         }
+    }
+}
+
+/** Una sección de Ajustes: título (y explicación opcional) con su contenido agrupado debajo. */
+@Composable
+private fun SeccionAjustes(titulo: String, descripcion: String? = null, contenido: @Composable () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(titulo, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            descripcion?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        contenido()
     }
 }
 
@@ -324,7 +345,6 @@ private fun TarjetaPrivacidad() {
 private fun TarjetaUso(uso: ResumenUso) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Cómo vienes usando Centavot", style = MaterialTheme.typography.titleSmall)
             val respuesta = uso.respuestasCuaderno.lastOrNull()?.let { if (it) "más fácil" else "todavía no" } ?: "sin responder"
             listOf(
                 "Veces que usaste la app hoy" to "${uso.aperturasHoy} ${if (uso.aperturasHoy == 1) "vez" else "veces"}",

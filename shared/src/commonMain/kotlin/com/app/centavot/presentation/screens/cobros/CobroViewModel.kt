@@ -1,5 +1,6 @@
 package com.app.centavot.presentation.screens.cobros
 
+import com.app.centavot.presentation.components.formatearRelativo
 import com.app.centavot.domain.model.Cobro
 import com.app.centavot.domain.usecase.EliminarIngresoUseCase
 import com.app.centavot.domain.usecase.EliminarCobroUseCase
@@ -27,6 +28,19 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 
 private const val MAX_MOTIVO = 60
+
+/**
+ * Resumen de los detalles plegados de un cobro: si se suma a las ventas y desde cuándo.
+ * Ej. "Se suma a tus ventas · Desde hoy". Al editar no se muestra lo de la venta (ya se decidió).
+ */
+fun resumenDetallesCobro(esEdicion: Boolean, contarComoVenta: Boolean, fecha: LocalDate, hoy: LocalDate): String =
+    buildList {
+        if (!esEdicion) add(if (contarComoVenta) "Se suma a tus ventas" else "No se suma a tus ventas")
+        add("Desde ${fecha.formatearRelativo(hoy).lowercase()}")
+    }.joinToString(" · ")
+
+/** Los detalles empiezan abiertos solo si ya tienen algo distinto de lo habitual. */
+fun CobroUiState.detallesAbiertosAlInicio(): Boolean = !contarComoVenta || fecha != hoy || errorFecha != null
 
 data class CobroUiState(
     val esEdicion: Boolean = false,
