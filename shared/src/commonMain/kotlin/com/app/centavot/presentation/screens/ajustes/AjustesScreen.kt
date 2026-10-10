@@ -44,12 +44,14 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.PeriodoTope
 import com.app.centavot.domain.model.ResumenUso
 import com.app.centavot.domain.model.Rubro
 import com.app.centavot.presentation.components.DialogoConfirmar
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.SelectorChips
+import com.app.centavot.presentation.components.SelectorModo
 import com.app.centavot.presentation.components.formatear
 import com.app.centavot.presentation.components.parsearMonto
 import com.app.centavot.presentation.components.parsearTasa
@@ -57,8 +59,8 @@ import com.app.centavot.domain.model.Perfil
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * Perfil y ajustes financieros. Es el primer paso del onboarding ([esPrimeraVez])
- * y también se abre desde Inicio.
+ * Perfil y ajustes financieros. Es el primer paso del onboarding ([esPrimeraVez]): ahí solo se
+ * pide el nombre y el modo (personal o negocio). También se abre desde Inicio.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -131,7 +133,7 @@ fun AjustesScreen(
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            text = "Tu cuaderno, pero que suma solo. Cuéntanos un poco de ti para empezar.",
+                            text = "Tu cuaderno, pero que suma solo. Dinos tu nombre y para qué la usarás.",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -139,8 +141,8 @@ fun AjustesScreen(
                 }
             }
 
-            // En el registro inicial la privacidad va antes de pedir datos; después, en "Tus datos".
-            if (esPrimeraVez) TarjetaPrivacidad()
+            // En el registro inicial no se repite la privacidad: se acaba de aceptar el aviso completo.
+            // Así el nombre y las dos opciones de modo entran en una sola pantalla.
 
             SeccionAjustes("Tu perfil") {
                 OutlinedTextField(
@@ -150,68 +152,86 @@ fun AjustesScreen(
                     isError = estado.errorNombre != null,
                     supportingText = estado.errorNombre?.let { { Text(it) } },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("¿A qué se dedica tu negocio?", style = MaterialTheme.typography.titleSmall)
-                    SelectorChips(
-                        opciones = Rubro.entries,
-                        seleccionada = estado.rubro,
-                        etiqueta = { it.etiqueta },
-                        onSeleccionar = viewModel::onRubroElegido,
-                    )
-                    estado.errorRubro?.let {
-                        Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                // El rubro es opcional y solo tiene sentido con negocio; en el registro no se pregunta.
+                if (!esPrimeraVez && estado.modo == Modo.NEGOCIO) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("¿A qué se dedica tu negocio? (opcional)", style = MaterialTheme.typography.titleSmall)
+                        SelectorChips(
+                            opciones = Rubro.entries,
+                            seleccionada = estado.rubro,
+                            etiqueta = { it.etiqueta },
+                            onSeleccionar = viewModel::onRubroElegido,
+                        )
                     }
                 }
-
             }
 
             SeccionAjustes(
-                titulo = "Tu meta de ahorro",
-                descripcion = "Cuando registres tus ventas, la meta se calcula sobre lo que de verdad ganas. " +
-                    "Mientras tanto, usamos el ingreso que pongas aquí.",
+                titulo = if (esPrimeraVez) "¿Para qué usarás Centavot?" else "Cómo usas Centavot",
+                descripcion = if (esPrimeraVez) {
+                    "Solo verás lo de tu elección. Puedes cambiarlo cuando quieras desde Inicio o aquí."
+                } else {
+                    "Al cambiar no se borra nada: lo del otro modo vuelve a aparecer cuando regreses a él."
+                },
             ) {
-                OutlinedTextField(
-                    value = estado.ingresoTexto,
-                    onValueChange = viewModel::onIngresoCambiado,
-                    label = { Text(if (esPrimeraVez) "Ingreso mensual (opcional)" else "Ingreso mensual") },
-                    prefix = { Text("S/ ") },
-                    placeholder = { Text("0.00") },
-                    isError = estado.errorIngreso != null,
-                    supportingText = { Text(estado.errorIngreso ?: "Lo que ganas en un mes normal, más o menos. Si tienes sueldo fijo, pon tu sueldo.") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                val meta = parsearMonto(estado.ingresoTexto.ifBlank { "0" })?.let { ingreso ->
-                    parsearTasa(estado.tasaTexto)?.let { tasa -> Perfil("", null, ingreso, tasa).metaAhorro }
+                SelectorModo(estado.modo, viewModel::onModoElegido)
+                estado.errorModo?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                 }
-                OutlinedTextField(
-                    value = estado.tasaTexto,
-                    onValueChange = viewModel::onTasaCambiada,
-                    label = { Text("¿Qué porcentaje quieres ahorrar?") },
-                    suffix = { Text("%") },
-                    placeholder = { Text("10") },
-                    isError = estado.errorTasa != null,
-                    supportingText = {
-                        Text(
-                            estado.errorTasa
-                                ?: meta?.takeIf { it.centimos > 0 }?.let { "Tu meta de ahorro será ${it.formatear()} al mes." }
-                                ?: "Entre 0 y 100, con un decimal como máximo.",
-                        )
-                    },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
             }
 
-            estado.regimen?.takeIf { !esPrimeraVez }?.let { regimen ->
+            if (!esPrimeraVez) {
+                SeccionAjustes(
+                    titulo = "Tu meta de ahorro",
+                    descripcion = if (estado.modo == Modo.PERSONAL) {
+                        "Cuando registres lo que te entra, la meta se calcula sobre eso. Mientras tanto, usamos el ingreso que pongas aquí."
+                    } else {
+                        "Cuando registres tus ventas, la meta se calcula sobre lo que de verdad ganas. " +
+                            "Mientras tanto, usamos el ingreso que pongas aquí."
+                    },
+                ) {
+                    OutlinedTextField(
+                        value = estado.ingresoTexto,
+                        onValueChange = viewModel::onIngresoCambiado,
+                        label = { Text("Ingreso mensual (opcional)") },
+                        prefix = { Text("S/ ") },
+                        placeholder = { Text("0.00") },
+                        isError = estado.errorIngreso != null,
+                        supportingText = { Text(estado.errorIngreso ?: "Lo que ganas en un mes normal, más o menos. Si tienes sueldo fijo, pon tu sueldo.") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    val meta = parsearMonto(estado.ingresoTexto.ifBlank { "0" })?.let { ingreso ->
+                        parsearTasa(estado.tasaTexto)?.let { tasa -> Perfil("", null, ingreso, tasa).metaAhorro }
+                    }
+                    OutlinedTextField(
+                        value = estado.tasaTexto,
+                        onValueChange = viewModel::onTasaCambiada,
+                        label = { Text("¿Qué porcentaje quieres ahorrar?") },
+                        suffix = { Text("%") },
+                        placeholder = { Text("10") },
+                        isError = estado.errorTasa != null,
+                        supportingText = {
+                            Text(
+                                estado.errorTasa
+                                    ?: meta?.takeIf { it.centimos > 0 }?.let { "Tu meta de ahorro será ${it.formatear()} al mes." }
+                                    ?: "Entre 0 y 100, con un decimal como máximo.",
+                            )
+                        },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+
+            estado.regimen?.takeIf { !esPrimeraVez && estado.modo == Modo.NEGOCIO }?.let { regimen ->
                 SeccionAjustes("Tu régimen") {
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                         Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {

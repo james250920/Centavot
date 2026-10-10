@@ -33,6 +33,8 @@ import com.app.centavot.domain.usecase.EliminarContactoUseCase
 import com.app.centavot.domain.usecase.EliminarGastoUseCase
 import com.app.centavot.domain.usecase.GuardarGastoUseCase
 import com.app.centavot.domain.usecase.GuardarPerfilUseCase
+import com.app.centavot.domain.usecase.ObservarModoUseCase
+import com.app.centavot.domain.usecase.CambiarModoUseCase
 import com.app.centavot.domain.usecase.GuardarRegimenUseCase
 import com.app.centavot.domain.usecase.MarcarCobradoUseCase
 import com.app.centavot.domain.usecase.ObtenerCobroUseCase
@@ -144,6 +146,8 @@ val moduloDomain = module {
     factoryOf(::RevisarAlertaTopeUseCase)
     factoryOf(::ObservarPerfilUseCase)
     factoryOf(::GuardarPerfilUseCase)
+    factoryOf(::ObservarModoUseCase)
+    factoryOf(::CambiarModoUseCase)
     factoryOf(::ObservarContactosUseCase)
     factoryOf(::ObservarCobrosUseCase)
     factoryOf(::ObservarResumenCobrosUseCase)
@@ -173,9 +177,9 @@ val moduloPresentation = module {
     viewModelOf(::ContactosViewModel)
     viewModelOf(::ActividadViewModel)
     viewModelOf(::NotificacionesViewModel)
-    viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get(), get()) }
-    viewModel { (id: String?) -> VentaViewModel(id, get(), get(), get(), get(), get(), get()) }
-    viewModel { (id: String?) -> CobroViewModel(id, get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get(), get(), get()) }
+    viewModel { (id: String?, retiro: Boolean) -> VentaViewModel(id, retiro, get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { (id: String?) -> CobroViewModel(id, get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 }
 
 val modulosComunes = listOf(moduloData, moduloDomain, moduloPresentation)

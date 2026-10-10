@@ -1,5 +1,6 @@
 package com.app.centavot.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.Index
@@ -16,6 +17,8 @@ data class IngresoEntity(
     val fecha: String,
     val categoria: String,
     val descripcion: String?,
+    /** v4: plata sacada de la caja del negocio para la casa. */
+    @ColumnInfo(defaultValue = "0") val retiroDelNegocio: Boolean = false,
 )
 
 @Dao

@@ -18,6 +18,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.app.centavot.domain.model.Gasto
 import com.app.centavot.domain.model.Ingreso
+import com.app.centavot.domain.model.Modo
+import com.app.centavot.domain.model.TipoEntrada
+import com.app.centavot.domain.model.tipo
 import com.app.centavot.domain.model.Monto
 import kotlinx.datetime.LocalDate
 
@@ -40,7 +43,7 @@ sealed interface Movimiento {
     }
 }
 
-/** Ventas y gastos juntos, del más reciente al más antiguo. */
+/** Entradas y gastos juntos, del más reciente al más antiguo. */
 fun movimientosDe(ingresos: List<Ingreso>, gastos: List<Gasto>): List<Movimiento> =
     (ingresos.map { Movimiento.Entrada(it) } + gastos.map { Movimiento.Salida(it) }).sortedByDescending { it.fecha }
 
@@ -51,12 +54,17 @@ fun FilaMovimiento(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     mostrarFecha: Boolean = true,
+    modo: Modo = Modo.NEGOCIO,
 ) {
     when (movimiento) {
         is Movimiento.Salida -> FilaGasto(movimiento.gasto, hoy, onClick, modifier, mostrarFecha)
-        is Movimiento.Entrada -> FilaIngreso(movimiento.ingreso, hoy, onClick, modifier, mostrarFecha)
+        is Movimiento.Entrada -> FilaIngreso(movimiento.ingreso, hoy, onClick, modifier, mostrarFecha, modo)
     }
 }
+
+/** En el negocio, lo que se sacó para la casa sale de la caja; en lo personal, es plata que entra. */
+fun Movimiento.esEntradaEn(modo: Modo): Boolean =
+    this is Movimiento.Entrada && !(modo == Modo.NEGOCIO && ingreso.retiroDelNegocio)
 
 @Composable
 fun FilaIngreso(
@@ -65,23 +73,34 @@ fun FilaIngreso(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     mostrarFecha: Boolean = true,
+    modo: Modo = Modo.NEGOCIO,
 ) {
     val colores = MaterialTheme.colorScheme
+    val saleDeLaCaja = ingreso.retiroDelNegocio && modo == Modo.NEGOCIO
+    val etiqueta = when (ingreso.tipo) {
+        TipoEntrada.VENTA -> "Venta"
+        TipoEntrada.INGRESO -> if (modo == Modo.PERSONAL) "Ingreso" else "Ingreso personal"
+        TipoEntrada.RETIRO -> if (saleDeLaCaja) "Para la casa" else "De tu negocio"
+    }
     ListItem(
         modifier = modifier.clickable(onClick = onClick),
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         headlineContent = {
             Text(
-                text = ingreso.descripcion ?: if (ingreso.esDeNegocio) "Venta" else "Ingreso",
+                text = ingreso.descripcion ?: etiqueta,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         },
         supportingContent = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Surface(color = colores.primary, contentColor = colores.onPrimary, shape = MaterialTheme.shapes.small) {
+                Surface(
+                    color = if (saleDeLaCaja) colores.secondaryContainer else colores.primary,
+                    contentColor = if (saleDeLaCaja) colores.onSecondaryContainer else colores.onPrimary,
+                    shape = MaterialTheme.shapes.small,
+                ) {
                     Text(
-                        text = if (ingreso.esDeNegocio) "Venta" else "Ingreso personal",
+                        text = etiqueta,
                         style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     )
@@ -93,10 +112,11 @@ fun FilaIngreso(
         },
         trailingContent = {
             Text(
-                text = "+ ${ingreso.monto.formatear()}",
+                // Si sale de la caja se muestra como un gasto: sin signo.
+                text = if (saleDeLaCaja) ingreso.monto.formatear() else "+ ${ingreso.monto.formatear()}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = colores.primary,
+                color = if (saleDeLaCaja) colores.onSurface else colores.primary,
             )
         },
     )

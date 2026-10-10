@@ -4,6 +4,7 @@ import com.app.centavot.presentation.Avisos
 import com.app.centavot.presentation.Aviso
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Perfil
 import com.app.centavot.domain.model.RegimenTributario
@@ -33,12 +34,14 @@ data class AjustesUiState(
     val cargando: Boolean = true,
     val nombre: String = "",
     val rubro: Rubro? = null,
+    /** null hasta que lo elija en el registro inicial. */
+    val modo: Modo? = null,
     val ingresoTexto: String = "",
     val tasaTexto: String = "",
     val regimen: RegimenTributario? = null,
     val uso: ResumenUso? = null,
     val errorNombre: String? = null,
-    val errorRubro: String? = null,
+    val errorModo: String? = null,
     val errorIngreso: String? = null,
     val errorTasa: String? = null,
     val guardando: Boolean = false,
@@ -47,7 +50,7 @@ data class AjustesUiState(
     val trabajandoConDatos: Boolean = false,
 )
 
-/** Perfil (nombre y rubro) y ajustes financieros (ingreso mensual y tasa de ahorro). */
+/** Perfil (nombre, modo de uso y rubro) y ajustes financieros (ingreso mensual y tasa de ahorro). */
 class AjustesViewModel(
     private val observarPerfil: ObservarPerfilUseCase,
     private val observarRegimen: ObservarRegimenUseCase,
@@ -70,6 +73,7 @@ class AjustesViewModel(
                     cargando = false,
                     nombre = perfil?.nombre.orEmpty(),
                     rubro = perfil?.rubro,
+                    modo = perfil?.modo,
                     ingresoTexto = perfil?.ingresoMensual?.takeIf { m -> m > Monto.CERO }?.comoTextoEditable().orEmpty(),
                     tasaTexto = perfil?.tasaAhorro?.takeIf { t -> t.decimas > 0 }?.comoTextoEditable().orEmpty(),
                 )
@@ -86,7 +90,9 @@ class AjustesViewModel(
 
     fun onNombreCambiado(texto: String) = _estado.update { it.copy(nombre = texto.take(MAX_NOMBRE), errorNombre = null) }
 
-    fun onRubroElegido(rubro: Rubro?) = _estado.update { it.copy(rubro = rubro, errorRubro = null) }
+    fun onRubroElegido(rubro: Rubro?) = _estado.update { it.copy(rubro = rubro) }
+
+    fun onModoElegido(modo: Modo) = _estado.update { it.copy(modo = modo, errorModo = null) }
 
     fun onIngresoCambiado(texto: String) {
         if (esEntradaDeMontoValida(texto)) _estado.update { it.copy(ingresoTexto = texto, errorIngreso = null) }
@@ -126,18 +132,19 @@ class AjustesViewModel(
         val tasa = parsearTasa(actual.tasaTexto)
         val errores = actual.copy(
             errorNombre = if (actual.nombre.isBlank()) "Escribe cómo quieres que te llamemos" else null,
-            errorRubro = if (actual.rubro == null) "Elige a qué se dedica tu negocio" else null,
+            errorModo = if (actual.modo == null) "Elige para qué usarás Centavot" else null,
             errorIngreso = if (ingreso == null) "Revisa el monto" else null,
             errorTasa = if (tasa == null) "Debe ser un número entre 0 y 100" else null,
         )
-        if (ingreso == null || tasa == null || errores.errorNombre != null || errores.errorRubro != null) {
+        val modo = actual.modo
+        if (ingreso == null || tasa == null || modo == null || errores.errorNombre != null) {
             _estado.value = errores
             return
         }
 
         viewModelScope.launch {
             _estado.update { it.copy(guardando = true) }
-            val perfil = Perfil(actual.nombre, actual.rubro, ingreso, tasa)
+            val perfil = Perfil(actual.nombre, actual.rubro, ingreso, tasa, modo)
             _estado.update {
                 when (guardarPerfil(perfil)) {
                     is GuardarPerfilUseCase.Resultado.Guardado -> {

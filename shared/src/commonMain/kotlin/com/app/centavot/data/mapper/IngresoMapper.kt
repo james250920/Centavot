@@ -16,6 +16,7 @@ fun IngresoEntity.toDomain() = Ingreso(
     fecha = LocalDate.parse(fecha),
     categoria = Categoria.valueOf(categoria),
     descripcion = descripcion,
+    retiroDelNegocio = retiroDelNegocio,
 )
 
 fun Ingreso.toEntity() = IngresoEntity(
@@ -24,6 +25,7 @@ fun Ingreso.toEntity() = IngresoEntity(
     fecha = fecha.toString(),
     categoria = categoria.name,
     descripcion = descripcion,
+    retiroDelNegocio = retiroDelNegocio,
 )
 
 fun EventoUsoEntity.toDomain() = EventoUso(

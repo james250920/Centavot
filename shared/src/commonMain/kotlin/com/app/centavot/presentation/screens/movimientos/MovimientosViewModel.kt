@@ -3,7 +3,10 @@ package com.app.centavot.presentation.screens.movimientos
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.Reloj
-import com.app.centavot.domain.model.Categoria
+import com.app.centavot.domain.model.Modo
+import com.app.centavot.domain.model.delModo
+import com.app.centavot.domain.usecase.ObservarModoUseCase
+import com.app.centavot.presentation.components.esEntradaEn
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Periodo
 import com.app.centavot.domain.model.rango
@@ -19,20 +22,32 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.LocalDate
 
-enum class FiltroMovimientos(val etiqueta: String) {
-    TODOS("Todos"),
-    VENTAS("Ventas"),
-    NEGOCIO("Gastos del negocio"),
-    PERSONAL("Gastos personales"),
-    INGRESOS_PERSONALES("Ingresos personales"),
+/** Qué movimientos ver. Las etiquetas y opciones dependen del modo (negocio o personal). */
+enum class FiltroMovimientos {
+    TODOS,
+    ENTRADAS,
+    GASTOS,
+
+    /** Solo en el negocio: lo que se sacó de la caja para la casa. */
+    PARA_LA_CASA,
     ;
 
-    fun incluye(movimiento: Movimiento): Boolean = when (this) {
+    fun etiqueta(modo: Modo): String = when (this) {
+        TODOS -> "Todos"
+        ENTRADAS -> if (modo == Modo.NEGOCIO) "Ventas" else "Ingresos"
+        GASTOS -> "Gastos"
+        PARA_LA_CASA -> "Para la casa"
+    }
+
+    fun incluye(movimiento: Movimiento, modo: Modo): Boolean = when (this) {
         TODOS -> true
-        VENTAS -> movimiento.esVenta
-        INGRESOS_PERSONALES -> movimiento is Movimiento.Entrada && !movimiento.ingreso.esDeNegocio
-        NEGOCIO -> movimiento is Movimiento.Salida && movimiento.gasto.categoria == Categoria.NEGOCIO
-        PERSONAL -> movimiento is Movimiento.Salida && movimiento.gasto.categoria == Categoria.PERSONAL
+        ENTRADAS -> movimiento.esEntradaEn(modo)
+        GASTOS -> movimiento is Movimiento.Salida
+        PARA_LA_CASA -> movimiento is Movimiento.Entrada && movimiento.ingreso.retiroDelNegocio
+    }
+
+    companion object {
+        fun para(modo: Modo): List<FiltroMovimientos> = if (modo == Modo.NEGOCIO) entries else entries - PARA_LA_CASA
     }
 }
 
@@ -59,25 +74,23 @@ sealed interface FiltroFechas {
     }
 }
 
-/** Solo las ventas del negocio cuentan como "vendido"; un sueldo u otro ingreso personal no. */
-private val Movimiento.esVenta: Boolean get() = this is Movimiento.Entrada && ingreso.esDeNegocio
-
-private val Movimiento.esIngresoPersonal: Boolean get() = this is Movimiento.Entrada && !ingreso.esDeNegocio
-
-data class GrupoDia(val fecha: LocalDate, val movimientos: List<Movimiento>) {
-    val vendido: Monto get() = movimientos.filter { it.esVenta }.map { it.monto }.sumar()
-    val ingresosPersonales: Monto get() = movimientos.filter { it.esIngresoPersonal }.map { it.monto }.sumar()
-    val gastado: Monto get() = movimientos.filterIsInstance<Movimiento.Salida>().map { it.monto }.sumar()
+/** Lo que entró y lo que salió en un día, según el modo. */
+data class GrupoDia(val fecha: LocalDate, val movimientos: List<Movimiento>, val modo: Modo = Modo.NEGOCIO) {
+    val entro: Monto get() = movimientos.filter { it.esEntradaEn(modo) }.map { it.monto }.sumar()
+    val salio: Monto get() = movimientos.filterNot { it.esEntradaEn(modo) }.map { it.monto }.sumar()
 }
 
 data class MovimientosUiState(
     val hoy: LocalDate,
+    val modo: Modo = Modo.NEGOCIO,
     val filtro: FiltroMovimientos = FiltroMovimientos.TODOS,
     val fechas: FiltroFechas = FiltroFechas.Todo,
     val grupos: List<GrupoDia> = emptyList(),
-    val totalVendido: Monto = Monto.CERO,
-    val totalIngresosPersonales: Monto = Monto.CERO,
+    /** Ventas en el negocio; ingresos (incluido lo que vino del negocio) en lo personal. */
+    val totalEntro: Monto = Monto.CERO,
     val totalGastado: Monto = Monto.CERO,
+    /** Solo en el negocio: lo que se sacó para la casa. */
+    val totalParaLaCasa: Monto = Monto.CERO,
     val hayMovimientos: Boolean = false,
     val cargando: Boolean = true,
 )
@@ -85,6 +98,7 @@ data class MovimientosUiState(
 class MovimientosViewModel(
     observarIngresos: ObservarIngresosUseCase,
     observarGastos: ObservarGastosUseCase,
+    observarModo: ObservarModoUseCase,
     reloj: Reloj,
 ) : ViewModel() {
 
@@ -92,21 +106,23 @@ class MovimientosViewModel(
     private val fechas = MutableStateFlow<FiltroFechas>(FiltroFechas.Todo)
 
     val estado: StateFlow<MovimientosUiState> = combine(
-        observarIngresos(),
-        observarGastos(),
+        combine(observarModo(), observarIngresos(), observarGastos(), ::Triple),
         filtro,
         fechas,
-    ) { ingresos, gastos, filtroActual, fechasActuales ->
+    ) { (modo, ingresos, gastos), filtroElegido, fechasActuales ->
         val hoy = reloj.hoy()
-        val todos = movimientosDe(ingresos, gastos)
-        val filtrados = todos.filter { filtroActual.incluye(it) && fechasActuales.incluye(it.fecha, hoy) }
+        // Un filtro que no existe en este modo (Para la casa en lo personal) vuelve a Todos.
+        val filtroActual = filtroElegido.takeIf { it in FiltroMovimientos.para(modo) } ?: FiltroMovimientos.TODOS
+        val todos = movimientosDe(ingresos.delModo(modo), gastos.delModo(modo))
+        val filtrados = todos.filter { filtroActual.incluye(it, modo) && fechasActuales.incluye(it.fecha, hoy) }
         MovimientosUiState(
             hoy = hoy,
+            modo = modo,
             filtro = filtroActual,
             fechas = fechasActuales,
-            grupos = filtrados.groupBy { it.fecha }.map { (fecha, delDia) -> GrupoDia(fecha, delDia) },
-            totalVendido = filtrados.filter { it.esVenta }.map { it.monto }.sumar(),
-            totalIngresosPersonales = filtrados.filter { it.esIngresoPersonal }.map { it.monto }.sumar(),
+            grupos = filtrados.groupBy { it.fecha }.map { (fecha, delDia) -> GrupoDia(fecha, delDia, modo) },
+            totalEntro = filtrados.filter { it.esEntradaEn(modo) }.map { it.monto }.sumar(),
+            totalParaLaCasa = filtrados.filterNot { it.esEntradaEn(modo) || it is Movimiento.Salida }.map { it.monto }.sumar(),
             totalGastado = filtrados.filterIsInstance<Movimiento.Salida>().map { it.monto }.sumar(),
             hayMovimientos = todos.isNotEmpty(),
             cargando = false,

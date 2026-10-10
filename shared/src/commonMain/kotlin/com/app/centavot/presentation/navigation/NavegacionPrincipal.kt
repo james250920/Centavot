@@ -111,6 +111,7 @@ fun NavegacionPrincipal() {
                 InicioScreen(
                     onRegistrarVenta = { nav.navigate(RutaVenta()) },
                     onRegistrarGasto = { nav.navigate(RutaGasto()) },
+                    onRegistrarRetiro = { nav.navigate(RutaVenta(retiro = true)) },
                     onAbrirMovimiento = { nav.abrirMovimiento(it) },
                     onVerMovimientos = { nav.irAPestana(RutaMovimientos) },
                     onVerCobros = { nav.irAPestana(RutaCobros) },
@@ -164,7 +165,8 @@ fun NavegacionPrincipal() {
                 GastoScreen(id = entrada.toRoute<RutaGasto>().id, onCerrar = { nav.popBackStack() })
             }
             composable<RutaVenta> { entrada ->
-                VentaScreen(id = entrada.toRoute<RutaVenta>().id, onCerrar = { nav.popBackStack() })
+                val ruta = entrada.toRoute<RutaVenta>()
+                VentaScreen(id = ruta.id, retiro = ruta.retiro, onCerrar = { nav.popBackStack() })
             }
             composable<RutaPrivacidad> {
                 AvisoPrivacidadScreen(onCerrar = { nav.popBackStack() })

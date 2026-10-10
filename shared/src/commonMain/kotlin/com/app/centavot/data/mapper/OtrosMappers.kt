@@ -13,6 +13,8 @@ import com.app.centavot.domain.model.EstadoCobro
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Notificacion
 import com.app.centavot.domain.model.Perfil
+import com.app.centavot.domain.model.Modo
+import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Rubro
 import com.app.centavot.domain.model.TasaAhorro
 import com.app.centavot.domain.model.TipoCobro
@@ -24,6 +26,7 @@ fun PerfilEntity.toDomain() = Perfil(
     rubro = rubro?.let(Rubro::valueOf),
     ingresoMensual = Monto(ingresoMensualCentimos),
     tasaAhorro = TasaAhorro(tasaAhorroDecimas),
+    modo = Modo.valueOf(modo),
 )
 
 fun Perfil.toEntity() = PerfilEntity(
@@ -31,6 +34,7 @@ fun Perfil.toEntity() = PerfilEntity(
     rubro = rubro?.name,
     ingresoMensualCentimos = ingresoMensual.centimos,
     tasaAhorroDecimas = tasaAhorro.decimas,
+    modo = modo.name,
 )
 
 fun ContactoEntity.toDomain() = Contacto(id = id, nombre = nombre, telefono = telefono)
@@ -48,6 +52,7 @@ fun CobroConContacto.toDomain() = Cobro(
     tipo = TipoCobro.valueOf(cobro.tipo),
     adelanto = Monto(cobro.adelantoCentimos),
     abonado = Monto(cobro.abonadoCentimos),
+    categoria = Categoria.valueOf(cobro.categoria),
 )
 
 fun Cobro.toEntity() = CobroEntity(
@@ -61,6 +66,7 @@ fun Cobro.toEntity() = CobroEntity(
     tipo = tipo.name,
     adelantoCentimos = adelanto.centimos,
     abonadoCentimos = abonado.centimos,
+    categoria = categoria.name,
 )
 
 fun ActividadEntity.toDomain() = Actividad(id = id, descripcion = descripcion, fechaHora = LocalDateTime.parse(fechaHora))

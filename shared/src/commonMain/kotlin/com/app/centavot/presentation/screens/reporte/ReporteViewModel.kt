@@ -7,6 +7,11 @@ import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Cobro
 import com.app.centavot.domain.model.Gasto
+import com.app.centavot.domain.model.Ingreso
+import com.app.centavot.domain.model.Modo
+import com.app.centavot.domain.model.delModo
+import com.app.centavot.domain.usecase.ObservarIngresosUseCase
+import com.app.centavot.domain.usecase.ObservarModoUseCase
 import com.app.centavot.domain.model.Historial
 import com.app.centavot.domain.model.ReporteSunat
 import com.app.centavot.domain.model.ResumenCobros
@@ -33,17 +38,27 @@ import kotlinx.datetime.yearMonth
 
 enum class PestanaReporte(val etiqueta: String) {
     NEGOCIO("Negocio"),
-    PERSONAL("Personal"),
+    PERSONAL("Mi plata"),
     ME_DEBEN("Me deben"),
+    ;
+
+    companion object {
+        /** Cada modo ve solo su reporte y lo que le deben. */
+        fun para(modo: Modo): List<PestanaReporte> =
+            listOf(if (modo == Modo.NEGOCIO) NEGOCIO else PERSONAL, ME_DEBEN)
+    }
 }
 
 data class ReporteUiState(
     val hoy: LocalDate,
     val periodo: YearMonth,
+    val modo: Modo = Modo.NEGOCIO,
     val pestana: PestanaReporte = PestanaReporte.NEGOCIO,
     val reporte: ReporteSunat? = null,
     val historial: Historial? = null,
     val gastosPersonales: List<Gasto> = emptyList(),
+    /** Lo que entró a la plata personal en el mes, incluido lo que se sacó del negocio. */
+    val ingresosPersonales: List<Ingreso> = emptyList(),
     val cobrosPendientes: List<Cobro> = emptyList(),
     val cargando: Boolean = true,
 ) {
@@ -55,41 +70,62 @@ data class ReporteUiState(
     val puedeExportar: Boolean
         get() = when (pestana) {
             PestanaReporte.NEGOCIO -> reporte?.estaVacio == false
-            PestanaReporte.PERSONAL -> gastosPersonales.isNotEmpty()
+            PestanaReporte.PERSONAL -> gastosPersonales.isNotEmpty() || ingresosPersonales.isNotEmpty()
             PestanaReporte.ME_DEBEN -> cobrosPendientes.isNotEmpty()
         }
 }
 
-private data class DatosMes(val reporte: ReporteSunat?, val historial: Historial, val personales: List<Gasto>)
+private data class DatosMes(
+    val reporte: ReporteSunat?,
+    val historial: Historial,
+    val personales: List<Gasto>,
+    val ingresosPersonales: List<Ingreso>,
+)
 
 class ReporteViewModel(
     observarReporte: ObservarReporteUseCase,
     observarHistorial: ObservarHistorialUseCase,
     observarGastosDelMes: ObservarGastosDelMesUseCase,
     observarCobros: ObservarCobrosUseCase,
+    observarIngresos: ObservarIngresosUseCase,
+    observarModo: ObservarModoUseCase,
     private val reloj: Reloj,
     private val compartidor: CompartidorArchivos,
 ) : ViewModel() {
 
     private val periodo = MutableStateFlow(reloj.hoy().yearMonth)
-    private val pestana = MutableStateFlow(PestanaReporte.NEGOCIO)
+    /** null = la primera pestaña del modo. */
+    private val pestana = MutableStateFlow<PestanaReporte?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val datosMes = periodo.flatMapLatest { mes ->
-        combine(observarReporte(mes), observarHistorial(mes), observarGastosDelMes(mes)) { reporte, historial, gastos ->
-            mes to DatosMes(reporte, historial, gastos.filter { it.categoria == Categoria.PERSONAL })
+        combine(observarReporte(mes), observarHistorial(mes), observarGastosDelMes(mes), observarIngresos()) { reporte, historial, gastos, ingresos ->
+            mes to DatosMes(
+                reporte = reporte,
+                historial = historial,
+                personales = gastos.filter { it.categoria == Categoria.PERSONAL },
+                ingresosPersonales = ingresos.filter { it.categoria == Categoria.PERSONAL && it.fecha.yearMonth == mes },
+            )
         }
     }
 
-    val estado: StateFlow<ReporteUiState> = combine(datosMes, pestana, observarCobros()) { (mes, datos), pestanaActual, cobros ->
+    val estado: StateFlow<ReporteUiState> = combine(
+        datosMes,
+        pestana,
+        observarModo(),
+        observarCobros(),
+    ) { (mes, datos), elegida, modo, cobros ->
+        val pestanas = PestanaReporte.para(modo)
         ReporteUiState(
             hoy = reloj.hoy(),
             periodo = mes,
-            pestana = pestanaActual,
+            modo = modo,
+            pestana = elegida?.takeIf { it in pestanas } ?: pestanas.first(),
             reporte = datos.reporte,
             historial = datos.historial,
             gastosPersonales = datos.personales,
-            cobrosPendientes = cobros.filter { it.estaPendiente },
+            ingresosPersonales = datos.ingresosPersonales,
+            cobrosPendientes = cobros.delModo(modo).filter { it.estaPendiente },
             cargando = false,
         )
     }.stateIn(
@@ -111,7 +147,7 @@ class ReporteViewModel(
             }
             PestanaReporte.PERSONAL -> compartidor.compartir(
                 "centavot-personal-${actual.periodo}.csv",
-                reporteGastosPersonalesCsv(actual.periodo, actual.gastosPersonales),
+                reporteGastosPersonalesCsv(actual.periodo, actual.gastosPersonales, actual.ingresosPersonales),
                 "text/csv",
             )
             PestanaReporte.ME_DEBEN -> compartidor.compartir(

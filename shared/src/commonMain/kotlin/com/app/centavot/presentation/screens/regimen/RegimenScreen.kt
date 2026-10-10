@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +49,8 @@ import org.koin.compose.viewmodel.koinViewModel
 fun RegimenScreen(
     esPrimeraVez: Boolean,
     onCerrar: () -> Unit,
+    /** Solo en el registro: quien no quiere dar su régimen puede usar Centavot para lo personal. */
+    onUsarModoPersonal: () -> Unit = {},
     viewModel: RegimenViewModel = koinViewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -86,7 +89,7 @@ fun RegimenScreen(
         ) {
             if (esPrimeraVez) {
                 Text(
-                    text = "Último paso",
+                    text = "Para tu negocio",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 32.dp),
@@ -118,6 +121,12 @@ fun RegimenScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+
+            if (esPrimeraVez) {
+                TextButton(onClick = onUsarModoPersonal, modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text("No tengo negocio: usar solo para mi plata personal")
+                }
             }
         }
     }

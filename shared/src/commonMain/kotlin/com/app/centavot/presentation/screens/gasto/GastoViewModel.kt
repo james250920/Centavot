@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import com.app.centavot.domain.usecase.ObservarModoUseCase
 import kotlinx.datetime.LocalDate
 
 private const val MAX_DESCRIPCION = 60
@@ -29,49 +31,54 @@ data class GastoUiState(
     val esEdicion: Boolean,
     val hoy: LocalDate,
     val fecha: LocalDate,
-    val cargando: Boolean = false,
+    val cargando: Boolean = true,
     val montoTexto: String = "",
-    val categoria: Categoria? = null,
+    /** La pone el modo (negocio o personal); al editar, la del gasto. */
+    val categoria: Categoria = Categoria.NEGOCIO,
     val subcategoria: SubcategoriaGasto? = null,
     val descripcion: String = "",
     val errorMonto: String? = null,
-    val errorCategoria: String? = null,
     val errorFecha: String? = null,
     val guardando: Boolean = false,
     val confirmandoEliminar: Boolean = false,
     val terminado: Boolean = false,
 )
 
-/** Registrar un gasto nuevo ([id] null) o editar uno existente. */
+/** Registrar un gasto nuevo ([id] null) del modo actual, o editar uno existente. */
 class GastoViewModel(
     private val id: String?,
     private val obtenerGasto: ObtenerGastoUseCase,
     private val guardarGasto: GuardarGastoUseCase,
     private val eliminarGasto: EliminarGastoUseCase,
     private val avisos: Avisos,
+    private val observarModo: ObservarModoUseCase,
     reloj: Reloj,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(
-        GastoUiState(esEdicion = id != null, cargando = id != null, hoy = reloj.hoy(), fecha = reloj.hoy()),
+        GastoUiState(esEdicion = id != null, hoy = reloj.hoy(), fecha = reloj.hoy()),
     )
     val estado = _estado.asStateFlow()
 
     init {
-        if (id != null) cargar(id)
+        viewModelScope.launch {
+            val categoriaDelModo = observarModo().first().categoria
+            if (id != null) cargar(id, categoriaDelModo) else _estado.update { it.copy(cargando = false, categoria = categoriaDelModo) }
+        }
     }
 
-    private fun cargar(id: String) = viewModelScope.launch {
+    private suspend fun cargar(id: String, categoriaDelModo: Categoria) {
         val gasto = obtenerGasto(id)
         if (gasto == null) {
             _estado.update { it.copy(cargando = false, terminado = true) }
-            return@launch
+            return
         }
         _estado.update {
             it.copy(
                 cargando = false,
                 montoTexto = gasto.monto.comoTextoEditable(),
-                categoria = gasto.categoria,
+                // Un gasto antiguo sin clasificar toma la categoría del modo en que se abre.
+                categoria = gasto.categoria ?: categoriaDelModo,
                 subcategoria = gasto.subcategoria,
                 descripcion = gasto.descripcion.orEmpty(),
                 fecha = gasto.fecha,
@@ -81,11 +88,6 @@ class GastoViewModel(
 
     fun onMontoCambiado(texto: String) {
         if (esEntradaDeMontoValida(texto)) _estado.update { it.copy(montoTexto = texto, errorMonto = null) }
-    }
-
-    fun onCategoriaElegida(categoria: Categoria) = _estado.update {
-        // Si la subcategoría elegida no aplica a la nueva categoría, se quita.
-        it.copy(categoria = categoria, errorCategoria = null, subcategoria = it.subcategoria?.takeIf { s -> s.aplicaA(categoria) })
     }
 
     fun onSubcategoriaElegida(subcategoria: SubcategoriaGasto?) = _estado.update { it.copy(subcategoria = subcategoria) }
@@ -99,13 +101,8 @@ class GastoViewModel(
         val actual = _estado.value
         val monto = parsearMonto(actual.montoTexto)?.takeIf { it > Monto.CERO }
         val categoria = actual.categoria
-        if (monto == null || categoria == null) {
-            _estado.update {
-                it.copy(
-                    errorMonto = if (monto == null) "Ingresa un monto mayor a cero" else null,
-                    errorCategoria = if (categoria == null) "Elige si es de tu negocio o personal" else null,
-                )
-            }
+        if (monto == null) {
+            _estado.update { it.copy(errorMonto = "Ingresa un monto mayor a cero") }
             return
         }
 

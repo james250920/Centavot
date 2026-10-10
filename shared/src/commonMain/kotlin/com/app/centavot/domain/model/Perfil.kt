@@ -30,6 +30,7 @@ data class Perfil(
     val rubro: Rubro?,
     val ingresoMensual: Monto = Monto.CERO,
     val tasaAhorro: TasaAhorro = TasaAhorro.CERO,
+    val modo: Modo = Modo.NEGOCIO,
 ) {
     /** Lo que el usuario quiere separar cada mes según su tasa de ahorro. */
     val metaAhorro: Monto get() = Monto(ingresoMensual.centimos * tasaAhorro.decimas / TasaAhorro.MAXIMA)

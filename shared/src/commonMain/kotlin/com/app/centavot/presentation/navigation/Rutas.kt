@@ -37,9 +37,9 @@ data object RutaActividad
 @Serializable
 data object RutaNotificaciones
 
-/** [id] null = registrar ventas nuevas. */
+/** [id] null = registrar ventas (o ingresos) nuevos; [retiro] = anotar plata sacada de la caja para la casa. */
 @Serializable
-data class RutaVenta(val id: String? = null)
+data class RutaVenta(val id: String? = null, val retiro: Boolean = false)
 
 @Serializable
 data object RutaAyuda

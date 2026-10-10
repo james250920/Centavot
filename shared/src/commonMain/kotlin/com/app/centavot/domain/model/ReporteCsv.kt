@@ -37,10 +37,22 @@ fun ReporteSunat.aCsv(): String = csv {
 }
 
 /** Gastos personales del mes: es solo para el usuario, no para SUNAT. */
-fun reporteGastosPersonalesCsv(periodo: YearMonth, gastos: List<Gasto>): String = csv {
+fun reporteGastosPersonalesCsv(periodo: YearMonth, gastos: List<Gasto>, ingresos: List<Ingreso> = emptyList()): String = csv {
     val personales = gastos.filter { it.categoria == Categoria.PERSONAL }.sortedBy { it.fecha }
-    appendLine(fila("Gastos personales", periodo.toString()))
+    val entradas = ingresos.filter { it.categoria == Categoria.PERSONAL }.sortedBy { it.fecha }
+    appendLine(fila("Mi plata personal", periodo.toString()))
+    if (entradas.isNotEmpty()) {
+        appendLine()
+        appendLine(fila("LO QUE TE ENTRÓ"))
+        appendLine(fila("Fecha", "Descripción", "Tipo", "Monto (S/)"))
+        entradas.forEach {
+            val tipo = if (it.retiroDelNegocio) "De tu negocio" else "Ingreso"
+            appendLine(fila(it.fecha.toString(), it.descripcion.orEmpty(), tipo, it.monto.enDecimal()))
+        }
+        appendLine(fila("", "", "Total", entradas.map { it.monto }.sumar().enDecimal()))
+    }
     appendLine()
+    appendLine(fila("GASTOS"))
     appendLine(fila("Fecha", "Descripción", "Categoría", "Monto (S/)"))
     personales.forEach { gasto ->
         appendLine(
@@ -104,10 +116,11 @@ fun exportarTodoCsv(
     appendLine(fila("Este archivo tiene todo lo que Centavot guarda en tu celular."))
     appendLine()
     appendLine(fila("PERFIL"))
-    appendLine(fila("Nombre", "Rubro", "Ingreso mensual (S/)", "Ahorro (%)", "Régimen", "Tope (S/)"))
+    appendLine(fila("Nombre", "Modo", "Rubro", "Ingreso mensual (S/)", "Ahorro (%)", "Régimen", "Tope (S/)"))
     appendLine(
         fila(
             perfil?.nombre.orEmpty(),
+            perfil?.modo?.etiqueta.orEmpty(),
             perfil?.rubro?.etiqueta.orEmpty(),
             perfil?.ingresoMensual?.enDecimal().orEmpty(),
             perfil?.tasaAhorro?.let { "${it.decimas / 10}.${it.decimas % 10}" }.orEmpty(),
@@ -119,7 +132,12 @@ fun exportarTodoCsv(
     appendLine(fila("VENTAS E INGRESOS (${ingresos.size})"))
     appendLine(fila("Fecha", "Tipo", "Descripción", "Monto (S/)"))
     ingresos.sortedBy { it.fecha }.forEach {
-        appendLine(fila(it.fecha.toString(), if (it.esDeNegocio) "Venta" else "Ingreso personal", it.descripcion.orEmpty(), it.monto.enDecimal()))
+        val tipo = when (it.tipo) {
+            TipoEntrada.VENTA -> "Venta"
+            TipoEntrada.INGRESO -> "Ingreso personal"
+            TipoEntrada.RETIRO -> "Retiro del negocio para la casa"
+        }
+        appendLine(fila(it.fecha.toString(), tipo, it.descripcion.orEmpty(), it.monto.enDecimal()))
     }
     appendLine()
     appendLine(fila("GASTOS (${gastos.size})"))
@@ -138,11 +156,12 @@ fun exportarTodoCsv(
     contactos.forEach { appendLine(fila(it.nombre, it.telefono.orEmpty())) }
     appendLine()
     appendLine(fila("COBROS (${cobros.size})"))
-    appendLine(fila("Desde", "Quién", "Tipo", "Motivo", "Monto (S/)", "Adelanto (S/)", "Abonos (S/)", "Falta (S/)", "Estado", "Cobrado el"))
+    appendLine(fila("Desde", "Quién", "De", "Tipo", "Motivo", "Monto (S/)", "Adelanto (S/)", "Abonos (S/)", "Falta (S/)", "Estado", "Cobrado el"))
     cobros.sortedBy { it.fecha }.forEach {
         appendLine(
             fila(
-                it.fecha.toString(), it.contacto.nombre, it.tipo.etiqueta, it.motivo, it.monto.enDecimal(),
+                it.fecha.toString(), it.contacto.nombre, if (it.categoria == Categoria.PERSONAL) "Personal" else "Negocio",
+                it.tipo.etiqueta, it.motivo, it.monto.enDecimal(),
                 it.adelanto.enDecimal(), it.abonado.enDecimal(), it.saldo.enDecimal(),
                 if (it.estaPendiente) "Pendiente" else "Cobrado", it.fechaCobrado?.toString().orEmpty(),
             ),

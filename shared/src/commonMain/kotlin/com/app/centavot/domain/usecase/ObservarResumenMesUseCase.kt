@@ -9,19 +9,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.yearMonth
 
-/** Totales de negocio y personal del mes en curso. */
+/** Totales de negocio y personal del mes en curso; el desglose por subcategoría, solo de [categoria] si se da. */
 class ObservarResumenMesUseCase(
     private val gastos: GastoRepository,
     private val reloj: Reloj,
 ) {
-    operator fun invoke(): Flow<ResumenMes> {
+    operator fun invoke(categoria: Categoria? = null): Flow<ResumenMes> {
         val mes = reloj.hoy().yearMonth
         return gastos.observarGastosEntre(mes.firstDay, mes.lastDay).map { lista ->
             ResumenMes(
                 totalNegocio = lista.filter { it.categoria == Categoria.NEGOCIO }.map { it.monto }.sumar(),
                 totalPersonal = lista.filter { it.categoria == Categoria.PERSONAL }.map { it.monto }.sumar(),
                 cantidadGastos = lista.size,
-                porSubcategoria = lista.groupBy { it.subcategoria }
+                porSubcategoria = lista.filter { categoria == null || it.categoria == categoria }.groupBy { it.subcategoria }
                     .map { (subcategoria, gastos) -> subcategoria to gastos.map { it.monto }.sumar() }
                     .sortedByDescending { it.second },
             )

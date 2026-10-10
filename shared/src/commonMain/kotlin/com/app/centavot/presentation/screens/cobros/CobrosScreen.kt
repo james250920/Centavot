@@ -52,6 +52,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.Cobro
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.ResumenCobros
@@ -118,11 +119,18 @@ fun CobrosScreen(
         if (estado.cobros.isEmpty()) {
             EstadoVacio(
                 titulo = "Nadie te debe por ahora",
-                mensaje = "Anota aquí lo que fías o prestas y los pedidos por cobrar. Marca \"Cobrar\" cuando te paguen, " +
-                    "o recuérdaselo por WhatsApp. Así no se te olvida nadie.",
+                mensaje = if (estado.modo == Modo.NEGOCIO) {
+                    "Anota aquí lo que fías y los pedidos por cobrar. Marca \"Cobrar\" cuando te paguen, " +
+                        "o recuérdaselo por WhatsApp. Así no se te olvida nadie."
+                } else {
+                    "Anota aquí la plata que prestaste. Marca \"Cobrar\" cuando te la devuelvan, " +
+                        "o recuérdaselo por WhatsApp. Así no se te olvida nadie."
+                },
                 modifier = Modifier.padding(padding),
             ) {
-                Button(onClick = onRegistrarCobro, modifier = Modifier.padding(top = 8.dp)) { Text("Registrar un cobro") }
+                Button(onClick = onRegistrarCobro, modifier = Modifier.padding(top = 8.dp)) {
+                    Text(if (estado.modo == Modo.NEGOCIO) "Registrar un cobro" else "Registrar un préstamo")
+                }
             }
             return@Scaffold
         }
@@ -137,11 +145,13 @@ fun CobrosScreen(
             item {
                 FilledTonalButton(onClick = onRegistrarCobro, modifier = Modifier.fillMaxWidth().height(56.dp)) {
                     Icon(Iconos.Agregar, contentDescription = null)
-                    Text("Registrar cobro", modifier = Modifier.padding(start = 8.dp))
+                    Text(if (estado.modo == Modo.NEGOCIO) "Registrar cobro" else "Registrar préstamo", modifier = Modifier.padding(start = 8.dp))
                 }
             }
 
-            item { Text("Fiados, préstamos y pedidos", style = MaterialTheme.typography.titleMedium) }
+            item {
+                Text(if (estado.modo == Modo.NEGOCIO) "Fiados y pedidos" else "Lo que prestaste", style = MaterialTheme.typography.titleMedium)
+            }
             item {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                     Column {

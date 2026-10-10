@@ -43,6 +43,8 @@ data class CobroEntity(
     @ColumnInfo(defaultValue = "0") val adelantoCentimos: Long = 0,
     /** v3: suma de los abonos (pagos parciales). */
     @ColumnInfo(defaultValue = "0") val abonadoCentimos: Long = 0,
+    /** v4: NEGOCIO (fiado o pedido) o PERSONAL (préstamo). Los cobros anteriores son del negocio. */
+    @ColumnInfo(defaultValue = "NEGOCIO") val categoria: String = "NEGOCIO",
 )
 
 data class CobroConContacto(

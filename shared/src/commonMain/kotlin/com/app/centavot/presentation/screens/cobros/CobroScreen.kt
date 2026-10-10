@@ -72,7 +72,10 @@ fun CobroScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (estado.esEdicion) "Editar cobro" else "Registrar cobro") },
+                title = {
+                    val queEs = if (estado.esNegocio) "cobro" else "préstamo"
+                    Text(if (estado.esEdicion) "Editar $queEs" else "Registrar $queEs")
+                },
                 navigationIcon = {
                     IconButton(onClick = onCerrar) { Icon(Iconos.Atras, contentDescription = "Volver") }
                 },
@@ -89,7 +92,7 @@ fun CobroScreen(
                     .padding(16.dp)
                     .height(56.dp),
             ) {
-                Text(if (estado.esEdicion) "Guardar cambios" else "Registrar cobro")
+                Text(if (estado.esEdicion) "Guardar cambios" else if (estado.esNegocio) "Registrar cobro" else "Registrar préstamo")
             }
         },
     ) { padding ->
@@ -108,9 +111,10 @@ fun CobroScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // En lo personal solo hay préstamos: no se pregunta si es fiado o pedido.
+            if (estado.esNegocio) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("¿Qué es?", style = MaterialTheme.typography.titleSmall)
-                // Misma forma que "Negocio / Personal": dos opciones excluyentes, una siempre elegida.
+                // Dos opciones excluyentes, una siempre elegida.
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     TipoCobro.entries.forEachIndexed { i, tipo ->
                         SegmentedButton(
@@ -202,7 +206,15 @@ fun CobroScreen(
                 value = estado.motivo,
                 onValueChange = viewModel::onMotivoCambiado,
                 label = { Text(if (esPedido) "¿Qué pidió?" else "Motivo") },
-                placeholder = { Text(if (esPedido) "Ej. arreglo de zapatos, 20 menús" else "Ej. fiado de abarrotes, préstamo") },
+                placeholder = {
+                    Text(
+                        when {
+                            esPedido -> "Ej. arreglo de zapatos, 20 menús"
+                            estado.esNegocio -> "Ej. fiado de abarrotes, préstamo"
+                            else -> "Ej. préstamo, le pagué el pasaje"
+                        },
+                    )
+                },
                 isError = estado.errorMotivo != null,
                 supportingText = estado.errorMotivo?.let { { Text(it) } },
                 singleLine = true,
@@ -217,10 +229,10 @@ fun CobroScreen(
             LaunchedEffect(estado.errorFecha) { if (estado.errorFecha != null) detallesAbiertos = true }
             DetallesPlegables(
                 abiertos = detallesAbiertos,
-                resumen = resumenDetallesCobro(estado.esEdicion, estado.contarComoVenta, estado.fecha, estado.hoy),
+                resumen = resumenDetallesCobro(estado.esEdicion, estado.contarComoVenta, estado.fecha, estado.hoy, estado.esNegocio),
                 onCambiar = { detallesAbiertos = !detallesAbiertos },
             ) {
-                if (!estado.esEdicion) {
+                if (!estado.esEdicion && estado.esNegocio) {
                     // Toda la fila es el interruptor: se puede tocar el texto, no solo el switch.
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

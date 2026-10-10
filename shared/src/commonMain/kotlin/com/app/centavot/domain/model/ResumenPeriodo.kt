@@ -22,16 +22,25 @@ fun Periodo.rango(hoy: LocalDate): ClosedRange<LocalDate> = when (this) {
     Periodo.MES -> hoy.yearMonth.firstDay..hoy
 }
 
-/** Cuánto vendió, gastó y ganó el negocio en un periodo. */
+/** Cuánto vendió, gastó y ganó el negocio en un periodo, y cómo le fue a la plata personal. */
 data class ResumenPeriodo(
     val ventas: Monto,
+    /** Todo lo personal que entró, incluida la plata que se sacó del negocio para la casa. */
     val ingresosPersonales: Monto,
     val gastosNegocio: Monto,
     val gastosPersonales: Monto,
     val cantidadMovimientos: Int,
+    /** Lo que se sacó de la caja del negocio para la casa. */
+    val retiros: Monto = Monto.CERO,
 ) {
     /** Ganancia del negocio: lo vendido menos lo gastado en el negocio. Lo personal no entra. */
     val ganancia: Monto get() = ventas - gastosNegocio
+
+    /** Lo que queda en la caja del negocio después de sacar plata para la casa. */
+    val quedaEnCaja: Monto get() = ganancia - retiros
+
+    /** En lo personal: lo que entró menos lo que se gastó. */
+    val saldoPersonal: Monto get() = ingresosPersonales - gastosPersonales
 
     companion object {
         val VACIO = ResumenPeriodo(Monto.CERO, Monto.CERO, Monto.CERO, Monto.CERO, 0)
@@ -42,6 +51,7 @@ data class ResumenPeriodo(
             gastosNegocio = gastos.filter { it.categoria == Categoria.NEGOCIO }.map { it.monto }.sumar(),
             gastosPersonales = gastos.filter { it.categoria == Categoria.PERSONAL }.map { it.monto }.sumar(),
             cantidadMovimientos = ingresos.size + gastos.size,
+            retiros = ingresos.filter { it.retiroDelNegocio }.map { it.monto }.sumar(),
         )
     }
 }

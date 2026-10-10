@@ -124,10 +124,10 @@ class PrivacidadTest {
         val lineas = archivo.contenido.removePrefix("﻿").lines()
 
         assertEquals("centavot-mis-datos-2026-10-09.csv", archivo.nombre)
-        assertTrue("Rosa Quispe,Comercio o bodega,0.00,10.0,RUS · Categoría 2,8000.00" in lineas)
+        assertTrue("Rosa Quispe,Mi negocio,Comercio o bodega,0.00,10.0,RUS · Categoría 2,8000.00" in lineas)
         assertTrue("2026-10-09,Venta,Pan,5.00" in lineas)
         assertTrue("Señora Juana,987654321" in lineas)
-        assertTrue("2026-10-03,Señora Juana,Fiado o préstamo,Abarrotes,85.00,0.00,30.00,55.00,Pendiente," in lineas)
+        assertTrue("2026-10-03,Señora Juana,Negocio,Fiado o préstamo,Abarrotes,85.00,0.00,30.00,55.00,Pendiente," in lineas)
         listOf("PERFIL", "VENTAS E INGRESOS (1)", "GASTOS (0)", "CONTACTOS (1)", "COBROS (1)", "HISTORIAL DE ACTIVIDAD (1)").forEach {
             assertTrue(it in lineas, "Falta la sección $it")
         }

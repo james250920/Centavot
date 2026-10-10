@@ -24,6 +24,8 @@ data class Cobro(
     val adelanto: Monto = Monto.CERO,
     /** Suma de los abonos: pagos parciales hechos después de registrar el cobro. */
     val abonado: Monto = Monto.CERO,
+    /** Un fiado del negocio o un préstamo personal: cada modo ve solo los suyos. */
+    val categoria: Categoria = Categoria.NEGOCIO,
 ) {
     val estaPendiente: Boolean get() = estado == EstadoCobro.PENDIENTE
 

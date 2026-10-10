@@ -21,10 +21,11 @@ import kotlinx.coroutines.IO
         IngresoEntity::class,
         EventoUsoEntity::class,
     ],
-    version = 3,
+    version = 4,
     // v2: subcategoría del gasto, perfil, contactos, cobros, actividad y notificaciones.
     // v3: ingresos (ventas), eventos de uso, y tipo, adelanto y abonos de los cobros.
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
+    // v4: modo de uso (negocio o personal), retiros para la casa y categoría de los cobros.
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)],
 )
 @ConstructedBy(CentavotDatabaseConstructor::class)
 abstract class CentavotDatabase : RoomDatabase() {

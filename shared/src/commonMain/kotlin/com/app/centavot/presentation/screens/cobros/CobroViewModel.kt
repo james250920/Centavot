@@ -25,22 +25,33 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import com.app.centavot.domain.model.Categoria
+import com.app.centavot.domain.usecase.ObservarModoUseCase
 import kotlinx.datetime.LocalDate
 
 private const val MAX_MOTIVO = 60
 
 /**
  * Resumen de los detalles plegados de un cobro: si se suma a las ventas y desde cuándo.
- * Ej. "Se suma a tus ventas · Desde hoy". Al editar no se muestra lo de la venta (ya se decidió).
+ * Ej. "Se suma a tus ventas · Desde hoy". Al editar no se muestra lo de la venta (ya se decidió),
+ * y en lo personal tampoco: un préstamo nunca es una venta.
  */
-fun resumenDetallesCobro(esEdicion: Boolean, contarComoVenta: Boolean, fecha: LocalDate, hoy: LocalDate): String =
+fun resumenDetallesCobro(
+    esEdicion: Boolean,
+    contarComoVenta: Boolean,
+    fecha: LocalDate,
+    hoy: LocalDate,
+    esNegocio: Boolean = true,
+): String =
     buildList {
-        if (!esEdicion) add(if (contarComoVenta) "Se suma a tus ventas" else "No se suma a tus ventas")
+        if (!esEdicion && esNegocio) add(if (contarComoVenta) "Se suma a tus ventas" else "No se suma a tus ventas")
         add("Desde ${fecha.formatearRelativo(hoy).lowercase()}")
     }.joinToString(" · ")
 
 /** Los detalles empiezan abiertos solo si ya tienen algo distinto de lo habitual. */
-fun CobroUiState.detallesAbiertosAlInicio(): Boolean = !contarComoVenta || fecha != hoy || errorFecha != null
+fun CobroUiState.detallesAbiertosAlInicio(): Boolean =
+    (esNegocio && !contarComoVenta) || fecha != hoy || errorFecha != null
 
 data class CobroUiState(
     val esEdicion: Boolean = false,
@@ -54,6 +65,8 @@ data class CobroUiState(
     val motivo: String = "",
     val montoTexto: String = "",
     val tipo: TipoCobro = TipoCobro.FIADO,
+    /** Fiado o pedido del negocio, o préstamo personal: lo pone el modo (al editar, el cobro). */
+    val categoria: Categoria = Categoria.NEGOCIO,
     /** Regla D1: por defecto el fiado o pedido cuenta como venta al registrarlo. */
     val contarComoVenta: Boolean = true,
     val adelantoTexto: String = "",
@@ -66,7 +79,9 @@ data class CobroUiState(
     val errorNuevoContacto: String? = null,
     val guardando: Boolean = false,
     val terminado: Boolean = false,
-)
+) {
+    val esNegocio: Boolean get() = categoria == Categoria.NEGOCIO
+}
 
 /** Registrar lo que un contacto le debe al usuario: un fiado, un préstamo o un pedido con adelanto. */
 class CobroViewModel(
@@ -78,6 +93,7 @@ class CobroViewModel(
     private val eliminarCobro: EliminarCobroUseCase,
     private val eliminarIngreso: EliminarIngresoUseCase,
     private val avisos: Avisos,
+    private val observarModo: ObservarModoUseCase,
     reloj: Reloj,
 ) : ViewModel() {
 
@@ -85,7 +101,14 @@ class CobroViewModel(
     val estado = _estado.asStateFlow()
 
     init {
-        if (id != null) cargar(id)
+        if (id != null) {
+            cargar(id)
+        } else {
+            viewModelScope.launch {
+                val categoria = observarModo().first().categoria
+                _estado.update { it.copy(categoria = categoria, contarComoVenta = categoria == Categoria.NEGOCIO) }
+            }
+        }
         viewModelScope.launch {
             observarContactos().collect { contactos ->
                 _estado.update { actual ->
@@ -111,6 +134,7 @@ class CobroViewModel(
             it.copy(
                 contacto = cobro.contacto,
                 tipo = cobro.tipo,
+                categoria = cobro.categoria,
                 montoTexto = cobro.monto.comoTextoEditable(),
                 adelantoTexto = cobro.adelanto.takeIf { a -> a > Monto.CERO }?.comoTextoEditable().orEmpty(),
                 abonado = cobro.abonado,
@@ -181,7 +205,9 @@ class CobroViewModel(
 
         viewModelScope.launch {
             _estado.update { it.copy(guardando = true) }
-            val registro = registrarCobro(contacto, actual.motivo, monto, actual.fecha, actual.tipo, adelanto, id, actual.contarComoVenta)
+            val registro = registrarCobro(
+                contacto, actual.motivo, monto, actual.fecha, actual.tipo, adelanto, id, actual.contarComoVenta, actual.categoria,
+            )
             val resultado = registro.resultado
             if (resultado is RegistrarCobroUseCase.Resultado.Registrado) avisarGuardado(resultado.cobro, registro.ventaId)
             _estado.update {
@@ -208,7 +234,8 @@ class CobroViewModel(
             avisos.mostrar(Aviso("Cambios guardados"))
             return
         }
-        val mensaje = "Cobro a ${cobro.contacto.nombre} guardado" + if (ventaId != null) " y sumado a tus ventas" else ""
+        val queEs = if (cobro.categoria == Categoria.PERSONAL) "Préstamo" else "Cobro"
+        val mensaje = "$queEs a ${cobro.contacto.nombre} guardado" + if (ventaId != null) " y sumado a tus ventas" else ""
         avisos.mostrar(
             Aviso(mensaje) {
                 eliminarCobro(cobro.id)
