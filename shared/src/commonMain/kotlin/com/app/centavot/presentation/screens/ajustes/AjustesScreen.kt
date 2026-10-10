@@ -87,7 +87,7 @@ fun AjustesScreen(
         },
         bottomBar = {
             Button(
-                onClick = viewModel::guardar,
+                onClick = { viewModel.guardar(avisar = !esPrimeraVez) },
                 enabled = !estado.guardando && !estado.cargando,
                 modifier = Modifier
                     .fillMaxWidth()

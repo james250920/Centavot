@@ -1,5 +1,9 @@
 package com.app.centavot.presentation.screens.regimen
 
+import com.app.centavot.presentation.components.formatear
+import com.app.centavot.domain.model.PeriodoTope
+import com.app.centavot.presentation.Avisos
+import com.app.centavot.presentation.Aviso
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.domain.model.RegimenTributario
@@ -19,10 +23,17 @@ data class RegimenUiState(
     val terminado: Boolean = false,
 )
 
+/** "Ahora estás en RUS · Categoría 2. Tu tope es S/ 8,000.00 al mes." */
+fun mensajeRegimenGuardado(regimen: RegimenTributario): String {
+    val periodo = if (regimen.periodo == PeriodoTope.MENSUAL) "al mes" else "al año"
+    return "Ahora estás en ${regimen.nombre}. Tu tope es ${regimen.tope.formatear()} $periodo."
+}
+
 class RegimenViewModel(
     private val obtenerOpciones: ObtenerOpcionesRegimenUseCase,
     private val observarRegimen: ObservarRegimenUseCase,
     private val guardarRegimen: GuardarRegimenUseCase,
+    private val avisos: Avisos,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(RegimenUiState())
@@ -38,11 +49,13 @@ class RegimenViewModel(
 
     fun seleccionar(regimen: RegimenTributario) = _estado.update { it.copy(seleccionado = regimen) }
 
-    fun guardar() {
+    /** [avisar] es false en el registro inicial: ahí la app avanza sola a Inicio. */
+    fun guardar(avisar: Boolean = true) {
         val regimen = _estado.value.seleccionado ?: return
         viewModelScope.launch {
             _estado.update { it.copy(guardando = true) }
             guardarRegimen(regimen)
+            if (avisar) avisos.mostrar(Aviso(mensajeRegimenGuardado(regimen)))
             _estado.update { it.copy(guardando = false, terminado = true) }
         }
     }

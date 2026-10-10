@@ -1,5 +1,7 @@
 package com.app.centavot.presentation.screens.ajustes
 
+import com.app.centavot.presentation.Avisos
+import com.app.centavot.presentation.Aviso
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.domain.model.Monto
@@ -54,6 +56,7 @@ class AjustesViewModel(
     private val exportarTodos: ExportarTodosLosDatosUseCase,
     private val borrarTodos: BorrarTodosLosDatosUseCase,
     private val compartidor: CompartidorArchivos,
+    private val avisos: Avisos,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(AjustesUiState())
@@ -116,7 +119,8 @@ class AjustesViewModel(
         }
     }
 
-    fun guardar() {
+    /** [avisar] es false en el registro inicial: ahí la app avanza sola al paso siguiente. */
+    fun guardar(avisar: Boolean = true) {
         val actual = _estado.value
         val ingreso = if (actual.ingresoTexto.isBlank()) Monto.CERO else parsearMonto(actual.ingresoTexto)
         val tasa = parsearTasa(actual.tasaTexto)
@@ -136,7 +140,10 @@ class AjustesViewModel(
             val perfil = Perfil(actual.nombre, actual.rubro, ingreso, tasa)
             _estado.update {
                 when (guardarPerfil(perfil)) {
-                    is GuardarPerfilUseCase.Resultado.Guardado -> it.copy(guardando = false, terminado = true)
+                    is GuardarPerfilUseCase.Resultado.Guardado -> {
+                        if (avisar) avisos.mostrar(Aviso("Ajustes guardados"))
+                        it.copy(guardando = false, terminado = true)
+                    }
                     GuardarPerfilUseCase.Resultado.NombreVacio ->
                         it.copy(guardando = false, errorNombre = "Escribe cómo quieres que te llamemos")
                 }

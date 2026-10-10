@@ -13,6 +13,9 @@ y datos de demostración, en un Samsung Galaxy A15 con Android 16.
 | 4 | Colores con un solo significado | [P2] Ámbar para alertas y para cosas neutras | ✅ |
 | 5 | Barra superior de Inicio | [P2] 4 íconos sin texto | ✅ |
 | 6 | Detalles finales | [P3] Montos, gráfico, compartir y controles distintos | ✅ |
+| 7 | Aviso al guardar Ajustes y Régimen | [P2] Segunda revisión: las dos únicas pantallas que se cerraban sin aviso | ✅ |
+| 8 | Registrar cobro más corto | [P2] Segunda revisión: el formulario más largo, 6 grupos | ⏳ |
+| 9 | Ajustes por secciones | [P2] Segunda revisión: 4 temas en una sola página | ⏳ |
 
 ---
 
@@ -225,6 +228,39 @@ debajo del monto y la tecla "siguiente" del teclado lleva a él. No se cambió.
 
 **Archivos.** `GastoScreen.kt`, `CobroScreen.kt`, `ReporteScreen.kt`, `GraficoLineas.kt`
 (`etiquetasEje`), `GraficoTest.kt` (nuevo).
+
+---
+
+## Segunda revisión (pasos 7 a 9)
+
+Tras los pasos 1 a 6 se volvió a correr la revisión UX/UI: **31/40** (antes 28/40). Quedaron tres
+problemas P2, que se resuelven en la rama `feat/mejoras-ux-2`, y uno P3 (identidad todavía de
+Material de fábrica) que queda pendiente por decisión del equipo de mantener "Material sobrio".
+
+---
+
+## Paso 7 · Aviso al guardar Ajustes y Régimen
+
+**Problema.** Después del paso 3, Ajustes y Régimen eran las dos únicas pantallas que se cerraban sin
+confirmar que se guardó.
+
+**Qué se hizo.**
+- Ajustes avisa **"Ajustes guardados"**.
+- Régimen dice qué cambió: **"Ahora estás en RUS · Categoría 2. Tu tope es S/ 8,000.00 al mes."**
+  (o "al año" en el RER).
+- **En el registro inicial no se avisa:** ahí la app ya avanza sola al paso siguiente, y el aviso
+  aparecería tarde, al llegar a Inicio.
+- **Defecto encontrado y corregido en la prueba:** en las pantallas sin barra de pestañas (formularios),
+  el aviso tapaba el botón principal de abajo mientras duraba. Ahora se muestra encima de ese botón.
+
+**Verificación.**
+- 2 tests nuevos (`RegimenAvisoTest`): el mensaje mensual y el anual. **87 tests, 0 fallas.**
+- En el teléfono: registro inicial completo (aviso de privacidad → bienvenida → régimen → Inicio) sin
+  ningún aviso; "Ajustes guardados" al guardar Ajustes; al cambiar a Categoría 1 y luego a 2, el aviso
+  con el nuevo tope aparece encima de "Guardar cambios" (1830 px contra 2081 px).
+
+**Archivos.** `AjustesViewModel.kt`, `AjustesScreen.kt`, `RegimenViewModel.kt` (`mensajeRegimenGuardado`),
+`RegimenScreen.kt`, `NavegacionPrincipal.kt`, `RegimenAvisoTest.kt` (nuevo).
 
 ---
 

@@ -69,7 +69,7 @@ fun RegimenScreen(
         },
         bottomBar = {
             Button(
-                onClick = viewModel::guardar,
+                onClick = { viewModel.guardar(avisar = !esPrimeraVez) },
                 enabled = estado.seleccionado != null && !estado.guardando,
                 modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp).height(56.dp),
             ) {

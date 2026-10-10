@@ -1,5 +1,6 @@
 package com.app.centavot.presentation.navigation
 
+import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import com.app.centavot.presentation.Avisos
 import androidx.compose.runtime.remember
@@ -51,6 +52,9 @@ private enum class Pestana(val ruta: Any, val etiqueta: String, val icono: () ->
     REPORTE(RutaReporte, "Reportes", { Iconos.Reporte }),
 }
 
+/** Alto del botón principal fijo abajo en los formularios (56 dp más 16 dp de margen arriba y abajo). */
+private val ALTO_BOTON_INFERIOR = 88.dp
+
 @Composable
 fun NavegacionPrincipal() {
     val nav = rememberNavController()
@@ -75,7 +79,10 @@ fun NavegacionPrincipal() {
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbar) },
+        snackbarHost = {
+            // En formularios (sin barra de pestañas) el botón principal va abajo: el aviso se pone encima de él.
+            SnackbarHost(snackbar, Modifier.padding(bottom = if (pestanaActual == null) ALTO_BOTON_INFERIOR else 0.dp))
+        },
         bottomBar = {
             // La barra solo se muestra en las pestañas principales, no en formularios.
             if (pestanaActual != null) {
