@@ -1,4 +1,4 @@
-rootProject.name = "Centavot"
+rootProject.name = "Lucka"
 
 pluginManagement {
     repositories {

@@ -12,7 +12,7 @@ plugins {
 
 kotlin {
     compilerOptions {
-        // Room genera un `actual object` por plataforma para CentavotDatabaseConstructor.
+        // Room genera un `actual object` por plataforma para LuckaDatabaseConstructor.
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
@@ -27,7 +27,7 @@ kotlin {
     }
     
     android {
-       namespace = "com.app.centavot.shared"
+       namespace = "com.app.lucka.shared"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
     
@@ -52,7 +52,6 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.androidx.core.ktx)
             implementation(libs.compose.uiToolingPreview)
-            implementation(libs.compose.uiTooling)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -84,7 +83,7 @@ room {
 }
 
 dependencies {
-    androidRuntimeClasspath(libs.compose.uiTooling)
+    // ui-tooling solo en debug (androidApp): en release dejaría PreviewActivity exportada.
     add("kspAndroid", libs.room.compiler)
     add("kspIosArm64", libs.room.compiler)
     add("kspIosSimulatorArm64", libs.room.compiler)
