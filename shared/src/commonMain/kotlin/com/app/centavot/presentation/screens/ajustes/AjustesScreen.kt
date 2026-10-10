@@ -52,6 +52,7 @@ import com.app.centavot.presentation.components.DialogoConfirmar
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.SelectorChips
 import com.app.centavot.presentation.components.SelectorModo
+import com.app.centavot.presentation.components.AyudaPlegable
 import com.app.centavot.presentation.components.formatear
 import com.app.centavot.presentation.components.parsearMonto
 import com.app.centavot.presentation.components.parsearTasa
@@ -133,7 +134,7 @@ fun AjustesScreen(
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            text = "Tu cuaderno, pero que suma solo. Dinos tu nombre y para qué la usarás.",
+                            text = "Tu cuaderno, pero que suma solo.",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -172,11 +173,7 @@ fun AjustesScreen(
 
             SeccionAjustes(
                 titulo = if (esPrimeraVez) "¿Para qué usarás Centavot?" else "Cómo usas Centavot",
-                descripcion = if (esPrimeraVez) {
-                    "Solo verás lo de tu elección. Puedes cambiarlo cuando quieras desde Inicio o aquí."
-                } else {
-                    "Al cambiar no se borra nada: lo del otro modo vuelve a aparecer cuando regreses a él."
-                },
+                descripcion = if (esPrimeraVez) "Puedes cambiarlo cuando quieras." else "Al cambiar no se borra nada.",
             ) {
                 SelectorModo(estado.modo, viewModel::onModoElegido)
                 estado.errorModo?.let {
@@ -185,15 +182,7 @@ fun AjustesScreen(
             }
 
             if (!esPrimeraVez) {
-                SeccionAjustes(
-                    titulo = "Tu meta de ahorro",
-                    descripcion = if (estado.modo == Modo.PERSONAL) {
-                        "Cuando registres lo que te entra, la meta se calcula sobre eso. Mientras tanto, usamos el ingreso que pongas aquí."
-                    } else {
-                        "Cuando registres tus ventas, la meta se calcula sobre lo que de verdad ganas. " +
-                            "Mientras tanto, usamos el ingreso que pongas aquí."
-                    },
-                ) {
+                SeccionAjustes(titulo = "Tu meta de ahorro") {
                     OutlinedTextField(
                         value = estado.ingresoTexto,
                         onValueChange = viewModel::onIngresoCambiado,
@@ -201,7 +190,7 @@ fun AjustesScreen(
                         prefix = { Text("S/ ") },
                         placeholder = { Text("0.00") },
                         isError = estado.errorIngreso != null,
-                        supportingText = { Text(estado.errorIngreso ?: "Lo que ganas en un mes normal, más o menos. Si tienes sueldo fijo, pon tu sueldo.") },
+                        supportingText = { Text(estado.errorIngreso ?: "Lo que ganas en un mes normal.") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                         modifier = Modifier.fillMaxWidth(),
@@ -221,12 +210,19 @@ fun AjustesScreen(
                             Text(
                                 estado.errorTasa
                                     ?: meta?.takeIf { it.centimos > 0 }?.let { "Tu meta de ahorro será ${it.formatear()} al mes." }
-                                    ?: "Entre 0 y 100, con un decimal como máximo.",
+                                    ?: "Entre 0 y 100.",
                             )
                         },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
                         modifier = Modifier.fillMaxWidth(),
+                    )
+                    AyudaPlegable(
+                        pregunta = "¿Cómo se calcula?",
+                        respuestas = listOf(
+                            if (estado.modo == Modo.PERSONAL) "Sobre lo que te entra cada mes." else "Sobre lo que de verdad ganas cada mes: ventas menos gastos.",
+                            "Mientras no hayas anotado nada en el mes, se usa el ingreso mensual de arriba.",
+                        ),
                     )
                 }
             }
@@ -292,8 +288,7 @@ private fun TarjetaTusDatos(
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                "Todo está solo en este celular y no se copia a la nube. Para no perderlo si cambias de celular, " +
-                    "exporta tus datos y guárdalos donde quieras.",
+                "No se copia a la nube. Si cambias de celular, exporta tus datos para no perderlos.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -342,7 +337,7 @@ private fun FilaActividad(onAbrir: () -> Unit) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("Tu actividad", style = MaterialTheme.typography.titleSmall)
                 Text(
-                    "Todo lo que registraste, cobraste o eliminaste, con fecha y hora.",
+                    "Todo lo que hiciste, con fecha y hora.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

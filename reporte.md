@@ -359,7 +359,7 @@ verificación, para saber en qué nos quedamos.
 | 10 | Modo personal o negocio | Reunión con asesores de negocio: no mezclar lo personal con el negocio | ✅ |
 | 11 | Inicio con menos texto | "Veo mucho texto": tarjetas con párrafos y frases repetidas | ✅ |
 | 12 | Régimen con menos texto | La misma explicación repetida en cada opción | ✅ |
-| 13 | Bienvenida y Ajustes con menos texto | Una explicación debajo de cada sección y de cada campo | ⏳ |
+| 13 | Bienvenida y Ajustes con menos texto | Una explicación debajo de cada sección y de cada campo | ✅ |
 | 14 | Cobros con menos texto | Ayudas largas en el formulario y en la lista vacía | ⏳ |
 | 15 | Venta, gasto y retiro con menos texto | Ayudas que repiten lo que ya dice el campo | ⏳ |
 | 16 | Reportes con menos texto | Notas largas encima de los números | ⏳ |
@@ -443,3 +443,29 @@ la misma. Debajo había un párrafo de cuatro líneas sobre montos referenciales
 plegable que abre y cierra. 99 tests, 0 fallas.
 
 **Archivos.** `RegimenScreen.kt`, `AyudaPlegable.kt` (nuevo).
+
+---
+
+## Paso 13 · Bienvenida y Ajustes con menos texto
+
+**Problema.** La bienvenida no entraba en una pantalla: la segunda opción de modo quedaba cortada.
+En Ajustes, cada sección y cada campo tenían una explicación de dos líneas, y "Tus datos" repetía
+que todo se guarda en el celular.
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Bienvenida | "Tu cuaderno, pero que suma solo. Dinos tu nombre y para qué la usarás." | "Tu cuaderno, pero que suma solo." |
+| Modo (registro) | "Solo verás lo de tu elección. Puedes cambiarlo cuando quieras desde Inicio o aquí." | "Puedes cambiarlo cuando quieras." |
+| Modo (Ajustes y hoja de Inicio) | "Al cambiar no se borra nada: lo del otro modo vuelve a aparecer cuando regreses a él." | "Al cambiar no se borra nada." |
+| Opciones de modo | "Tu presupuesto: sueldo, gastos de la casa, a quién le prestaste y cuánto ahorras." / "Tu bodega o puesto: ventas, compras, fiados, el tope de tu régimen y el resumen para tu contador." | "Tu sueldo, los gastos de la casa y tu ahorro." / "Ventas, compras, fiados y el tope de tu régimen." |
+| Meta de ahorro | Párrafo de dos líneas sobre cómo se calcula | Plegado en **"¿Cómo se calcula?"** |
+| Ingreso mensual | "Lo que ganas en un mes normal, más o menos. Si tienes sueldo fijo, pon tu sueldo." | "Lo que ganas en un mes normal." |
+| Porcentaje | "Entre 0 y 100, con un decimal como máximo." | "Entre 0 y 100." (el error sigue diciendo qué corregir) |
+| Tu actividad | "Todo lo que registraste, cobraste o eliminaste, con fecha y hora." | "Todo lo que hiciste, con fecha y hora." |
+| Tus datos | "Todo está solo en este celular y no se copia a la nube. Para no perderlo si cambias de celular, exporta tus datos y guárdalos donde quieras." | "No se copia a la nube. Si cambias de celular, exporta tus datos para no perderlos." |
+
+**Verificación.** En el teléfono con una instalación limpia: la bienvenida entra completa (nombre,
+las dos opciones y "Continuar"); en modo personal, la tarjeta de primera vez es una sola línea con
+"Ayuda"; en Ajustes, "¿Cómo se calcula?" abre y cierra. 99 tests, 0 fallas.
+
+**Archivos.** `AjustesScreen.kt`, `SelectorModo.kt`, `InicioScreen.kt`.

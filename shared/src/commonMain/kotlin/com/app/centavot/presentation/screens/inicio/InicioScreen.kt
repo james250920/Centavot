@@ -277,7 +277,7 @@ private fun HojaModo(actual: Modo, onElegir: (Modo) -> Unit, onCerrar: () -> Uni
         ) {
             Text("¿Qué quieres ver?", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
             Text(
-                "Al cambiar no se borra nada: lo del otro modo vuelve a aparecer cuando regreses a él.",
+                "Al cambiar no se borra nada.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

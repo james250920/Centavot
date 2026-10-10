@@ -28,8 +28,8 @@ private val ORDEN = listOf(Modo.PERSONAL, Modo.NEGOCIO)
 
 val Modo.descripcion: String
     get() = when (this) {
-        Modo.PERSONAL -> "Tu presupuesto: sueldo, gastos de la casa, a quién le prestaste y cuánto ahorras."
-        Modo.NEGOCIO -> "Tu bodega o puesto: ventas, compras, fiados, el tope de tu régimen y el resumen para tu contador."
+        Modo.PERSONAL -> "Tu sueldo, los gastos de la casa y tu ahorro."
+        Modo.NEGOCIO -> "Ventas, compras, fiados y el tope de tu régimen."
     }
 
 val Modo.icono: ImageVector
