@@ -21,7 +21,7 @@ fun EtiquetaCategoria(categoria: Categoria?, modifier: Modifier = Modifier) {
     val (fondo, texto) = when (categoria) {
         Categoria.NEGOCIO -> colores.primaryContainer to colores.onPrimaryContainer
         Categoria.PERSONAL -> colores.secondaryContainer to colores.onSecondaryContainer
-        null -> colores.tertiaryContainer to colores.onTertiaryContainer
+        null -> colores.surfaceContainerHighest to colores.onSurfaceVariant
     }
     Surface(color = fondo, contentColor = texto, shape = MaterialTheme.shapes.small, modifier = modifier) {
         Text(

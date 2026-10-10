@@ -7,8 +7,11 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// Verde "dinero en orden" como color principal; ámbar (tertiary) para avisos
-// de tope y rojo (error) cuando se llega al límite.
+// Cada color significa una sola cosa en toda la app:
+// - Verde (primary): plata a favor o algo que salió bien (ventas, ganancia, guardado, cobrado, tope sin problemas).
+// - Ámbar (tertiary): atención, solo para avisos de tope (80 % y 90 %).
+// - Rojo (error): tope alcanzado o una acción sin vuelta atrás (eliminar).
+// - Superficies neutras (surfaceContainer*): todo lo informativo (encuestas, ayuda, privacidad, lo que te deben).
 private val EsquemaClaro = lightColorScheme(
     primary = Color(0xFF0B6E4F),
     onPrimary = Color(0xFFFFFFFF),

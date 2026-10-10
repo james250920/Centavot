@@ -1,5 +1,6 @@
 package com.app.centavot.presentation.screens.ajustes
 
+import androidx.compose.foundation.layout.heightIn
 import com.app.centavot.presentation.components.LogoCentavot
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -64,6 +65,7 @@ fun AjustesScreen(
     onCerrar: () -> Unit,
     onCambiarRegimen: () -> Unit,
     onVerPrivacidad: () -> Unit = {},
+    onAbrirActividad: () -> Unit = {},
     viewModel: AjustesViewModel = koinViewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -216,6 +218,8 @@ fun AjustesScreen(
                 }
             }
 
+            if (!esPrimeraVez) FilaActividad(onAbrirActividad)
+
             estado.uso?.takeIf { !esPrimeraVez && it.primerUso != null }?.let { uso -> TarjetaUso(uso) }
 
             if (!esPrimeraVez) {
@@ -272,12 +276,39 @@ private fun TarjetaTusDatos(
     }
 }
 
+/** Antes era un reloj sin texto en Inicio; aquí va con su nombre y para qué sirve. */
+@Composable
+private fun FilaActividad(onAbrir: () -> Unit) {
+    Card(
+        onClick = onAbrir,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Iconos.Historial, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("Tu actividad", style = MaterialTheme.typography.titleSmall)
+                Text(
+                    "Todo lo que registraste, cobraste o eliminaste, con fecha y hora.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(Iconos.Siguiente, contentDescription = null)
+        }
+    }
+}
+
 /** Lo que la entrevista pidió dejar claro: sin banco, sin SUNAT, los datos son del usuario. */
 @Composable
 private fun TarjetaPrivacidad() {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Icon(Iconos.Candado, contentDescription = null)
+            Icon(Iconos.Candado, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Tus datos son tuyos", style = MaterialTheme.typography.titleSmall)
                 Text("• No pedimos tus claves ni tu cuenta del banco.", style = MaterialTheme.typography.bodyMedium)

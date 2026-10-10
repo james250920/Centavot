@@ -1,5 +1,9 @@
 package com.app.centavot.presentation.screens.gasto
 
+import com.app.centavot.presentation.components.formatear
+import com.app.centavot.domain.model.Gasto
+import com.app.centavot.presentation.Avisos
+import com.app.centavot.presentation.Aviso
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.Reloj
@@ -44,6 +48,7 @@ class GastoViewModel(
     private val obtenerGasto: ObtenerGastoUseCase,
     private val guardarGasto: GuardarGastoUseCase,
     private val eliminarGasto: EliminarGastoUseCase,
+    private val avisos: Avisos,
     reloj: Reloj,
 ) : ViewModel() {
 
@@ -107,6 +112,7 @@ class GastoViewModel(
         viewModelScope.launch {
             _estado.update { it.copy(guardando = true) }
             val resultado = guardarGasto(id, monto, categoria, actual.fecha, actual.descripcion, actual.subcategoria)
+            if (resultado is GuardarGastoUseCase.Resultado.Guardado) avisarGuardado(resultado.gasto)
             _estado.update {
                 when (resultado) {
                     is GuardarGastoUseCase.Resultado.Guardado,
@@ -120,6 +126,14 @@ class GastoViewModel(
         }
     }
 
+    private fun avisarGuardado(gasto: Gasto) {
+        if (id != null) {
+            avisos.mostrar(Aviso("Cambios guardados"))
+        } else {
+            avisos.mostrar(Aviso("Gasto de ${gasto.monto.formatear()} guardado") { eliminarGasto(gasto.id) })
+        }
+    }
+
     fun pedirEliminar() = _estado.update { it.copy(confirmandoEliminar = true) }
 
     fun cancelarEliminar() = _estado.update { it.copy(confirmandoEliminar = false) }
@@ -128,6 +142,7 @@ class GastoViewModel(
         val id = id ?: return
         viewModelScope.launch {
             eliminarGasto(id)
+            avisos.mostrar(Aviso("Gasto eliminado"))
             _estado.update { it.copy(confirmandoEliminar = false, terminado = true) }
         }
     }

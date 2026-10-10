@@ -1,5 +1,8 @@
 package com.app.centavot.presentation.screens.cobros
 
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SegmentedButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -101,12 +104,16 @@ fun CobroScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("¿Qué es?", style = MaterialTheme.typography.titleSmall)
-                SelectorChips(
-                    opciones = TipoCobro.entries,
-                    seleccionada = estado.tipo,
-                    etiqueta = { it.etiqueta },
-                    onSeleccionar = viewModel::onTipoElegido,
-                )
+                // Misma forma que "Negocio / Personal": dos opciones excluyentes, una siempre elegida.
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    TipoCobro.entries.forEachIndexed { i, tipo ->
+                        SegmentedButton(
+                            selected = estado.tipo == tipo,
+                            onClick = { viewModel.onTipoElegido(tipo) },
+                            shape = SegmentedButtonDefaults.itemShape(index = i, count = TipoCobro.entries.size),
+                        ) { Text(tipo.etiqueta) }
+                    }
+                }
                 Text(
                     text = if (esPedido) {
                         "Un trabajo o pedido que te encargaron (zapatos, costura, menús). Anota el adelanto si te dieron uno."
@@ -151,7 +158,7 @@ fun CobroScreen(
             OutlinedTextField(
                 value = estado.montoTexto,
                 onValueChange = viewModel::onMontoCambiado,
-                label = { Text(if (esPedido) "Precio total del pedido" else "Monto") },
+                label = { Text(if (esPedido) "Precio total del pedido" else "¿Cuánto te debe?") },
                 prefix = { Text("S/ ") },
                 placeholder = { Text("0.00") },
                 textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold),

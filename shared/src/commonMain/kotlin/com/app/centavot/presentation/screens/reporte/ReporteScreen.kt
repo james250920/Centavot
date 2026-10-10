@@ -1,5 +1,6 @@
 package com.app.centavot.presentation.screens.reporte
 
+import androidx.compose.material3.TextButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,8 +63,13 @@ fun ReporteScreen(
             TopAppBar(
                 title = { Text("Reportes") },
                 actions = {
-                    IconButton(onClick = viewModel::exportar, enabled = estado.puedeExportar) {
-                        Icon(Iconos.Compartir, contentDescription = "Compartir en Excel (CSV)")
+                    // Con texto: un ícono de compartir solo no dice qué se manda ni a quién.
+                    TextButton(onClick = viewModel::exportar, enabled = estado.puedeExportar) {
+                        Icon(Iconos.Compartir, contentDescription = null)
+                        Text(
+                            if (estado.pestana == PestanaReporte.NEGOCIO) "Enviar al contador" else "Compartir",
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
                     }
                 },
             )
@@ -220,7 +226,7 @@ private fun LazyListScope.contenidoPersonal(estado: ReporteUiState, onAbrirGasto
 private fun LazyListScope.contenidoMeDeben(estado: ReporteUiState) {
     val resumen = estado.resumenCobros
     item {
-        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
+        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
             Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Te deben en total", style = MaterialTheme.typography.labelLarge)
                 Text(resumen.totalPendiente.formatear(), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)

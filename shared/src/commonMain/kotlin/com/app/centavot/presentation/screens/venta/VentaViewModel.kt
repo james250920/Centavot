@@ -1,5 +1,8 @@
 package com.app.centavot.presentation.screens.venta
 
+import com.app.centavot.presentation.Avisos
+import com.app.centavot.presentation.Aviso
+import com.app.centavot.presentation.components.formatearRelativo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.Reloj
@@ -25,6 +28,21 @@ private const val MAX_DESCRIPCION = 40
 /** Montos de un toque para las ventas más comunes de una bodega o un puesto. */
 val MONTOS_RAPIDOS = listOf(1L, 2L, 5L, 10L, 20L, 50L)
 
+/**
+ * Resumen de los detalles plegados de una venta: lo que se guardará si no se tocan.
+ * Ej. "Venta del negocio · Hoy" o "Ingreso personal · Ayer · Pan".
+ */
+fun resumenDetallesVenta(categoria: Categoria, fecha: LocalDate, hoy: LocalDate, descripcion: String): String =
+    buildList {
+        add(if (categoria == Categoria.PERSONAL) "Ingreso personal" else "Venta del negocio")
+        add(fecha.formatearRelativo(hoy))
+        descripcion.trim().takeIf { it.isNotEmpty() }?.let(::add)
+    }.joinToString(" · ")
+
+/** Los detalles empiezan abiertos solo si ya tienen algo distinto de lo habitual. */
+fun VentaUiState.detallesAbiertosAlInicio(): Boolean =
+    esEdicion || categoria != Categoria.NEGOCIO || fecha != hoy || descripcion.isNotBlank() || errorFecha != null
+
 data class VentaUiState(
     val esEdicion: Boolean,
     val hoy: LocalDate,
@@ -39,6 +57,8 @@ data class VentaUiState(
     val guardando: Boolean = false,
     /** Última venta guardada en esta pantalla, para confirmarla sin cerrar (se registra la siguiente). */
     val ultimaGuardada: Ingreso? = null,
+    /** Monto de la última venta que se deshizo, para decirlo en la misma pantalla. */
+    val ventaQuitada: Monto? = null,
     val ventasEnEstaSesion: Int = 0,
     val confirmandoEliminar: Boolean = false,
     val terminado: Boolean = false,
@@ -53,6 +73,7 @@ class VentaViewModel(
     private val obtenerIngreso: ObtenerIngresoUseCase,
     private val guardarIngreso: GuardarIngresoUseCase,
     private val eliminarIngreso: EliminarIngresoUseCase,
+    private val avisos: Avisos,
     observarFrecuentes: ObservarVentasFrecuentesUseCase,
     reloj: Reloj,
 ) : ViewModel() {
@@ -122,6 +143,7 @@ class VentaViewModel(
                 when (resultado) {
                     is GuardarIngresoUseCase.Resultado.Guardado ->
                         if (id != null) {
+                            avisos.mostrar(Aviso("Cambios guardados"))
                             it.copy(guardando = false, terminado = true)
                         } else {
                             // Se queda abierta y limpia para registrar la siguiente venta.
@@ -131,6 +153,7 @@ class VentaViewModel(
                                 descripcion = "",
                                 categoria = Categoria.NEGOCIO,
                                 ultimaGuardada = resultado.ingreso,
+                                ventaQuitada = null,
                                 ventasEnEstaSesion = it.ventasEnEstaSesion + 1,
                             )
                         }
@@ -144,6 +167,15 @@ class VentaViewModel(
         }
     }
 
+    /** "Deshacer" de la confirmación: quita la última venta guardada en esta pantalla. */
+    fun deshacerUltima() {
+        val venta = _estado.value.ultimaGuardada ?: return
+        _estado.update {
+            it.copy(ultimaGuardada = null, ventaQuitada = venta.monto, ventasEnEstaSesion = (it.ventasEnEstaSesion - 1).coerceAtLeast(0))
+        }
+        viewModelScope.launch { eliminarIngreso(venta.id) }
+    }
+
     fun pedirEliminar() = _estado.update { it.copy(confirmandoEliminar = true) }
 
     fun cancelarEliminar() = _estado.update { it.copy(confirmandoEliminar = false) }
@@ -152,6 +184,7 @@ class VentaViewModel(
         val id = id ?: return
         viewModelScope.launch {
             eliminarIngreso(id)
+            avisos.mostrar(Aviso("Venta eliminada"))
             _estado.update { it.copy(confirmandoEliminar = false, terminado = true) }
         }
     }

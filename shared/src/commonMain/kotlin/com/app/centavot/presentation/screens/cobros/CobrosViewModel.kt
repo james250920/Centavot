@@ -1,5 +1,8 @@
 package com.app.centavot.presentation.screens.cobros
 
+import com.app.centavot.domain.usecase.RestaurarCobroUseCase
+import com.app.centavot.presentation.Avisos
+import com.app.centavot.presentation.Aviso
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.AbridorEnlaces
@@ -45,6 +48,8 @@ class CobrosViewModel(
     private val marcarCobrado: MarcarCobradoUseCase,
     private val eliminarCobro: EliminarCobroUseCase,
     private val registrarAbono: RegistrarAbonoUseCase,
+    private val restaurarCobro: RestaurarCobroUseCase,
+    private val avisos: Avisos,
     observarPerfil: ObservarPerfilUseCase,
     private val abridor: AbridorEnlaces,
     reloj: Reloj,
@@ -71,7 +76,11 @@ class CobrosViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CobrosUiState(hoy = reloj.hoy()))
 
     fun cobrar(cobro: Cobro) {
-        viewModelScope.launch { marcarCobrado(cobro.id) }
+        viewModelScope.launch {
+            marcarCobrado(cobro.id)
+            val pago = cobro.saldo.formatear()
+            avisos.mostrar(Aviso("${cobro.contacto.nombre} te pagó $pago") { restaurarCobro(cobro, "el pago de $pago") })
+        }
     }
 
     fun pedirAbono(cobro: Cobro) {
@@ -94,7 +103,16 @@ class CobrosViewModel(
             return
         }
         viewModelScope.launch {
-            val error = when (registrarAbono(dialogo.cobro.id, monto)) {
+            val resultado = registrarAbono(dialogo.cobro.id, monto)
+            if (resultado is RegistrarAbonoUseCase.Resultado.Abonado) {
+                val abono = monto.formatear()
+                avisos.mostrar(
+                    Aviso("Abono de $abono de ${dialogo.cobro.contacto.nombre} guardado") {
+                        restaurarCobro(dialogo.cobro, "el abono de $abono")
+                    },
+                )
+            }
+            val error = when (resultado) {
                 is RegistrarAbonoUseCase.Resultado.Abonado, RegistrarAbonoUseCase.Resultado.NoEncontrado -> null
                 RegistrarAbonoUseCase.Resultado.MontoInvalido -> "Ingresa un monto mayor a cero"
                 RegistrarAbonoUseCase.Resultado.MayorQueElSaldo -> "No puede ser mayor que lo que falta (${dialogo.cobro.saldo.formatear()})"
@@ -120,6 +138,9 @@ class CobrosViewModel(
     fun confirmarEliminar() {
         val cobro = porEliminar.value ?: return
         porEliminar.value = null
-        viewModelScope.launch { eliminarCobro(cobro.id) }
+        viewModelScope.launch {
+            eliminarCobro(cobro.id)
+            avisos.mostrar(Aviso("Cobro eliminado"))
+        }
     }
 }

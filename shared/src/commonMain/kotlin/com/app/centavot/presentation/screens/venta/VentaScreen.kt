@@ -1,5 +1,12 @@
 package com.app.centavot.presentation.screens.venta
 
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -132,8 +139,23 @@ fun VentaScreen(
                             text = "Guardaste ${venta.monto.formatear()}${venta.descripcion?.let { " ($it)" }.orEmpty()}. " +
                                 "Ya puedes anotar la siguiente.",
                             style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f),
                         )
+                        TextButton(onClick = viewModel::deshacerUltima) { Text("Deshacer") }
                     }
+                }
+            }
+            estado.ventaQuitada?.let { monto ->
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                ) {
+                    Text(
+                        "Quitaste la venta de ${monto.formatear()}.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    )
                 }
             }
 
@@ -164,6 +186,7 @@ fun VentaScreen(
                 supportingText = estado.errorMonto?.let { { Text(it) } },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { viewModel.guardar() }),
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -177,37 +200,46 @@ fun VentaScreen(
                 }
             }
 
-            OutlinedTextField(
-                value = estado.descripcion,
-                onValueChange = viewModel::onDescripcionCambiada,
-                label = { Text("¿Qué vendiste? (opcional)") },
-                placeholder = { Text("Ej. gaseosa, menú, arreglo de zapatos") },
-                supportingText = { Text("Si le pones nombre, la próxima vez aparece arriba para registrarla con un toque.") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Seccion("¿De dónde vino la plata?") {
-                val opciones = listOf(Categoria.NEGOCIO to "Venta del negocio", Categoria.PERSONAL to "Ingreso personal")
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    opciones.forEachIndexed { i, (categoria, etiqueta) ->
-                        SegmentedButton(
-                            selected = estado.categoria == categoria,
-                            onClick = { viewModel.onCategoriaElegida(categoria) },
-                            shape = SegmentedButtonDefaults.itemShape(index = i, count = opciones.size),
-                        ) { Text(etiqueta) }
-                    }
-                }
-                Text(
-                    text = "Ingreso personal: un sueldo, un regalo o plata que no es del negocio. No cuenta para tu tope.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            // Lo habitual (venta del negocio, hoy, sin nombre) no se pregunta: queda plegado con su resumen.
+            var detallesAbiertos by rememberSaveable(estado.esEdicion) { mutableStateOf(estado.detallesAbiertosAlInicio()) }
+            LaunchedEffect(estado.errorFecha) { if (estado.errorFecha != null) detallesAbiertos = true }
+            DetallesPlegables(
+                abiertos = detallesAbiertos,
+                resumen = resumenDetallesVenta(estado.categoria, estado.fecha, estado.hoy, estado.descripcion),
+                onCambiar = { detallesAbiertos = !detallesAbiertos },
+            ) {
+                OutlinedTextField(
+                    value = estado.descripcion,
+                    onValueChange = viewModel::onDescripcionCambiada,
+                    label = { Text("¿Qué vendiste? (opcional)") },
+                    placeholder = { Text("Ej. gaseosa, menú, arreglo de zapatos") },
+                    supportingText = { Text("Con nombre, la próxima vez aparece arriba para un toque.") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                    modifier = Modifier.fillMaxWidth(),
                 )
-            }
 
-            Seccion("Fecha") {
-                CampoFecha(estado.fecha, estado.hoy, viewModel::onFechaElegida, estado.errorFecha)
+                Seccion("¿De dónde vino la plata?") {
+                    val opciones = listOf(Categoria.NEGOCIO to "Venta del negocio", Categoria.PERSONAL to "Ingreso personal")
+                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                        opciones.forEachIndexed { i, (categoria, etiqueta) ->
+                            SegmentedButton(
+                                selected = estado.categoria == categoria,
+                                onClick = { viewModel.onCategoriaElegida(categoria) },
+                                shape = SegmentedButtonDefaults.itemShape(index = i, count = opciones.size),
+                            ) { Text(etiqueta) }
+                        }
+                    }
+                    Text(
+                        text = "Ingreso personal: un sueldo, un regalo o plata que no es del negocio. No cuenta para tu tope.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                Seccion("Fecha") {
+                    CampoFecha(estado.fecha, estado.hoy, viewModel::onFechaElegida, estado.errorFecha)
+                }
             }
         }
     }
@@ -220,6 +252,41 @@ fun VentaScreen(
             onConfirmar = viewModel::confirmarEliminar,
             onCancelar = viewModel::cancelarEliminar,
         )
+    }
+}
+
+/** Fila que muestra lo que se guardará y, al tocarla, abre los campos para cambiarlo. */
+@Composable
+private fun DetallesPlegables(
+    abiertos: Boolean,
+    resumen: String,
+    onCambiar: () -> Unit,
+    contenido: @Composable () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Surface(
+            onClick = onCambiar,
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            modifier = Modifier.fillMaxWidth().semantics {
+                stateDescription = if (abiertos) "Abierto" else "Cerrado"
+            },
+        ) {
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(if (abiertos) "Menos detalles" else "Cambiar detalles", style = MaterialTheme.typography.labelLarge)
+                    Text(resumen, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Icon(if (abiertos) Iconos.Plegar else Iconos.Desplegar, contentDescription = null)
+            }
+        }
+        AnimatedVisibility(visible = abiertos) {
+            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) { contenido() }
+        }
     }
 }
 

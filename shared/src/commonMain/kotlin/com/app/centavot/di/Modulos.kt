@@ -1,5 +1,7 @@
 package com.app.centavot.di
 
+import com.app.centavot.presentation.Avisos
+import com.app.centavot.domain.usecase.RestaurarCobroUseCase
 import com.app.centavot.core.util.Reloj
 import com.app.centavot.core.util.RelojSistema
 import com.app.centavot.data.local.CentavotDatabase
@@ -113,6 +115,7 @@ private val generarId: () -> String = { Uuid.random().toString() }
 
 val moduloDomain = module {
     single<Reloj> { RelojSistema }
+    single { Avisos() }
     factory { GuardarGastoUseCase(get(), get(), generarId, get(), get(), get()) }
     factory { GuardarIngresoUseCase(get(), get(), generarId, get(), get(), get()) }
     factoryOf(::ObtenerIngresoUseCase)
@@ -150,6 +153,7 @@ val moduloDomain = module {
     factoryOf(::MarcarCobradoUseCase)
     factoryOf(::RegistrarAbonoUseCase)
     factoryOf(::RegistrarCobroYVentaUseCase)
+    factoryOf(::RestaurarCobroUseCase)
     factoryOf(::ObtenerCobroUseCase)
     factoryOf(::EliminarCobroUseCase)
     factoryOf(::ObservarActividadesUseCase)
@@ -169,9 +173,9 @@ val moduloPresentation = module {
     viewModelOf(::ContactosViewModel)
     viewModelOf(::ActividadViewModel)
     viewModelOf(::NotificacionesViewModel)
-    viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get()) }
-    viewModel { (id: String?) -> VentaViewModel(id, get(), get(), get(), get(), get()) }
-    viewModel { (id: String?) -> CobroViewModel(id, get(), get(), get(), get(), get()) }
+    viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get(), get()) }
+    viewModel { (id: String?) -> VentaViewModel(id, get(), get(), get(), get(), get(), get()) }
+    viewModel { (id: String?) -> CobroViewModel(id, get(), get(), get(), get(), get(), get(), get(), get()) }
 }
 
 val modulosComunes = listOf(moduloData, moduloDomain, moduloPresentation)
