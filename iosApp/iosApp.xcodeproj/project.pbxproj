@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		00B1565C3AF99610E6B21FCC /* Lucka.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lucka.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		00B1565C3AF99610E6B21FCC /* Centavot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Centavot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,7 +59,7 @@
 		64DFF07437FCC89E85ED950C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				00B1565C3AF99610E6B21FCC /* Lucka.app */,
+				00B1565C3AF99610E6B21FCC /* Centavot.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = 00B1565C3AF99610E6B21FCC /* Lucka.app */;
+			productReference = 00B1565C3AF99610E6B21FCC /* Centavot.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
