@@ -123,7 +123,7 @@ class PrivacidadTest {
         val archivo = exportar()
         val lineas = archivo.contenido.removePrefix("﻿").lines()
 
-        assertEquals("centavot-mis-datos-2026-10-09.csv", archivo.nombre)
+        assertEquals("lucka-mis-datos-2026-10-09.csv", archivo.nombre)
         assertTrue("Rosa Quispe,Comercio o bodega,0.00,10.0,RUS · Categoría 2,8000.00" in lineas)
         assertTrue("2026-10-09,Venta,Pan,5.00" in lineas)
         assertTrue("Señora Juana,987654321" in lineas)

@@ -4,7 +4,7 @@ import kotlinx.datetime.YearMonth
 
 /**
  * Resumen del negocio de un mes (ventas y gastos de negocio), listo para revisar con el
- * contador. Centavot no declara ni envía nada a SUNAT.
+ * contador. Lucka no declara ni envía nada a SUNAT.
  */
 data class ReporteSunat(
     val periodo: YearMonth,

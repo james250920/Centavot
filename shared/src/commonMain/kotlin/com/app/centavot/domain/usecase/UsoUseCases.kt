@@ -38,7 +38,7 @@ class ObservarResumenUsoUseCase(private val repositorio: UsoRepository, private 
     operator fun invoke(): Flow<ResumenUso> = repositorio.observar().map { ResumenUso.de(it, reloj.hoy()) }
 }
 
-/** Guarda la respuesta a "¿te resulta más fácil Centavot que tu cuaderno?". */
+/** Guarda la respuesta a "¿te resulta más fácil Lucka que tu cuaderno?". */
 class ResponderEncuestaCuadernoUseCase(private val repositorio: UsoRepository, private val reloj: Reloj) {
     suspend operator fun invoke(masFacil: Boolean) = repositorio.registrar(
         EventoUso(

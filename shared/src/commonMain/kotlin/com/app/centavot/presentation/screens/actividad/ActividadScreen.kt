@@ -54,7 +54,7 @@ fun ActividadScreen(
             }
             estado.actividades.isEmpty() -> EstadoVacio(
                 titulo = "Sin actividad todavía",
-                mensaje = "Aquí verás todo lo que hagas en Centavot: gastos, cobros y cambios en tus ajustes.",
+                mensaje = "Aquí verás todo lo que hagas en Lucka: gastos, cobros y cambios en tus ajustes.",
                 modifier = Modifier.padding(padding),
             )
             else -> LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(bottom = 24.dp)) {

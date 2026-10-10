@@ -30,8 +30,8 @@ private data class Apartado(val titulo: String, val texto: String)
 private val APARTADOS = listOf(
     Apartado(
         "Quién es responsable",
-        "Centavot es un proyecto del curso Proyecto Startup de la Universidad ESAN. " +
-            "El equipo de Centavot es responsable de cómo la app trata tus datos.",
+        "Lucka es un proyecto del curso Proyecto Startup de la Universidad ESAN. " +
+            "El equipo de Lucka es responsable de cómo la app trata tus datos.",
     ),
     Apartado(
         "Qué datos guarda",
@@ -101,9 +101,9 @@ fun AvisoPrivacidadScreen(
         ) {
             Text(
                 text = if (pideConsentimiento) {
-                    "Antes de empezar, lee cómo Centavot cuida tus datos. Es corto."
+                    "Antes de empezar, lee cómo Lucka cuida tus datos. Es corto."
                 } else {
-                    "Así cuida Centavot tus datos."
+                    "Así cuida Lucka tus datos."
                 },
                 style = MaterialTheme.typography.bodyLarge,
             )

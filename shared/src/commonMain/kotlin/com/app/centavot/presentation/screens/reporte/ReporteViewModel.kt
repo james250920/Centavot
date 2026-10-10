@@ -107,15 +107,15 @@ class ReporteViewModel(
         val actual = estado.value
         when (actual.pestana) {
             PestanaReporte.NEGOCIO -> actual.reporte?.let {
-                compartidor.compartir("centavot-negocio-${it.periodo}.csv", it.aCsv(), "text/csv")
+                compartidor.compartir("lucka-negocio-${it.periodo}.csv", it.aCsv(), "text/csv")
             }
             PestanaReporte.PERSONAL -> compartidor.compartir(
-                "centavot-personal-${actual.periodo}.csv",
+                "lucka-personal-${actual.periodo}.csv",
                 reporteGastosPersonalesCsv(actual.periodo, actual.gastosPersonales),
                 "text/csv",
             )
             PestanaReporte.ME_DEBEN -> compartidor.compartir(
-                "centavot-me-deben-${actual.hoy}.csv",
+                "lucka-me-deben-${actual.hoy}.csv",
                 reporteMeDebenCsv(actual.cobrosPendientes),
                 "text/csv",
             )

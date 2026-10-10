@@ -47,7 +47,7 @@ class ExportarTodosLosDatosUseCase(
     data class Archivo(val nombre: String, val contenido: String)
 
     suspend operator fun invoke(): Archivo = Archivo(
-        nombre = "centavot-mis-datos-${reloj.hoy()}.csv",
+        nombre = "lucka-mis-datos-${reloj.hoy()}.csv",
         contenido = exportarTodoCsv(
             perfil = perfiles.observarPerfil().first(),
             regimen = regimenes.observarRegimen().first(),

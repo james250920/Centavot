@@ -29,7 +29,7 @@ private val PASOS = listOf(
     Paso(Iconos.Gasto, "2. Anota tus gastos", "Toca Gasto y elige si fue para el negocio (mercadería, alquiler) o para tu casa. Así no se mezcla la plata."),
     Paso(Iconos.Inicio, "3. Cierra el día", "En Inicio, \"Tu caja\" te dice cuánto vendiste, cuánto gastaste y cuánto te quedó: hoy, en la semana o en el mes."),
     Paso(Iconos.Cobros, "4. Lo que te deben", "En Cobros anota los fiados, préstamos y pedidos con adelanto. Si tienes su celular, recuérdaselo por WhatsApp."),
-    Paso(Iconos.Aviso, "5. Tu tope", "Centavot te avisa cuando tus ventas o compras se acercan al tope de tu régimen, antes de que sea un problema."),
+    Paso(Iconos.Aviso, "5. Tu tope", "Lucka te avisa cuando tus ventas o compras se acercan al tope de tu régimen, antes de que sea un problema."),
     Paso(Iconos.Reporte, "6. Tus reportes", "En Reportes ves cómo te fue mes a mes y puedes mandar el resumen a tu contador en un archivo de Excel."),
 )
 
@@ -40,7 +40,7 @@ fun AyudaScreen(onCerrar: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cómo usar Centavot") },
+                title = { Text("Cómo usar Lucka") },
                 navigationIcon = {
                     IconButton(onClick = onCerrar) { Icon(Iconos.Atras, contentDescription = "Volver") }
                 },
@@ -55,7 +55,7 @@ fun AyudaScreen(onCerrar: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                "Centavot es tu cuaderno, pero que suma solo. Úsalo varias veces al día, cada vez que vendas o gastes.",
+                "Lucka es tu cuaderno, pero que suma solo. Úsalo varias veces al día, cada vez que vendas o gastes.",
                 style = MaterialTheme.typography.bodyLarge,
             )
             PASOS.forEach { paso ->

@@ -78,7 +78,7 @@ fun InicioScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = estado.perfil?.nombre?.let { "Hola, ${it.substringBefore(' ')}" } ?: "Centavot",
+                        text = estado.perfil?.nombre?.let { "Hola, ${it.substringBefore(' ')}" } ?: "Lucka",
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -99,7 +99,7 @@ fun InicioScreen(
                             Icon(Iconos.Notificaciones, contentDescription = descripcion)
                         }
                     }
-                    IconButton(onClick = onAbrirAyuda) { Icon(Iconos.Ayuda, contentDescription = "Cómo usar Centavot") }
+                    IconButton(onClick = onAbrirAyuda) { Icon(Iconos.Ayuda, contentDescription = "Cómo usar Lucka") }
                     IconButton(onClick = onAbrirActividad) { Icon(Iconos.Historial, contentDescription = "Actividad") }
                     IconButton(onClick = onAbrirAjustes) { Icon(Iconos.Ajustes, contentDescription = "Ajustes") }
                 },
@@ -292,7 +292,7 @@ private fun TarjetaPreguntaCuaderno(onResponder: (Boolean) -> Unit) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Una pregunta rápida", style = MaterialTheme.typography.titleMedium)
             Text(
-                "¿Te resulta más fácil llevar tus cuentas con Centavot que con tu cuaderno y la calculadora?",
+                "¿Te resulta más fácil llevar tus cuentas con Lucka que con tu cuaderno y la calculadora?",
                 style = MaterialTheme.typography.bodyMedium,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

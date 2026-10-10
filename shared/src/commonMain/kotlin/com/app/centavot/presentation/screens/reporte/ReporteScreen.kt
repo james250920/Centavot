@@ -279,7 +279,7 @@ private fun AvisoPrivacidad() {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Icon(Iconos.Candado, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(
-            text = "Centavot no declara ni envía nada a SUNAT: este resumen es tuyo. Revísalo con tu contador antes de " +
+            text = "Lucka no declara ni envía nada a SUNAT: este resumen es tuyo. Revísalo con tu contador antes de " +
                 "declarar. Con el botón de compartir lo envías en un archivo que se abre en Excel.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -114,7 +114,7 @@ fun AjustesScreen(
             if (esPrimeraVez) {
                 Column(Modifier.padding(top = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Te damos la bienvenida a Centavot",
+                        text = "Te damos la bienvenida a Lucka",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                     )
@@ -291,7 +291,7 @@ private fun TarjetaPrivacidad() {
 private fun TarjetaUso(uso: ResumenUso) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Cómo vienes usando Centavot", style = MaterialTheme.typography.titleSmall)
+            Text("Cómo vienes usando Lucka", style = MaterialTheme.typography.titleSmall)
             val respuesta = uso.respuestasCuaderno.lastOrNull()?.let { if (it) "más fácil" else "todavía no" } ?: "sin responder"
             listOf(
                 "Veces que usaste la app hoy" to "${uso.aperturasHoy} ${if (uso.aperturasHoy == 1) "vez" else "veces"}",

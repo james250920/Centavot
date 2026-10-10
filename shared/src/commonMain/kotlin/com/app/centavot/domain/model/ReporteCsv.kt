@@ -100,8 +100,8 @@ fun exportarTodoCsv(
     actividades: List<Actividad>,
     generado: kotlinx.datetime.LocalDateTime,
 ): String = csv {
-    appendLine(fila("Mis datos en Centavot", generado.toString()))
-    appendLine(fila("Este archivo tiene todo lo que Centavot guarda en tu celular."))
+    appendLine(fila("Mis datos en Lucka", generado.toString()))
+    appendLine(fila("Este archivo tiene todo lo que Lucka guarda en tu celular."))
     appendLine()
     appendLine(fila("PERFIL"))
     appendLine(fila("Nombre", "Rubro", "Ingreso mensual (S/)", "Ahorro (%)", "Régimen", "Tope (S/)"))
