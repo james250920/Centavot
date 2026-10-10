@@ -342,11 +342,11 @@ private fun AvisoTopeCorto(tope: EstadoTope, onVer: () -> Unit) {
 @Composable
 private fun BotonesRegistro(modo: Modo, onRegistrarEntrada: () -> Unit, onRegistrarGasto: () -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Button(onClick = onRegistrarEntrada, modifier = Modifier.weight(1f).height(64.dp)) {
+        Button(onClick = onRegistrarEntrada, modifier = Modifier.weight(1f).height(56.dp)) {
             Icon(Iconos.Venta, contentDescription = null)
             Text(if (modo == Modo.NEGOCIO) "Venta" else "Ingreso", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
         }
-        FilledTonalButton(onClick = onRegistrarGasto, modifier = Modifier.weight(1f).height(64.dp)) {
+        FilledTonalButton(onClick = onRegistrarGasto, modifier = Modifier.weight(1f).height(56.dp)) {
             Icon(Iconos.Gasto, contentDescription = null)
             Text("Gasto", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
         }
@@ -398,7 +398,7 @@ private fun TarjetaCaja(
                         FilaCaja("Sacaste para la casa", caja.retiros, colores.onSurface)
                         FilaResultado(caja.quedaEnCaja, positivo = "Queda en caja", negativo = "Falta en caja")
                     }
-                    OutlinedButton(onClick = onRegistrarRetiro, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+                    OutlinedButton(onClick = onRegistrarRetiro, modifier = Modifier.fillMaxWidth()) {
                         Icon(Iconos.Inicio, contentDescription = null, modifier = Modifier.size(18.dp))
                         Text("Saqué para la casa", modifier = Modifier.padding(start = 8.dp))
                     }
@@ -466,8 +466,8 @@ private fun TarjetaPreguntaCuaderno(onResponder: (Boolean) -> Unit) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("¿Es más fácil que tu cuaderno?", style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = { onResponder(true) }, modifier = Modifier.weight(1f).height(48.dp)) { Text("Sí, más fácil") }
-                OutlinedButton(onClick = { onResponder(false) }, modifier = Modifier.weight(1f).height(48.dp)) { Text("Todavía no") }
+                Button(onClick = { onResponder(true) }, modifier = Modifier.weight(1f)) { Text("Sí, más fácil") }
+                OutlinedButton(onClick = { onResponder(false) }, modifier = Modifier.weight(1f)) { Text("Todavía no") }
             }
         }
     }

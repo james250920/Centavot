@@ -102,7 +102,7 @@ fun VentaScreen(
                     .navigationBarsPadding()
                     .imePadding()
                     .padding(16.dp)
-                    .height(56.dp),
+                    .height(48.dp),
             ) {
                 Text(if (estado.esEdicion) "Guardar cambios" else textos.guardar)
             }
@@ -166,7 +166,7 @@ fun VentaScreen(
                             FilledTonalButton(
                                 onClick = { viewModel.registrarFrecuente(frecuente) },
                                 enabled = !estado.guardando,
-                                modifier = Modifier.height(48.dp),
+                                // Alto estándar (40 dp a la vista, 48 dp para tocar).
                             ) {
                                 Text("${frecuente.descripcion} · ${frecuente.monto.formatear()}")
                             }
@@ -181,7 +181,7 @@ fun VentaScreen(
                 label = { Text(textos.monto) },
                 prefix = { Text("S/ ") },
                 placeholder = { Text("0.00") },
-                textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
+                textStyle = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
                 isError = estado.errorMonto != null,
                 supportingText = estado.errorMonto?.let { { Text(it) } },
                 singleLine = true,
@@ -193,7 +193,7 @@ fun VentaScreen(
             if (!estado.esEdicion) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     MONTOS_RAPIDOS.forEach { soles ->
-                        OutlinedButton(onClick = { viewModel.onMontoRapido(soles) }, modifier = Modifier.height(48.dp)) {
+                        OutlinedButton(onClick = { viewModel.onMontoRapido(soles) }) {
                             Text(Monto.soles(soles).formatear().removeSuffix(".00"))
                         }
                     }

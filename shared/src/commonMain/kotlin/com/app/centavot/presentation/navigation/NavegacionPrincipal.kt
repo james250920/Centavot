@@ -52,8 +52,8 @@ private enum class Pestana(val ruta: Any, val etiqueta: String, val icono: () ->
     REPORTE(RutaReporte, "Reportes", { Iconos.Reporte }),
 }
 
-/** Alto del botón principal fijo abajo en los formularios (56 dp más 16 dp de margen arriba y abajo). */
-private val ALTO_BOTON_INFERIOR = 88.dp
+/** Alto del botón principal fijo abajo en los formularios (48 dp más 16 dp de margen arriba y abajo). */
+private val ALTO_BOTON_INFERIOR = 80.dp
 
 @Composable
 fun NavegacionPrincipal() {

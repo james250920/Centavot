@@ -90,7 +90,7 @@ fun CobroScreen(
                     .navigationBarsPadding()
                     .imePadding()
                     .padding(16.dp)
-                    .height(56.dp),
+                    .height(48.dp),
             ) {
                 Text(if (estado.esEdicion) "Guardar cambios" else if (estado.esNegocio) "Registrar cobro" else "Registrar préstamo")
             }
@@ -162,7 +162,7 @@ fun CobroScreen(
                 label = { Text(if (esPedido) "Precio total del pedido" else "¿Cuánto te debe?") },
                 prefix = { Text("S/ ") },
                 placeholder = { Text("0.00") },
-                textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
+                textStyle = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
                 isError = estado.errorMonto != null,
                 supportingText = estado.errorMonto?.let { { Text(it) } },
                 singleLine = true,
