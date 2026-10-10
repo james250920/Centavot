@@ -56,6 +56,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.presentation.components.CampoFecha
+import com.app.centavot.presentation.components.DetallesPlegables
 import com.app.centavot.presentation.components.DialogoConfirmar
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.formatear
@@ -252,41 +253,6 @@ fun VentaScreen(
             onConfirmar = viewModel::confirmarEliminar,
             onCancelar = viewModel::cancelarEliminar,
         )
-    }
-}
-
-/** Fila que muestra lo que se guardará y, al tocarla, abre los campos para cambiarlo. */
-@Composable
-private fun DetallesPlegables(
-    abiertos: Boolean,
-    resumen: String,
-    onCambiar: () -> Unit,
-    contenido: @Composable () -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Surface(
-            onClick = onCambiar,
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-            modifier = Modifier.fillMaxWidth().semantics {
-                stateDescription = if (abiertos) "Abierto" else "Cerrado"
-            },
-        ) {
-            Row(
-                Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(if (abiertos) "Menos detalles" else "Cambiar detalles", style = MaterialTheme.typography.labelLarge)
-                    Text(resumen, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Icon(if (abiertos) Iconos.Plegar else Iconos.Desplegar, contentDescription = null)
-            }
-        }
-        AnimatedVisibility(visible = abiertos) {
-            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) { contenido() }
-        }
     }
 }
 

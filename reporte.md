@@ -14,7 +14,7 @@ y datos de demostración, en un Samsung Galaxy A15 con Android 16.
 | 5 | Barra superior de Inicio | [P2] 4 íconos sin texto | ✅ |
 | 6 | Detalles finales | [P3] Montos, gráfico, compartir y controles distintos | ✅ |
 | 7 | Aviso al guardar Ajustes y Régimen | [P2] Segunda revisión: las dos únicas pantallas que se cerraban sin aviso | ✅ |
-| 8 | Registrar cobro más corto | [P2] Segunda revisión: el formulario más largo, 6 grupos | ⏳ |
+| 8 | Registrar cobro más corto | [P2] Segunda revisión: el formulario más largo, 6 grupos | ✅ |
 | 9 | Ajustes por secciones | [P2] Segunda revisión: 4 temas en una sola página | ⏳ |
 
 ---
@@ -261,6 +261,37 @@ confirmar que se guardó.
 
 **Archivos.** `AjustesViewModel.kt`, `AjustesScreen.kt`, `RegimenViewModel.kt` (`mensajeRegimenGuardado`),
 `RegimenScreen.kt`, `NavegacionPrincipal.kt`, `RegimenAvisoTest.kt` (nuevo).
+
+---
+
+## Paso 8 · Registrar cobro más corto
+
+**Problema.** Era el formulario más largo: qué es, quién debe, monto, motivo, "Contarlo como venta" y
+fecha, todo visible. Había que bajar para llegar a la fecha.
+
+**Qué se hizo.**
+- Mismo patrón que Registrar venta (paso 1): **"Contarlo como venta" y la fecha quedan plegados**
+  bajo "Cambiar detalles", con el resumen de lo que se va a guardar: *"Se suma a tus ventas · Desde hoy"*.
+  Al editar un cobro el resumen solo muestra la fecha (*"Desde 4 de octubre"*).
+- Empiezan **abiertos** si ya hay algo distinto: no se suma a ventas, la fecha no es hoy o la fecha
+  tiene un error.
+- El componente plegable pasó a `components/DetallesPlegables.kt` y lo usan Venta y Cobro.
+- **Defecto encontrado y corregido en la prueba:** tocar el texto "Contarlo como venta" no cambiaba
+  nada; solo respondía el interruptor pequeño. Ahora toda la fila es el interruptor (y TalkBack la
+  anuncia como interruptor).
+
+**Resultado.** Un cobro nuevo se registra en una sola pantalla, sin bajar: qué es, quién, cuánto,
+motivo y Registrar.
+
+**Verificación.**
+- 3 tests nuevos (`CobroDetallesTest`): el resumen nuevo y al editar, y cuándo empiezan abiertos.
+  **90 tests, 0 fallas.**
+- En el teléfono: formulario plegado con "Se suma a tus ventas · Desde hoy"; al abrir y tocar la
+  fila, el resumen cambia a "No se suma a tus ventas · Desde hoy" y se guarda como "Cobro a Pedro
+  guardado" (sin "y sumado a tus ventas"). Registrar venta sigue igual con el componente compartido.
+
+**Archivos.** `CobroScreen.kt`, `CobroViewModel.kt` (`resumenDetallesCobro`, `detallesAbiertosAlInicio`),
+`DetallesPlegables.kt` (nuevo, movido desde `VentaScreen.kt`), `VentaScreen.kt`, `CobroDetallesTest.kt` (nuevo).
 
 ---
 
