@@ -2,11 +2,14 @@ package com.app.lucka
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
+import com.app.lucka.presentation.components.LogoLucka
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,7 +29,10 @@ fun App() {
         val estado by viewModel.estado.collectAsStateWithLifecycle()
         LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.alVolverALaApp() }
         when (estado) {
-            EstadoApp.CARGANDO -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
+            EstadoApp.CARGANDO -> Box(
+                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center,
+            ) { LogoLucka(tamano = 160.dp, animado = true) }
             // Al guardar el perfil y luego el régimen, el estado avanza solo hasta LISTA.
             EstadoApp.SIN_CONSENTIMIENTO -> AvisoPrivacidadScreen(onAceptar = viewModel::aceptarAvisoPrivacidad)
             EstadoApp.SIN_PERFIL -> AjustesScreen(esPrimeraVez = true, onCerrar = {}, onCambiarRegimen = {})
