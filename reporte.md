@@ -361,7 +361,7 @@ verificación, para saber en qué nos quedamos.
 | 12 | Régimen con menos texto | La misma explicación repetida en cada opción | ✅ |
 | 13 | Bienvenida y Ajustes con menos texto | Una explicación debajo de cada sección y de cada campo | ✅ |
 | 14 | Cobros con menos texto | Ayudas largas en el formulario y en la lista vacía | ✅ |
-| 15 | Venta, gasto y retiro con menos texto | Ayudas que repiten lo que ya dice el campo | ⏳ |
+| 15 | Venta, gasto y retiro con menos texto | Ayudas que repiten lo que ya dice el campo | ✅ |
 | 16 | Reportes con menos texto | Notas largas encima de los números | ⏳ |
 | 17 | Ayuda más corta | 402 palabras: la pantalla con más texto | ⏳ |
 
@@ -487,3 +487,19 @@ las dos opciones y "Continuar"); en modo personal, la tarjeta de primera vez es 
 detalles abiertos (adelanto, "Contarlo como venta" y fecha). 99 tests, 0 fallas.
 
 **Archivos.** `CobroScreen.kt`, `CobrosScreen.kt`, `ContactosScreen.kt`.
+
+---
+
+## Paso 15 · Venta, gasto y retiro con menos texto
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Ventas frecuentes | "Tus ventas frecuentes (un toque y listo)" | "Tus ventas frecuentes" (lo mismo con los ingresos) |
+| Nombre de la venta o el ingreso | "Con nombre, la próxima vez aparece arriba para un toque." | "Con nombre, la próxima vez es un toque." |
+| Saqué para la casa | "Se resta de tu caja y aparece como ingreso en tu plata personal." | Sin ayuda: la caja lo muestra al guardar ("Sacaste para la casa", "Queda en caja") |
+| Eliminar venta, ingreso o retiro | "Úsalo solo si lo registraste por error. Ya no se contará en tus totales ni en tu tope, y quedará anotado en tu actividad." | "Ya no contará en tus totales ni en tu tope." (sin "ni en tu tope" si no es venta) |
+| Eliminar gasto | Lo mismo que arriba | "Ya no contará en tus totales ni en tu tope." (en lo personal, sin el tope) |
+
+**Verificación.** En el teléfono: venta y "Saqué para la casa" con los detalles abiertos. 99 tests, 0 fallas.
+
+**Archivos.** `VentaScreen.kt`, `GastoScreen.kt`.

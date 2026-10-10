@@ -149,7 +149,7 @@ fun GastoScreen(
         AlertDialog(
             onDismissRequest = viewModel::cancelarEliminar,
             title = { Text("¿Eliminar este gasto?") },
-            text = { Text("Úsalo solo si lo registraste por error. Ya no se contará en tu tope ni en tus reportes, y quedará anotado en tu actividad.") },
+            text = { Text(if (estado.categoria == Categoria.NEGOCIO) "Ya no contará en tus totales ni en tu tope." else "Ya no contará en tus totales.") },
             confirmButton = {
                 TextButton(
                     onClick = viewModel::confirmarEliminar,
