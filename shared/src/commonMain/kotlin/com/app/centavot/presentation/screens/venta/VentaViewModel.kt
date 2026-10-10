@@ -1,5 +1,6 @@
 package com.app.centavot.presentation.screens.venta
 
+import com.app.centavot.presentation.components.formatearRelativo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.Reloj
@@ -24,6 +25,21 @@ private const val MAX_DESCRIPCION = 40
 
 /** Montos de un toque para las ventas más comunes de una bodega o un puesto. */
 val MONTOS_RAPIDOS = listOf(1L, 2L, 5L, 10L, 20L, 50L)
+
+/**
+ * Resumen de los detalles plegados de una venta: lo que se guardará si no se tocan.
+ * Ej. "Venta del negocio · Hoy" o "Ingreso personal · Ayer · Pan".
+ */
+fun resumenDetallesVenta(categoria: Categoria, fecha: LocalDate, hoy: LocalDate, descripcion: String): String =
+    buildList {
+        add(if (categoria == Categoria.PERSONAL) "Ingreso personal" else "Venta del negocio")
+        add(fecha.formatearRelativo(hoy))
+        descripcion.trim().takeIf { it.isNotEmpty() }?.let(::add)
+    }.joinToString(" · ")
+
+/** Los detalles empiezan abiertos solo si ya tienen algo distinto de lo habitual. */
+fun VentaUiState.detallesAbiertosAlInicio(): Boolean =
+    esEdicion || categoria != Categoria.NEGOCIO || fecha != hoy || descripcion.isNotBlank() || errorFecha != null
 
 data class VentaUiState(
     val esEdicion: Boolean,
