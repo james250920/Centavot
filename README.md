@@ -1,10 +1,8 @@
-# Lucka
-
-> Antes se llamaba **Centavot**. Desde el 9 de octubre de 2026 el identificador es `com.app.lucka` (Android) y la base local es `lucka.db`.
+# Centavot
 
 > *Tu dinero, bajo control. Siempre.*
 
-Lucka es una aplicación móvil (Android / iOS) con inteligencia artificial para
+Centavot es una aplicación móvil (Android / iOS) con inteligencia artificial para
 independientes, comerciantes y emprendedores peruanos bajo los regímenes
 tributarios **RUS / RER**. Ayuda a ordenar el dinero del negocio y a llegar a
 la declaración ante SUNAT sin sorpresas — **sin pedir nunca credenciales bancarias**.
@@ -52,7 +50,7 @@ calculadora** del comerciante, que vende muchas veces al día.
   Sin banco, nada se envía a SUNAT ni a un servidor, y **sin respaldo automático en la nube**.
 - **Indicadores de uso** guardados solo en el teléfono: aperturas, registros por día,
   días con registros y la pregunta "¿te resulta más fácil que tu cuaderno?" (a los 7 y 30 días).
-- Guía "Cómo usar Lucka" para la capacitación inicial.
+- Guía "Cómo usar Centavot" para la capacitación inicial.
 
 Aún no incluye: foto del cuaderno o de boletas (OCR), voz, PDF, backend ni login.
 
