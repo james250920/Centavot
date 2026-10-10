@@ -21,11 +21,11 @@ dependencies {
 }
 
 android {
-    namespace = "com.app.centavot"
+    namespace = "com.app.lucka"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.app.centavot"
+        applicationId = "com.app.lucka"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

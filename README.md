@@ -1,6 +1,6 @@
 # Lucka
 
-> Antes se llamaba **Centavot**. El nombre interno del código (`com.app.centavot`) se mantiene por ahora.
+> Antes se llamaba **Centavot**. Desde el 9 de octubre de 2026 el identificador es `com.app.lucka` (Android) y la base local es `lucka.db`.
 
 > *Tu dinero, bajo control. Siempre.*
 

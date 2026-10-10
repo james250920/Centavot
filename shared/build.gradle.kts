@@ -12,7 +12,7 @@ plugins {
 
 kotlin {
     compilerOptions {
-        // Room genera un `actual object` por plataforma para CentavotDatabaseConstructor.
+        // Room genera un `actual object` por plataforma para LuckaDatabaseConstructor.
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
@@ -27,7 +27,7 @@ kotlin {
     }
     
     android {
-       namespace = "com.app.centavot.shared"
+       namespace = "com.app.lucka.shared"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
     
