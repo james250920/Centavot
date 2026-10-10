@@ -30,11 +30,16 @@ import org.jetbrains.compose.resources.painterResource
  * igual en tema claro y oscuro. Con [animado], imita el ícono animado: empieza
  * cerca de la moneda, se aleja girando un poco y luego se mece suave.
  */
+/** Lo justo para que se reconozca la mano con la moneda sin competir con el texto encima. */
+private const val OPACIDAD_MARCA_DE_AGUA = 0.10f
+
 @Composable
 fun LogoCentavot(
     modifier: Modifier = Modifier,
     tamano: Dp = 96.dp,
     animado: Boolean = false,
+    /** Como marca de agua: muy tenue y decorativo (TalkBack no lo lee). */
+    marcaDeAgua: Boolean = false,
 ) {
     val escala = remember { Animatable(if (animado) 1.8f else 1f) }
     val giro = remember { Animatable(if (animado) -14f else 0f) }
@@ -61,7 +66,7 @@ fun LogoCentavot(
     }
     Image(
         painter = painterResource(Res.drawable.logo_centavot),
-        contentDescription = "Centavot",
+        contentDescription = if (marcaDeAgua) null else "Centavot",
         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
         modifier = modifier
             .size(tamano)
@@ -69,7 +74,7 @@ fun LogoCentavot(
                 scaleX = escala.value
                 scaleY = escala.value
                 rotationZ = giro.value + vaiven * amplitud.value
-                alpha = opacidad.value
+                alpha = opacidad.value * if (marcaDeAgua) OPACIDAD_MARCA_DE_AGUA else 1f
             },
     )
 }
