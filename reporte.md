@@ -358,7 +358,7 @@ verificación, para saber en qué nos quedamos.
 |---|---|---|---|
 | 10 | Modo personal o negocio | Reunión con asesores de negocio: no mezclar lo personal con el negocio | ✅ |
 | 11 | Inicio con menos texto | "Veo mucho texto": tarjetas con párrafos y frases repetidas | ✅ |
-| 12 | Régimen con menos texto | La misma explicación repetida en cada opción | ⏳ |
+| 12 | Régimen con menos texto | La misma explicación repetida en cada opción | ✅ |
 | 13 | Bienvenida y Ajustes con menos texto | Una explicación debajo de cada sección y de cada campo | ⏳ |
 | 14 | Cobros con menos texto | Ayudas largas en el formulario y en la lista vacía | ⏳ |
 | 15 | Venta, gasto y retiro con menos texto | Ayudas que repiten lo que ya dice el campo | ⏳ |
@@ -421,3 +421,25 @@ porcentaje del tope estaba en la barra y otra vez en el mensaje).
 99 tests, 0 fallas.
 
 **Archivos.** `InicioScreen.kt`, `TarjetaTope.kt`.
+
+---
+
+## Paso 12 · Régimen con menos texto
+
+**Problema.** Cada opción tenía una explicación de dos líneas, y la de las dos categorías del RUS era
+la misma. Debajo había un párrafo de cuatro líneas sobre montos referenciales, la Clave SOL y el RMT.
+
+**Qué se hizo.**
+- Título único: "¿En qué régimen estás?" (antes "Para tu negocio" + "¿En qué régimen tributario
+  estás?") y una línea: "Para avisarte antes de llegar a tu tope. No le enviamos nada a SUNAT."
+- Cada opción en dos líneas: nombre y "Tope S/ 8,000.00 al mes · das boletas". El comprobante
+  ("boletas" o "facturas") es lo que más distingue al RUS del RER para quien no sabe en cuál está.
+- Las explicaciones pasan a **"¿No sabes cuál elegir?"**, que se abre al tocarla: qué cuenta el tope en
+  cada régimen, dónde ver la categoría y qué hacer en el RMT o sin RUC.
+- Nuevo componente **`AyudaPlegable`** (pregunta que se toca para ver la respuesta), para usarlo en los
+  siguientes pasos.
+
+**Verificación.** En el teléfono, desde Ajustes → Cambiar: tres opciones de dos líneas y la ayuda
+plegable que abre y cierra. 99 tests, 0 fallas.
+
+**Archivos.** `RegimenScreen.kt`, `AyudaPlegable.kt` (nuevo).
