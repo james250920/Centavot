@@ -11,7 +11,7 @@ y datos de demostración, en un Samsung Galaxy A15 con Android 16.
 | 2 | Cobros sin acciones tapadas | [P1] El botón flotante tapa acciones; 5 acciones por cobro | ✅ |
 | 3 | Confirmación y deshacer al guardar | [P2] Gasto, cobro y abono se cierran sin decir nada | ✅ |
 | 4 | Colores con un solo significado | [P2] Ámbar para alertas y para cosas neutras | ✅ |
-| 5 | Barra superior de Inicio | [P2] 4 íconos sin texto | ⏳ |
+| 5 | Barra superior de Inicio | [P2] 4 íconos sin texto | ✅ |
 | 6 | Detalles finales | [P3] Montos, gráfico, compartir y controles distintos | ⏳ |
 
 ---
@@ -161,3 +161,28 @@ Cambios puntuales:
 
 **Archivos.** `Tema.kt`, `InicioScreen.kt`, `CobrosScreen.kt`, `ReporteScreen.kt`, `AjustesScreen.kt`,
 `AyudaScreen.kt`, `EtiquetaCategoria.kt`, `GraficoLineas.kt`.
+
+---
+
+## Paso 5 · Barra superior de Inicio
+
+**Problema.** Arriba de Inicio había 4 íconos sin texto: campana, "?", un reloj y un engranaje. Para
+alguien con poca práctica digital el reloj (que abre Actividad) no dice nada.
+
+**Qué se hizo.**
+- **El reloj sale de Inicio.** Actividad pasa a Ajustes como una fila con nombre y para qué sirve:
+  **"Tu actividad — Todo lo que registraste, cobraste o eliminaste, con fecha y hora."**, justo antes
+  de "Cómo vienes usando Centavot".
+- Arriba quedan 3 íconos: **campana** (avisos, con su número), **"?"** (ayuda) y **engranaje** (ajustes).
+
+**Cambio respecto del plan.** El plan proponía mover también la Ayuda a Ajustes. Se dejó en Inicio
+porque "?" es el ícono más reconocible y la ayuda tiene que encontrarse en segundos, sobre todo el
+primer día; esconderla dentro de Ajustes empeoraría lo que la revisión pedía mejorar. El único ícono
+ambiguo era el reloj.
+
+**Verificación.**
+- En el teléfono: Inicio muestra campana, "?" y engranaje (TalkBack: "Notificaciones, 1 sin leer",
+  "Cómo usar Centavot", "Ajustes"); en Ajustes, "Tu actividad" abre el historial.
+- **83 tests, 0 fallas.**
+
+**Archivos.** `InicioScreen.kt`, `AjustesScreen.kt` (`FilaActividad`), `NavegacionPrincipal.kt`.

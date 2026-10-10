@@ -108,7 +108,6 @@ fun NavegacionPrincipal() {
                     onVerMovimientos = { nav.irAPestana(RutaMovimientos) },
                     onVerCobros = { nav.irAPestana(RutaCobros) },
                     onAbrirNotificaciones = { nav.navigate(RutaNotificaciones) },
-                    onAbrirActividad = { nav.navigate(RutaActividad) },
                     onAbrirAjustes = { nav.navigate(RutaAjustes) },
                     onAbrirAyuda = { nav.navigate(RutaAyuda) },
                 )
@@ -139,6 +138,7 @@ fun NavegacionPrincipal() {
                     onCerrar = { nav.popBackStack() },
                     onCambiarRegimen = { nav.navigate(RutaRegimen) },
                     onVerPrivacidad = { nav.navigate(RutaPrivacidad) },
+                    onAbrirActividad = { nav.navigate(RutaActividad) },
                 )
             }
             composable<RutaActividad> {

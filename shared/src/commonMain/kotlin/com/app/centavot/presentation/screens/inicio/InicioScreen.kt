@@ -74,7 +74,6 @@ fun InicioScreen(
     onVerMovimientos: () -> Unit,
     onVerCobros: () -> Unit,
     onAbrirNotificaciones: () -> Unit,
-    onAbrirActividad: () -> Unit,
     onAbrirAjustes: () -> Unit,
     onAbrirAyuda: () -> Unit,
     viewModel: InicioViewModel = koinViewModel(),
@@ -108,7 +107,6 @@ fun InicioScreen(
                         }
                     }
                     IconButton(onClick = onAbrirAyuda) { Icon(Iconos.Ayuda, contentDescription = "Cómo usar Centavot") }
-                    IconButton(onClick = onAbrirActividad) { Icon(Iconos.Historial, contentDescription = "Actividad") }
                     IconButton(onClick = onAbrirAjustes) { Icon(Iconos.Ajustes, contentDescription = "Ajustes") }
                 },
             )
