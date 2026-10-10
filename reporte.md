@@ -363,7 +363,7 @@ verificación, para saber en qué nos quedamos.
 | 14 | Cobros con menos texto | Ayudas largas en el formulario y en la lista vacía | ✅ |
 | 15 | Venta, gasto y retiro con menos texto | Ayudas que repiten lo que ya dice el campo | ✅ |
 | 16 | Reportes con menos texto | Notas largas encima de los números | ✅ |
-| 17 | Ayuda más corta | 402 palabras: la pantalla con más texto | ⏳ |
+| 17 | Ayuda más corta | 402 palabras: la pantalla con más texto | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -523,3 +523,56 @@ se distinguen por el color.
 **Verificación.** En el teléfono: resumen, nota de una línea, gráfico y lecturas. 99 tests, 0 fallas.
 
 **Archivos.** `ReporteScreen.kt`.
+
+---
+
+## Paso 17 · Ayuda más corta
+
+**Problema.** Era la pantalla con más texto: siete tarjetas numeradas con dos o tres líneas cada una,
+más una tarjeta sobre el cuaderno y otra sobre la privacidad.
+
+**Qué se hizo.**
+- Los pasos pasan de tarjetas a una **lista**: ícono, título y una línea. Sin números (no es una
+  secuencia que haya que seguir en orden).
+- Cada paso, en una línea. Ej. negocio: "Anota cada venta · Ponle nombre y la próxima vez es un
+  toque."; "Tu tope · Te avisamos antes de que llegues."; personal: "Tu ahorro · En «Mi mes», según
+  tu meta de Ajustes."
+- Cambio de modo: "¿También tienes negocio? · Toca «Mi plata personal» arriba en Inicio. No se borra nada."
+- Intro: "Tu cuaderno, pero que suma solo." (antes con "Úsalo varias veces al día, cada vez que
+  vendas o gastes").
+- Cuaderno: "Al cerrar el día, pasa aquí los totales." (antes tres frases). Privacidad: "Sin banco
+  ni SUNAT. Todo queda en tu celular."
+
+**Verificación.** En el teléfono, modo negocio: los siete pasos entran casi en una pantalla.
+99 tests, 0 fallas.
+
+**Archivos.** `AyudaScreen.kt`.
+
+---
+
+## Resumen de la ronda 2 (pasos 11–17)
+
+Palabras de interfaz en el código de cada pantalla (incluye mensajes de error y las ayudas
+plegadas, que no se ven hasta tocarlas):
+
+| Pantalla | Antes | Después |
+|---|---|---|
+| Ayuda | 402 | 166 |
+| Ajustes y bienvenida | 326 | 262 |
+| Inicio | 290 | 173 |
+| Reportes | 188 | 147 |
+| Registrar cobro | 152 | 101 |
+| Lista de cobros | 138 | 105 |
+| Régimen | 126 | 97 (la mitad, plegada) |
+| Venta, ingreso y retiro | 132 | 92 |
+| **Total** | **1,754** | **1,143 (−35 %)** |
+
+- La bienvenida entra en una pantalla y la tarjeta de primera vez es una sola línea.
+- Nuevo componente `AyudaPlegable`: las explicaciones que solo necesita quien tiene la duda quedan a
+  un toque ("¿No sabes cuál elegir?", "¿Cómo se calcula?").
+- No se tocó el aviso de privacidad (texto legal, Ley 29733) ni los mensajes de error, que siguen
+  diciendo qué corregir.
+- 99 tests. Todo se probó en el teléfono con una copia aparte (`com.app.centavot.prueba`).
+
+**Dónde nos quedamos.** Rama `ux/menos-texto`, un commit por paso, sin subir. Siguiente: decidir si se
+sube y se fusiona, y actualizar las capturas.

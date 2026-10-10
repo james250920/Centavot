@@ -34,33 +34,28 @@ import org.koin.compose.koinInject
 private data class Paso(val icono: ImageVector, val titulo: String, val texto: String)
 
 private val PASOS_NEGOCIO = listOf(
-    Paso(Iconos.Venta, "1. Anota cada venta", "Toca Venta y pon el monto. Si le pones nombre (\"gaseosa\"), la próxima vez la registras con un solo toque."),
-    Paso(Iconos.Gasto, "2. Anota tus gastos", "Toca Gasto y pon el monto: mercadería, alquiler, pasajes del negocio. Lo de tu casa va en el modo personal."),
-    Paso(
-        Iconos.Inicio,
-        "3. Cierra el día",
-        "En Inicio, \"Tu caja\" te dice cuánto vendiste, cuánto gastaste y cuánto te quedó. Si sacas plata para la casa, " +
-            "toca \"Saqué para la casa\" y la caja te cuadra.",
-    ),
-    Paso(Iconos.Cobros, "4. Lo que te deben", "En Cobros anota los fiados y los pedidos con adelanto. Si tienes su celular, recuérdaselo por WhatsApp."),
-    Paso(Iconos.Aviso, "5. Tu tope", "Centavot te avisa cuando tus ventas o compras se acercan al tope de tu régimen, antes de que sea un problema."),
-    Paso(Iconos.Reporte, "6. Tus reportes", "En Reportes ves cómo te fue mes a mes y puedes mandar el resumen a tu contador en un archivo de Excel."),
+    Paso(Iconos.Venta, "Anota cada venta", "Ponle nombre y la próxima vez es un toque."),
+    Paso(Iconos.Gasto, "Anota tus gastos", "Mercadería, alquiler, pasajes del negocio."),
+    Paso(Iconos.Inicio, "Mira tu caja", "Lo que vendiste, gastaste y te quedó. Si sacas para la casa, anótalo."),
+    Paso(Iconos.Cobros, "Lo que te deben", "Fiados y pedidos, con recordatorio por WhatsApp."),
+    Paso(Iconos.Aviso, "Tu tope", "Te avisamos antes de que llegues."),
+    Paso(Iconos.Reporte, "Para tu contador", "Mándale el resumen del mes en Excel."),
 )
 
 private val PASOS_PERSONAL = listOf(
-    Paso(Iconos.Venta, "1. Anota lo que te entra", "Toca Ingreso y pon el monto: tu sueldo, una propina, un cachuelo. Con nombre, la próxima vez es un toque."),
-    Paso(Iconos.Gasto, "2. Anota tus gastos", "Toca Gasto y pon el monto. Si quieres, elige en qué fue: comida, pasajes, servicios."),
-    Paso(Iconos.Inicio, "3. Cierra el día", "En Inicio, \"Tu plata\" te dice cuánto te entró, cuánto gastaste y cuánto te quedó: hoy, en la semana o en el mes."),
-    Paso(Iconos.Cobros, "4. Lo que te deben", "En Cobros anota la plata que prestaste. Si tienes su celular, recuérdaselo por WhatsApp."),
-    Paso(Iconos.Personal, "5. Tu ahorro", "En \"Mi mes\" ves cuánto separar este mes según el porcentaje que elegiste en Ajustes."),
-    Paso(Iconos.Reporte, "6. Tus reportes", "En Reportes ves lo que te entró y en qué se fue tu plata cada mes, y puedes guardarlo en Excel."),
+    Paso(Iconos.Venta, "Anota lo que te entra", "Sueldo, propina o cachuelo."),
+    Paso(Iconos.Gasto, "Anota tus gastos", "Pasajes, comida, luz."),
+    Paso(Iconos.Inicio, "Mira tu plata", "Lo que te entró, gastaste y te quedó."),
+    Paso(Iconos.Cobros, "Lo que te deben", "La plata que prestaste, con recordatorio por WhatsApp."),
+    Paso(Iconos.Personal, "Tu ahorro", "En «Mi mes», según tu meta de Ajustes."),
+    Paso(Iconos.Reporte, "Tus reportes", "Lo que entró y gastaste cada mes, en Excel."),
 )
 
 /** El último paso, en los dos modos: cómo pasar al otro sin perder nada. */
-private fun pasoCambiarModo(modo: Modo, numero: Int) = Paso(
+private fun pasoCambiarModo(modo: Modo) = Paso(
     Modo.entries.first { it != modo }.icono,
-    "$numero. ¿También ${if (modo == Modo.NEGOCIO) "quieres llevar tu plata personal" else "tienes un negocio"}?",
-    "Toca \"${modo.etiqueta}\" arriba en Inicio y cambia de modo. No se borra nada: cada modo guarda lo suyo.",
+    if (modo == Modo.NEGOCIO) "¿También tu plata personal?" else "¿También tienes negocio?",
+    "Toca «${modo.etiqueta}» arriba en Inicio. No se borra nada.",
 )
 
 /** Guía corta para empezar sin manual. Pensada para leerse junto a quien enseña a usar la app. */
@@ -69,7 +64,7 @@ private fun pasoCambiarModo(modo: Modo, numero: Int) = Paso(
 fun AyudaScreen(onCerrar: () -> Unit) {
     val observarModo = koinInject<ObservarModoUseCase>()
     val modo by remember(observarModo) { observarModo() }.collectAsStateWithLifecycle(Modo.NEGOCIO)
-    val pasos = (if (modo == Modo.NEGOCIO) PASOS_NEGOCIO else PASOS_PERSONAL).let { it + pasoCambiarModo(modo, it.size + 1) }
+    val pasos = (if (modo == Modo.NEGOCIO) PASOS_NEGOCIO else PASOS_PERSONAL) + pasoCambiarModo(modo)
     Scaffold(
         topBar = {
             TopAppBar(
@@ -89,21 +84,19 @@ fun AyudaScreen(onCerrar: () -> Unit) {
         ) {
             LogoCentavot(modifier = Modifier.align(Alignment.CenterHorizontally), tamano = 112.dp)
             Text(
-                if (modo == Modo.NEGOCIO) {
-                    "Centavot es tu cuaderno, pero que suma solo. Úsalo varias veces al día, cada vez que vendas o gastes."
-                } else {
-                    "Centavot es tu cuaderno, pero que suma solo. Úsalo cada vez que te entre plata o gastes."
-                },
+                "Tu cuaderno, pero que suma solo.",
                 style = MaterialTheme.typography.bodyLarge,
             )
+            // Una lista, no siete tarjetas: título y una línea por paso.
             pasos.forEach { paso ->
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-                    Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Icon(paso.icono, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(paso.titulo, style = MaterialTheme.typography.titleSmall)
-                            Text(paso.texto, style = MaterialTheme.typography.bodyMedium)
-                        }
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    Icon(paso.icono, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(paso.titulo, style = MaterialTheme.typography.titleSmall)
+                        Text(paso.texto, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -111,8 +104,7 @@ fun AyudaScreen(onCerrar: () -> Unit) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("¿No quieres dejar tu cuaderno?", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "No hay problema. Sigue anotando como siempre y, al cerrar el día, pasa aquí los totales de tus " +
-                            "${if (modo == Modo.NEGOCIO) "ventas" else "ingresos"} y gastos. Con el tiempo verás que es más fácil anotar directo en el celular.",
+                        "Al cerrar el día, pasa aquí los totales.",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
@@ -123,7 +115,7 @@ fun AyudaScreen(onCerrar: () -> Unit) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("Tus datos son tuyos", style = MaterialTheme.typography.titleSmall)
                         Text(
-                            "No pedimos tu banco y no le enviamos nada a SUNAT. Todo queda en tu celular.",
+                            "Sin banco ni SUNAT. Todo queda en tu celular.",
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
