@@ -1,5 +1,10 @@
 package com.app.centavot.presentation.screens.cobros
 
+import com.app.centavot.domain.model.Cobro
+import com.app.centavot.domain.usecase.EliminarIngresoUseCase
+import com.app.centavot.domain.usecase.EliminarCobroUseCase
+import com.app.centavot.presentation.Avisos
+import com.app.centavot.presentation.Aviso
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.Reloj
@@ -56,6 +61,9 @@ class CobroViewModel(
     private val obtenerCobro: ObtenerCobroUseCase,
     private val agregarContacto: AgregarContactoUseCase,
     private val registrarCobro: RegistrarCobroYVentaUseCase,
+    private val eliminarCobro: EliminarCobroUseCase,
+    private val eliminarIngreso: EliminarIngresoUseCase,
+    private val avisos: Avisos,
     reloj: Reloj,
 ) : ViewModel() {
 
@@ -159,7 +167,9 @@ class CobroViewModel(
 
         viewModelScope.launch {
             _estado.update { it.copy(guardando = true) }
-            val resultado = registrarCobro(contacto, actual.motivo, monto, actual.fecha, actual.tipo, adelanto, id, actual.contarComoVenta)
+            val registro = registrarCobro(contacto, actual.motivo, monto, actual.fecha, actual.tipo, adelanto, id, actual.contarComoVenta)
+            val resultado = registro.resultado
+            if (resultado is RegistrarCobroUseCase.Resultado.Registrado) avisarGuardado(resultado.cobro, registro.ventaId)
             _estado.update {
                 when (resultado) {
                     is RegistrarCobroUseCase.Resultado.Registrado -> it.copy(guardando = false, terminado = true)
@@ -177,5 +187,19 @@ class CobroViewModel(
                 }
             }
         }
+    }
+
+    private fun avisarGuardado(cobro: Cobro, ventaId: String?) {
+        if (id != null) {
+            avisos.mostrar(Aviso("Cambios guardados"))
+            return
+        }
+        val mensaje = "Cobro a ${cobro.contacto.nombre} guardado" + if (ventaId != null) " y sumado a tus ventas" else ""
+        avisos.mostrar(
+            Aviso(mensaje) {
+                eliminarCobro(cobro.id)
+                ventaId?.let { eliminarIngreso(it) }
+            },
+        )
     }
 }

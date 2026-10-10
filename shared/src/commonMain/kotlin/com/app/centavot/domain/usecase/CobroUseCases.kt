@@ -145,6 +145,9 @@ class RegistrarCobroYVentaUseCase(
     private val registrarCobro: RegistrarCobroUseCase,
     private val guardarIngreso: GuardarIngresoUseCase,
 ) {
+    /** El resultado del cobro y, si se registró, el id de la venta creada con él (para poder deshacerla). */
+    data class Registro(val resultado: RegistrarCobroUseCase.Resultado, val ventaId: String?)
+
     suspend operator fun invoke(
         contacto: Contacto,
         motivo: String,
@@ -154,12 +157,14 @@ class RegistrarCobroYVentaUseCase(
         adelanto: Monto,
         idExistente: String?,
         contarComoVenta: Boolean,
-    ): RegistrarCobroUseCase.Resultado {
+    ): Registro {
         val resultado = registrarCobro(contacto, motivo, monto, fecha, tipo, adelanto, idExistente)
+        var ventaId: String? = null
         if (resultado is RegistrarCobroUseCase.Resultado.Registrado && idExistente == null && contarComoVenta) {
-            guardarIngreso(null, monto, Categoria.NEGOCIO, fecha, resultado.cobro.motivo)
+            val venta = guardarIngreso(null, monto, Categoria.NEGOCIO, fecha, resultado.cobro.motivo)
+            ventaId = (venta as? GuardarIngresoUseCase.Resultado.Guardado)?.ingreso?.id
         }
-        return resultado
+        return Registro(resultado, ventaId)
     }
 }
 
@@ -209,6 +214,24 @@ class MarcarCobradoUseCase(
         repositorio.guardarCobro(cobro.copy(estado = EstadoCobro.COBRADO, fechaCobrado = reloj.hoy()))
         actividades.registrar(
             "${cobro.contacto.nombre} te pagó ${cobro.saldo.enSoles()} (\"${cobro.motivo}\").",
+            reloj.ahora(),
+        )
+    }
+}
+
+/**
+ * "Deshacer" tras cobrar o abonar: el cobro vuelve exactamente a como estaba [antes].
+ * Queda anotado en Actividad, que nunca se borra.
+ */
+class RestaurarCobroUseCase(
+    private val repositorio: CobroRepository,
+    private val actividades: ActividadRepository,
+    private val reloj: Reloj,
+) {
+    suspend operator fun invoke(antes: Cobro, queSeDeshizo: String) {
+        repositorio.guardarCobro(antes)
+        actividades.registrar(
+            "Deshiciste $queSeDeshizo. \"${antes.motivo}\" de ${antes.contacto.nombre} vuelve a deber ${antes.saldo.enSoles()}.",
             reloj.ahora(),
         )
     }

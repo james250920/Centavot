@@ -58,7 +58,7 @@ class PendientesTest {
     @Test
     fun alRegistrarUnFiadoSeCuentaLaVentaUnaSolaVez() = runTest {
         val cobro = assertIs<RegistrarCobroUseCase.Resultado.Registrado>(
-            registrar(rosa, "Arroz", Monto.soles(30), hoy, TipoCobro.FIADO, Monto.CERO, null, contarComoVenta = true),
+            registrar(rosa, "Arroz", Monto.soles(30), hoy, TipoCobro.FIADO, Monto.CERO, null, contarComoVenta = true).resultado,
         ).cobro
 
         val venta = ingresos.ingresos.value.single()
@@ -83,7 +83,7 @@ class PendientesTest {
     @Test
     fun editarUnCobroNoCreaOtraVenta() = runTest {
         val cobro = assertIs<RegistrarCobroUseCase.Resultado.Registrado>(
-            registrar(rosa, "Pedido", Monto.soles(60), hoy, TipoCobro.PEDIDO, Monto.soles(20), null, contarComoVenta = true),
+            registrar(rosa, "Pedido", Monto.soles(60), hoy, TipoCobro.PEDIDO, Monto.soles(20), null, contarComoVenta = true).resultado,
         ).cobro
 
         registrar(rosa, "Pedido", Monto.soles(80), hoy, TipoCobro.PEDIDO, Monto.soles(20), cobro.id, contarComoVenta = true)

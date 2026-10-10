@@ -9,7 +9,7 @@ y datos de demostración, en un Samsung Galaxy A15 con Android 16.
 |---|---|---|---|
 | 1 | Registrar venta más simple | [P1] Demasiadas decisiones para la acción más frecuente | ✅ |
 | 2 | Cobros sin acciones tapadas | [P1] El botón flotante tapa acciones; 5 acciones por cobro | ✅ |
-| 3 | Confirmación y deshacer al guardar | [P2] Gasto, cobro y abono se cierran sin decir nada | ⏳ |
+| 3 | Confirmación y deshacer al guardar | [P2] Gasto, cobro y abono se cierran sin decir nada | ✅ |
 | 4 | Colores con un solo significado | [P2] Ámbar para alertas y para cosas neutras | ⏳ |
 | 5 | Barra superior de Inicio | [P2] 4 íconos sin texto | ⏳ |
 | 6 | Detalles finales | [P3] Montos, gráfico, compartir y controles distintos | ⏳ |
@@ -76,3 +76,49 @@ WhatsApp, y ningún botón tapa contenido en reposo.
 - **79 tests, 0 fallas** (este paso no cambia lógica).
 
 **Archivos.** `CobrosScreen.kt` (botón en la lista, `MenuCobro`, regla del "+" flotante).
+
+---
+
+## Paso 3 · Confirmación y deshacer al guardar
+
+**Problema.** Al guardar un gasto o un cobro la pantalla se cerraba sin decir nada, y Cobrar o Abonar
+cambiaban el cobro sin confirmación visible ni forma de volver atrás. El comerciante no sabía si se
+guardó, con riesgo de registrarlo dos veces. La app no tenía ningún aviso breve (snackbar).
+
+**Qué se hizo.**
+- **Un canal de avisos para toda la app** (`Avisos`). Las pantallas publican el mensaje y la
+  navegación principal lo muestra como snackbar de Material, aunque la pantalla que lo pidió ya se
+  haya cerrado. TalkBack lo lee.
+- **Con "Deshacer"** (el aviso dura más y tiene una X para cerrarlo):
+
+  | Acción | Aviso | Deshacer hace |
+  |---|---|---|
+  | Gasto nuevo | "Gasto de S/ 12.00 guardado" | Elimina ese gasto |
+  | Cobro nuevo | "Cobro a Pedro guardado" (o "… y sumado a tus ventas") | Elimina el cobro y, si se creó, también su venta |
+  | Cobrar | "Don Lucho te pagó S/ 200.00" | El cobro vuelve a pendiente, como estaba |
+  | Abono | "Abono de S/ 50.00 de Don Lucho guardado" | El cobro vuelve a como estaba antes del abono |
+  | Venta (en la misma pantalla) | "Guardaste S/ 5.00…" con botón **Deshacer** | Quita la venta y dice "Quitaste la venta de S/ 5.00." |
+
+- **Sin deshacer** (aviso corto): "Cambios guardados" al editar, y "Gasto eliminado", "Venta
+  eliminada" o "Cobro eliminado" al eliminar (eliminar ya pide confirmación antes).
+- Todo lo que se deshace **queda anotado en Actividad**, que nunca se borra
+  (ej. *"Deshiciste el pago de S/ 200.00…"*).
+- Dominio: `RestaurarCobroUseCase` (devuelve un cobro a como estaba) y `RegistrarCobroYVentaUseCase`
+  ahora devuelve también el id de la venta creada, para poder deshacerla.
+
+**Verificación.**
+- 4 tests nuevos (`DeshacerTest`): el cobro devuelve el id de su venta, sin venta no devuelve nada,
+  deshacer un abono que cerró el cobro lo deja idéntico, y deshacer el pago queda en Actividad.
+  **83 tests, 0 fallas.**
+- En el teléfono, cada caso guardado y deshecho:
+  - gasto S/ 12 → "Gastaste en el negocio" vuelve a S/ 12.00;
+  - Cobrar a Don Lucho y abono de S/ 50 → "Te deben" vuelve a S/ 255.00;
+  - venta S/ 5 → "Quitaste la venta de S/ 5.00.";
+  - cobro "Pan" a Pedro sumado a ventas → desaparece el cobro y "Vendiste" vuelve a S/ 153.70.
+
+**Observación para el paso 6.** En "Registrar cobro" el teclado numérico tapa el campo "Motivo";
+se llega con la tecla "siguiente" del teclado, pero no se ve.
+
+**Archivos.** `Avisos.kt` (nuevo), `NavegacionPrincipal.kt` (snackbar), `GastoViewModel.kt`,
+`VentaViewModel.kt`, `VentaScreen.kt`, `CobroViewModel.kt`, `CobrosViewModel.kt`, `CobroUseCases.kt`,
+`Modulos.kt`, `PendientesTest.kt`, `DeshacerTest.kt` (nuevo).

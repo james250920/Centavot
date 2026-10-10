@@ -139,8 +139,23 @@ fun VentaScreen(
                             text = "Guardaste ${venta.monto.formatear()}${venta.descripcion?.let { " ($it)" }.orEmpty()}. " +
                                 "Ya puedes anotar la siguiente.",
                             style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f),
                         )
+                        TextButton(onClick = viewModel::deshacerUltima) { Text("Deshacer") }
                     }
+                }
+            }
+            estado.ventaQuitada?.let { monto ->
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                ) {
+                    Text(
+                        "Quitaste la venta de ${monto.formatear()}.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    )
                 }
             }
 

@@ -1,5 +1,13 @@
 package com.app.centavot.presentation.navigation
 
+import org.koin.compose.koinInject
+import com.app.centavot.presentation.Avisos
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -51,7 +59,23 @@ fun NavegacionPrincipal() {
         entradaActual?.destination?.hasRoute(pestana.ruta::class) == true
     }
 
+    // Avisos tras guardar ("Gasto de S/ 12.00 guardado · Deshacer"), aunque la pantalla que lo pidió ya se cerró.
+    val avisos = koinInject<Avisos>()
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(avisos) {
+        avisos.flujo.collect { aviso ->
+            val resultado = snackbar.showSnackbar(
+                message = aviso.mensaje,
+                actionLabel = if (aviso.deshacer != null) "Deshacer" else null,
+                withDismissAction = aviso.deshacer != null,
+                duration = if (aviso.deshacer != null) SnackbarDuration.Long else SnackbarDuration.Short,
+            )
+            if (resultado == SnackbarResult.ActionPerformed) aviso.deshacer?.invoke()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbar) },
         bottomBar = {
             // La barra solo se muestra en las pestañas principales, no en formularios.
             if (pestanaActual != null) {
