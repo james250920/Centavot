@@ -17,7 +17,11 @@ import com.app.centavot.domain.usecase.ObservarGastosUseCase
 import com.app.centavot.domain.usecase.ObservarIngresosUseCase
 import com.app.centavot.domain.usecase.ObservarNoLeidasUseCase
 import com.app.centavot.domain.usecase.ObservarPerfilUseCase
-import com.app.centavot.domain.usecase.ObservarResumenCobrosUseCase
+import com.app.centavot.domain.usecase.ObservarCobrosUseCase
+import com.app.centavot.domain.usecase.ObservarModoUseCase
+import com.app.centavot.domain.usecase.CambiarModoUseCase
+import com.app.centavot.domain.model.Modo
+import com.app.centavot.domain.model.delModo
 import com.app.centavot.domain.usecase.ObservarResumenMesUseCase
 import com.app.centavot.domain.usecase.ObservarResumenPeriodoUseCase
 import com.app.centavot.domain.usecase.ObservarResumenUsoUseCase
@@ -38,7 +42,9 @@ import kotlinx.datetime.LocalDate
 data class InicioUiState(
     val hoy: LocalDate,
     val cargando: Boolean = true,
+    val modo: Modo = Modo.NEGOCIO,
     val perfil: Perfil? = null,
+    /** Solo en modo negocio: en lo personal no hay régimen ni tope. */
     val tope: EstadoTope? = null,
     val periodo: Periodo = Periodo.HOY,
     /** Cierre de caja del periodo elegido. */
@@ -52,14 +58,21 @@ data class InicioUiState(
     val recientes: List<Movimiento> = emptyList(),
     val hayMovimientos: Boolean = false,
 ) {
+    /** Lo que entró en el mes según el modo: las ventas del negocio o el ingreso personal. */
+    private val entradasDelMes: Monto get() = if (modo == Modo.NEGOCIO) mes.ventas else mes.ingresosPersonales
+
     /**
-     * Base de la meta de ahorro: la ganancia real del mes si ya registra ventas;
-     * si no, el ingreso mensual que puso en Ajustes.
+     * Base de la meta de ahorro: lo que de verdad entró en el mes (en el negocio, la ganancia);
+     * si todavía no hay nada, el ingreso mensual que puso en Ajustes.
      */
     val baseAhorro: Monto
-        get() = if (mes.ventas > Monto.CERO) maxOf(mes.ganancia, Monto.CERO) else perfil?.ingresoMensual ?: Monto.CERO
+        get() = when {
+            entradasDelMes <= Monto.CERO -> perfil?.ingresoMensual ?: Monto.CERO
+            modo == Modo.NEGOCIO -> maxOf(mes.ganancia, Monto.CERO)
+            else -> mes.ingresosPersonales
+        }
 
-    val baseAhorroEsGanancia: Boolean get() = mes.ventas > Monto.CERO
+    val baseAhorroEsGanancia: Boolean get() = entradasDelMes > Monto.CERO
 
     val metaAhorro: Monto
         get() = Monto(baseAhorro.centimos * (perfil?.tasaAhorro?.decimas ?: 0) / TasaAhorro.MAXIMA)
@@ -68,6 +81,7 @@ data class InicioUiState(
 private const val CANTIDAD_RECIENTES = 5
 
 private data class Base(
+    val modo: Modo,
     val perfil: Perfil?,
     val tope: EstadoTope?,
     val gastosMes: ResumenMes,
@@ -83,28 +97,46 @@ class InicioViewModel(
     observarGastos: ObservarGastosUseCase,
     observarIngresos: ObservarIngresosUseCase,
     observarPerfil: ObservarPerfilUseCase,
-    observarResumenCobros: ObservarResumenCobrosUseCase,
+    observarCobros: ObservarCobrosUseCase,
     observarNoLeidas: ObservarNoLeidasUseCase,
     observarResumenUso: ObservarResumenUsoUseCase,
     private val responderEncuesta: ResponderEncuestaCuadernoUseCase,
+    observarModo: ObservarModoUseCase,
+    private val cambiarModo: CambiarModoUseCase,
     reloj: Reloj,
 ) : ViewModel() {
 
     private val periodo = MutableStateFlow(Periodo.HOY)
 
-    private val movimientos = combine(observarIngresos(), observarGastos()) { ingresos, gastos ->
-        movimientosDe(ingresos, gastos)
+    private val modo = observarModo()
+
+    /** Solo los movimientos del modo actual: lo del otro modo queda guardado, pero no se ve. */
+    private val movimientos = combine(modo, observarIngresos(), observarGastos()) { modoActual, ingresos, gastos ->
+        movimientosDe(ingresos.delModo(modoActual), gastos.delModo(modoActual))
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val gastosMes = modo.flatMapLatest { observarResumenMes(it.categoria) }
+
     private val base = combine(
-        observarPerfil(),
+        combine(modo, observarPerfil(), ::Pair),
         observarEstadoTope(),
-        observarResumenMes(),
+        gastosMes,
         observarResumenPeriodo(Periodo.MES),
         movimientos,
-    ) { perfil, tope, gastosMes, mes, lista ->
-        Base(perfil, tope, gastosMes, mes, lista.take(CANTIDAD_RECIENTES), lista.isNotEmpty())
+    ) { (modoActual, perfil), tope, resumenGastos, mes, lista ->
+        Base(
+            modo = modoActual,
+            perfil = perfil,
+            tope = tope.takeIf { modoActual == Modo.NEGOCIO },
+            gastosMes = resumenGastos,
+            mes = mes,
+            recientes = lista.take(CANTIDAD_RECIENTES),
+            hayMovimientos = lista.isNotEmpty(),
+        )
     }
+
+    private val cobros = combine(modo, observarCobros()) { modoActual, lista -> ResumenCobros.de(lista.delModo(modoActual)) }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val caja = periodo.flatMapLatest { elegido -> observarResumenPeriodo(elegido).map { elegido to it } }
@@ -112,13 +144,14 @@ class InicioViewModel(
     val estado: StateFlow<InicioUiState> = combine(
         base,
         caja,
-        observarResumenCobros(),
+        cobros,
         observarNoLeidas(),
         observarResumenUso(),
     ) { b, (elegido, resumenCaja), cobros, noLeidas, uso ->
         InicioUiState(
             hoy = reloj.hoy(),
             cargando = false,
+            modo = b.modo,
             perfil = b.perfil,
             tope = b.tope,
             periodo = elegido,
@@ -135,6 +168,10 @@ class InicioViewModel(
 
     fun onPeriodo(nuevo: Periodo) {
         periodo.value = nuevo
+    }
+
+    fun onCambiarModo(nuevo: Modo) {
+        viewModelScope.launch { cambiarModo(nuevo) }
     }
 
     fun responderCuaderno(masFacil: Boolean) {

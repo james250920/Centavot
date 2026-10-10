@@ -1,6 +1,5 @@
 package com.app.centavot.presentation
 
-import com.app.centavot.domain.model.Categoria
 import com.app.centavot.presentation.screens.venta.VentaUiState
 import com.app.centavot.presentation.screens.venta.detallesAbiertosAlInicio
 import com.app.centavot.presentation.screens.venta.resumenDetallesVenta
@@ -15,14 +14,14 @@ class VentaDetallesTest {
 
     @Test
     fun resumenDeLoHabitual() {
-        assertEquals("Venta del negocio · Hoy", resumenDetallesVenta(Categoria.NEGOCIO, hoy, hoy, ""))
+        assertEquals("Hoy", resumenDetallesVenta(hoy, hoy, ""))
     }
 
     @Test
     fun resumenConCambios() {
         assertEquals(
-            "Ingreso personal · Ayer · Pan",
-            resumenDetallesVenta(Categoria.PERSONAL, LocalDate(2026, 10, 9), hoy, "  Pan "),
+            "Ayer · Pan",
+            resumenDetallesVenta(LocalDate(2026, 10, 9), hoy, "  Pan "),
         )
     }
 
@@ -35,7 +34,7 @@ class VentaDetallesTest {
     fun detallesAbiertosSiHayAlgoDistinto() {
         val base = VentaUiState(esEdicion = false, hoy = hoy, fecha = hoy)
         assertTrue(base.copy(esEdicion = true).detallesAbiertosAlInicio())
-        assertTrue(base.copy(categoria = Categoria.PERSONAL).detallesAbiertosAlInicio())
+        assertTrue(base.copy(descripcion = "Pan").detallesAbiertosAlInicio())
         assertTrue(base.copy(fecha = LocalDate(2026, 10, 8)).detallesAbiertosAlInicio())
         assertTrue(base.copy(errorFecha = "La fecha no puede ser futura").detallesAbiertosAlInicio())
     }

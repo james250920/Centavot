@@ -107,6 +107,7 @@ class RegistrarCobroUseCase(
         tipo: TipoCobro = TipoCobro.FIADO,
         adelanto: Monto = Monto.CERO,
         idExistente: String? = null,
+        categoria: Categoria = Categoria.NEGOCIO,
     ): Resultado {
         val motivoLimpio = motivo.trim()
         if (motivoLimpio.isEmpty()) return Resultado.MotivoVacio
@@ -121,10 +122,14 @@ class RegistrarCobroUseCase(
         if (adelanto + abonado >= monto) return Resultado.MontoMenorQueLoPagado
 
         val cobro = existente?.copy(contacto = contacto, motivo = motivoLimpio, monto = monto, fecha = fecha, tipo = tipo, adelanto = adelanto)
-            ?: Cobro(generarId(), contacto, motivoLimpio, monto, fecha, tipo = tipo, adelanto = adelanto)
+            ?: Cobro(generarId(), contacto, motivoLimpio, monto, fecha, tipo = tipo, adelanto = adelanto, categoria = categoria)
         repositorio.guardarCobro(cobro)
 
-        val queEs = if (tipo == TipoCobro.PEDIDO) "un pedido" else "un cobro"
+        val queEs = when {
+            tipo == TipoCobro.PEDIDO -> "un pedido"
+            (existente?.categoria ?: categoria) == Categoria.PERSONAL -> "un préstamo"
+            else -> "un cobro"
+        }
         val conAdelanto = if (adelanto > Monto.CERO) " con adelanto de ${adelanto.enSoles()}" else ""
         val accion = if (existente == null) "Registraste" else "Editaste"
         actividades.registrar(
@@ -157,10 +162,13 @@ class RegistrarCobroYVentaUseCase(
         adelanto: Monto,
         idExistente: String?,
         contarComoVenta: Boolean,
+        categoria: Categoria = Categoria.NEGOCIO,
     ): Registro {
-        val resultado = registrarCobro(contacto, motivo, monto, fecha, tipo, adelanto, idExistente)
+        val resultado = registrarCobro(contacto, motivo, monto, fecha, tipo, adelanto, idExistente, categoria)
         var ventaId: String? = null
-        if (resultado is RegistrarCobroUseCase.Resultado.Registrado && idExistente == null && contarComoVenta) {
+        // Un préstamo personal no es una venta: solo los fiados y pedidos del negocio se suman.
+        val esVenta = contarComoVenta && categoria == Categoria.NEGOCIO
+        if (resultado is RegistrarCobroUseCase.Resultado.Registrado && idExistente == null && esVenta) {
             val venta = guardarIngreso(null, monto, Categoria.NEGOCIO, fecha, resultado.cobro.motivo)
             ventaId = (venta as? GuardarIngresoUseCase.Resultado.Guardado)?.ingreso?.id
         }

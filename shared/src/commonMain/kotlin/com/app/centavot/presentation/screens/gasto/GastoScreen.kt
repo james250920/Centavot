@@ -36,12 +36,12 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.SubcategoriaGasto
 import com.app.centavot.domain.model.para
 import com.app.centavot.presentation.components.CampoFecha
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.SelectorChips
-import com.app.centavot.presentation.components.SelectorCategoria
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -117,17 +117,6 @@ fun GastoScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Seccion(titulo = "¿Para qué fue?") {
-                SelectorCategoria(estado.categoria, viewModel::onCategoriaElegida)
-                Text(
-                    text = estado.errorCategoria
-                        ?: "Negocio: mercadería, alquiler del puesto, pasajes de trabajo. Personal: casa, comida, familia.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (estado.errorCategoria != null) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
             Seccion(titulo = "¿En qué? (opcional)") {
                 SelectorChips(
                     opciones = SubcategoriaGasto.para(estado.categoria),
@@ -141,7 +130,7 @@ fun GastoScreen(
                 value = estado.descripcion,
                 onValueChange = viewModel::onDescripcionCambiada,
                 label = { Text("Descripción (opcional)") },
-                placeholder = { Text("Ej. mercadería, pasaje, luz") },
+                placeholder = { Text(if (estado.categoria == Categoria.NEGOCIO) "Ej. mercadería, bolsas, alquiler" else "Ej. pasaje, menú, luz") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences,

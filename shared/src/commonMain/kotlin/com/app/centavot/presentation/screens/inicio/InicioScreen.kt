@@ -50,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Periodo
 import com.app.centavot.domain.model.ResumenPeriodo
@@ -59,7 +60,16 @@ import com.app.centavot.presentation.components.GraficoDistribucion
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.Movimiento
 import com.app.centavot.presentation.components.ParteGrafico
+import com.app.centavot.presentation.components.SelectorModo
 import com.app.centavot.presentation.components.TarjetaTope
+import com.app.centavot.presentation.components.icono
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.ui.semantics.heading
 import com.app.centavot.presentation.components.formatear
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -70,6 +80,7 @@ private const val MAX_DEUDORES = 3
 fun InicioScreen(
     onRegistrarVenta: () -> Unit,
     onRegistrarGasto: () -> Unit,
+    onRegistrarRetiro: () -> Unit,
     onAbrirMovimiento: (Movimiento) -> Unit,
     onVerMovimientos: () -> Unit,
     onVerCobros: () -> Unit,
@@ -120,16 +131,34 @@ fun InicioScreen(
         }
 
         var pestana by rememberSaveable { mutableStateOf(PestanaInicio.HOY) }
+        var eligiendoModo by rememberSaveable { mutableStateOf(false) }
         val alertaTope = estado.tope?.takeIf { it.nivelAlerta != NivelAlerta.NINGUNA }
+        val modo = estado.modo
+
+        if (eligiendoModo) {
+            HojaModo(
+                actual = modo,
+                onElegir = { nuevo ->
+                    eligiendoModo = false
+                    if (nuevo != modo) {
+                        pestana = PestanaInicio.HOY
+                        viewModel.onCambiarModo(nuevo)
+                    }
+                },
+                onCerrar = { eligiendoModo = false },
+            )
+        }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            item { BotonesRegistro(onRegistrarVenta, onRegistrarGasto) }
+            item { ChipModo(modo, onClick = { eligiendoModo = true }) }
 
-            item { PestanasInicio(pestana, alerta = alertaTope?.nivelAlerta, onCambiar = { pestana = it }) }
+            item { BotonesRegistro(modo, onRegistrarVenta, onRegistrarGasto) }
+
+            item { PestanasInicio(modo, pestana, alerta = alertaTope?.nivelAlerta, onCambiar = { pestana = it }) }
 
             when (pestana) {
                 PestanaInicio.HOY -> {
@@ -138,19 +167,21 @@ fun InicioScreen(
                     }
 
                     if (!estado.hayMovimientos) {
-                        item { PrimerosPasos(onRegistrarVenta, onRegistrarGasto, onAbrirAyuda) }
+                        item { PrimerosPasos(modo, onRegistrarVenta, onRegistrarGasto, onAbrirAyuda) }
                     }
 
                     alertaTope?.let { tope ->
-                        item { AvisoTopeCorto(tope, onVer = { pestana = PestanaInicio.NEGOCIO }) }
+                        item { AvisoTopeCorto(tope, onVer = { pestana = PestanaInicio.RESUMEN }) }
                     }
 
                     item {
                         TarjetaCaja(
+                            modo = modo,
                             periodo = estado.periodo,
                             caja = estado.caja,
                             uso = estado.uso?.takeIf { it.primerUso != null && estado.hayMovimientos },
                             onPeriodo = viewModel::onPeriodo,
+                            onRegistrarRetiro = onRegistrarRetiro,
                         )
                     }
 
@@ -159,7 +190,7 @@ fun InicioScreen(
                             Seccion("Últimos movimientos", accion = "Ver todos", onAccion = onVerMovimientos) {
                                 Column {
                                     estado.recientes.forEach { movimiento ->
-                                        FilaMovimiento(movimiento, estado.hoy, onClick = { onAbrirMovimiento(movimiento) })
+                                        FilaMovimiento(movimiento, estado.hoy, onClick = { onAbrirMovimiento(movimiento) }, modo = modo)
                                     }
                                 }
                             }
@@ -167,7 +198,7 @@ fun InicioScreen(
                     }
                 }
 
-                PestanaInicio.NEGOCIO -> {
+                PestanaInicio.RESUMEN -> {
                     estado.tope?.let { tope -> item { TarjetaTope(tope) } }
 
                     estado.cobros?.takeIf { it.porContacto.isNotEmpty() }?.let { cobros ->
@@ -217,14 +248,48 @@ fun InicioScreen(
     }
 }
 
-/** Inicio separa lo del día de la foto del negocio, para no mostrar todo a la vez. */
-private enum class PestanaInicio(val titulo: String) {
-    HOY("Hoy"),
-    NEGOCIO("Mi negocio"),
+/** Inicio separa lo del día de la foto del mes (del negocio o de la plata personal), para no mostrar todo a la vez. */
+private enum class PestanaInicio { HOY, RESUMEN }
+
+private fun PestanaInicio.titulo(modo: Modo): String = when (this) {
+    PestanaInicio.HOY -> "Hoy"
+    PestanaInicio.RESUMEN -> if (modo == Modo.NEGOCIO) "Mi negocio" else "Mi mes"
+}
+
+/** Dice en qué modo está y lo cambia: lo personal y el negocio no se mezclan en pantalla. */
+@Composable
+private fun ChipModo(modo: Modo, onClick: () -> Unit) {
+    AssistChip(
+        onClick = onClick,
+        label = { Text(modo.etiqueta) },
+        leadingIcon = { Icon(modo.icono, contentDescription = null, modifier = Modifier.size(AssistChipDefaults.IconSize)) },
+        trailingIcon = { Icon(Iconos.Desplegar, contentDescription = null, modifier = Modifier.size(AssistChipDefaults.IconSize)) },
+        modifier = Modifier.semantics { contentDescription = "Estás en ${modo.etiqueta}. Tocar para cambiar de modo" },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HojaModo(actual: Modo, onElegir: (Modo) -> Unit, onCerrar: () -> Unit) {
+    // Abierta del todo: a media altura la segunda opción quedaba cortada.
+    ModalBottomSheet(onDismissRequest = onCerrar, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(
+            Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("¿Qué quieres ver?", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+            Text(
+                "Al cambiar no se borra nada: lo del otro modo vuelve a aparecer cuando regreses a él.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            SelectorModo(actual, onElegir)
+        }
+    }
 }
 
 @Composable
-private fun PestanasInicio(actual: PestanaInicio, alerta: NivelAlerta?, onCambiar: (PestanaInicio) -> Unit) {
+private fun PestanasInicio(modo: Modo, actual: PestanaInicio, alerta: NivelAlerta?, onCambiar: (PestanaInicio) -> Unit) {
     val conAlerta = alerta != null
     val colorPunto = if (alerta == NivelAlerta.TOPE_ALCANZADO) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
     PrimaryTabRow(selectedTabIndex = actual.ordinal, containerColor = Color.Transparent) {
@@ -233,14 +298,14 @@ private fun PestanasInicio(actual: PestanaInicio, alerta: NivelAlerta?, onCambia
                 selected = pestana == actual,
                 onClick = { onCambiar(pestana) },
                 text = {
-                    if (pestana == PestanaInicio.NEGOCIO && conAlerta) {
-                        BadgedBox(badge = { Badge(containerColor = colorPunto) }) { Text(pestana.titulo) }
+                    if (pestana == PestanaInicio.RESUMEN && conAlerta) {
+                        BadgedBox(badge = { Badge(containerColor = colorPunto) }) { Text(pestana.titulo(modo)) }
                     } else {
-                        Text(pestana.titulo)
+                        Text(pestana.titulo(modo))
                     }
                 },
                 modifier = Modifier.semantics {
-                    if (pestana == PestanaInicio.NEGOCIO && conAlerta) contentDescription = "Mi negocio, tienes un aviso de tope"
+                    if (pestana == PestanaInicio.RESUMEN && conAlerta) contentDescription = "Mi negocio, tienes un aviso de tope"
                 },
             )
         }
@@ -277,11 +342,11 @@ private fun AvisoTopeCorto(tope: EstadoTope, onVer: () -> Unit) {
 
 /** Las dos acciones más frecuentes, grandes y arriba: una decisión, un toque. */
 @Composable
-private fun BotonesRegistro(onRegistrarVenta: () -> Unit, onRegistrarGasto: () -> Unit) {
+private fun BotonesRegistro(modo: Modo, onRegistrarEntrada: () -> Unit, onRegistrarGasto: () -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Button(onClick = onRegistrarVenta, modifier = Modifier.weight(1f).height(64.dp)) {
+        Button(onClick = onRegistrarEntrada, modifier = Modifier.weight(1f).height(64.dp)) {
             Icon(Iconos.Venta, contentDescription = null)
-            Text("Venta", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
+            Text(if (modo == Modo.NEGOCIO) "Venta" else "Ingreso", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
         }
         FilledTonalButton(onClick = onRegistrarGasto, modifier = Modifier.weight(1f).height(64.dp)) {
             Icon(Iconos.Gasto, contentDescription = null)
@@ -298,14 +363,24 @@ private val Periodo.etiquetaCorta: String
         Periodo.MES -> "Mes"
     }
 
-/** Cierre de caja: lo vendido, lo gastado y lo que quedó, por día, semana o mes. */
+/**
+ * Cierre de caja por día, semana o mes. En el negocio: lo vendido, lo gastado, la ganancia y lo
+ * que se sacó para la casa. En lo personal: lo que entró, lo que se gastó y lo que quedó.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TarjetaCaja(periodo: Periodo, caja: ResumenPeriodo, uso: ResumenUso?, onPeriodo: (Periodo) -> Unit) {
+private fun TarjetaCaja(
+    modo: Modo,
+    periodo: Periodo,
+    caja: ResumenPeriodo,
+    uso: ResumenUso?,
+    onPeriodo: (Periodo) -> Unit,
+    onRegistrarRetiro: () -> Unit,
+) {
     val colores = MaterialTheme.colorScheme
     Card(colors = CardDefaults.cardColors(containerColor = colores.surfaceContainerLow)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Tu caja", style = MaterialTheme.typography.titleMedium)
+            Text(if (modo == Modo.NEGOCIO) "Tu caja" else "Tu plata", style = MaterialTheme.typography.titleMedium)
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 Periodo.entries.forEachIndexed { i, opcion ->
                     SegmentedButton(
@@ -315,27 +390,43 @@ private fun TarjetaCaja(periodo: Periodo, caja: ResumenPeriodo, uso: ResumenUso?
                     ) { Text(opcion.etiquetaCorta, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                 }
             }
-            FilaCaja("Vendiste", caja.ventas, colores.primary)
-            FilaCaja("Gastaste en el negocio", caja.gastosNegocio, colores.onSurface)
-            HorizontalDivider(color = colores.outlineVariant)
-            val ganancia = caja.ganancia
-            FilaCaja(
-                titulo = if (ganancia < Monto.CERO) "Perdiste" else "Te quedó (ganancia)",
-                monto = Monto(kotlin.math.abs(ganancia.centimos)),
-                color = if (ganancia < Monto.CERO) colores.error else colores.onSurface,
-                destacado = true,
-            )
-            if (caja.gastosPersonales > Monto.CERO || caja.ingresosPersonales > Monto.CERO) {
-                Text(
-                    text = "Aparte, lo de tu casa: gastaste ${caja.gastosPersonales.formatear()}" +
-                        if (caja.ingresosPersonales > Monto.CERO) " y entraron ${caja.ingresosPersonales.formatear()}." else ".",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colores.onSurfaceVariant,
-                )
+            when (modo) {
+                Modo.NEGOCIO -> {
+                    FilaCaja("Vendiste", caja.ventas, colores.primary)
+                    FilaCaja("Gastaste en el negocio", caja.gastosNegocio, colores.onSurface)
+                    HorizontalDivider(color = colores.outlineVariant)
+                    FilaResultado(caja.ganancia, positivo = "Te quedó (ganancia)", negativo = "Perdiste")
+                    if (caja.retiros > Monto.CERO) {
+                        FilaCaja("Sacaste para la casa", caja.retiros, colores.onSurface)
+                        FilaResultado(caja.quedaEnCaja, positivo = "Queda en caja", negativo = "Falta en caja")
+                    }
+                    OutlinedButton(onClick = onRegistrarRetiro, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+                        Icon(Iconos.Inicio, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Text("Saqué para la casa", modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
+                Modo.PERSONAL -> {
+                    FilaCaja("Te entró", caja.ingresosPersonales, colores.primary)
+                    FilaCaja("Gastaste", caja.gastosPersonales, colores.onSurface)
+                    HorizontalDivider(color = colores.outlineVariant)
+                    FilaResultado(caja.saldoPersonal, positivo = "Te quedó", negativo = "Gastaste de más")
+                }
             }
             uso?.let { LineaConstancia(it) }
         }
     }
+}
+
+/** El resultado destacado: en rojo y sin signo cuando es negativo, con su propia etiqueta. */
+@Composable
+private fun FilaResultado(monto: Monto, positivo: String, negativo: String) {
+    val colores = MaterialTheme.colorScheme
+    FilaCaja(
+        titulo = if (monto < Monto.CERO) negativo else positivo,
+        monto = Monto(kotlin.math.abs(monto.centimos)),
+        color = if (monto < Monto.CERO) colores.error else colores.onSurface,
+        destacado = true,
+    )
 }
 
 @Composable
@@ -388,21 +479,32 @@ private fun TarjetaPreguntaCuaderno(onResponder: (Boolean) -> Unit) {
     }
 }
 
+private fun pasosDe(modo: Modo): List<String> = when (modo) {
+    Modo.NEGOCIO -> listOf(
+        "1. Cada vez que vendas algo, toca Venta y pon el monto.",
+        "2. Cuando compres mercadería o pagues algo, toca Gasto.",
+        "3. Al cerrar el día, mira tu caja: cuánto vendiste y cuánto te quedó.",
+    )
+    Modo.PERSONAL -> listOf(
+        "1. Cuando te paguen o te entre plata, toca Ingreso y pon el monto.",
+        "2. Cuando pagues algo (pasaje, comida, luz), toca Gasto.",
+        "3. Al final del día, mira tu plata: cuánto entró y cuánto te quedó.",
+    )
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PrimerosPasos(onRegistrarVenta: () -> Unit, onRegistrarGasto: () -> Unit, onAbrirAyuda: () -> Unit) {
+private fun PrimerosPasos(modo: Modo, onRegistrarEntrada: () -> Unit, onRegistrarGasto: () -> Unit, onAbrirAyuda: () -> Unit) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Empieza en 3 pasos", style = MaterialTheme.typography.titleMedium)
-            Text("1. Cada vez que vendas algo, toca Venta y pon el monto.", style = MaterialTheme.typography.bodyMedium)
-            Text("2. Cuando compres mercadería o pagues algo, toca Gasto.", style = MaterialTheme.typography.bodyMedium)
-            Text("3. Al cerrar el día, mira tu caja: cuánto vendiste y cuánto te quedó.", style = MaterialTheme.typography.bodyMedium)
+            pasosDe(modo).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
             Text(
                 "¿Sigues usando tu cuaderno? No pasa nada: al final del día pasa aquí los totales.",
                 style = MaterialTheme.typography.bodySmall,
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = onRegistrarVenta) { Text("Mi primera venta") }
+                TextButton(onClick = onRegistrarEntrada) { Text(if (modo == Modo.NEGOCIO) "Mi primera venta" else "Mi primer ingreso") }
                 TextButton(onClick = onRegistrarGasto) { Text("Mi primer gasto") }
                 TextButton(onClick = onAbrirAyuda) { Text("Ver ayuda") }
             }
@@ -423,7 +525,11 @@ private fun TarjetaAhorro(estado: InicioUiState, onAbrirAjustes: () -> Unit) {
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                if (estado.baseAhorroEsGanancia) "Ahorro del mes ($tasa de tu ganancia)" else "Meta de ahorro del mes ($tasa)",
+                when {
+                    !estado.baseAhorroEsGanancia -> "Meta de ahorro del mes ($tasa)"
+                    estado.modo == Modo.NEGOCIO -> "Ahorro del mes ($tasa de tu ganancia)"
+                    else -> "Ahorro del mes ($tasa de lo que te entró)"
+                },
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

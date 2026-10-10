@@ -5,7 +5,9 @@ import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.EventoUso
 import com.app.centavot.domain.model.Ingreso
 import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.TipoEntrada
 import com.app.centavot.domain.model.TipoEventoUso
+import com.app.centavot.domain.model.tipo
 import com.app.centavot.domain.model.VentaFrecuente
 import com.app.centavot.domain.model.enSoles
 import com.app.centavot.domain.model.ventasFrecuentes
@@ -24,12 +26,16 @@ class ObtenerIngresoUseCase(private val repositorio: IngresoRepository) {
     suspend operator fun invoke(id: String): Ingreso? = repositorio.obtener(id)
 }
 
-/** Las ventas que más se repiten, para registrarlas con un toque. */
+/** Las ventas (o ingresos personales) que más se repiten, para registrarlos con un toque. */
 class ObservarVentasFrecuentesUseCase(private val repositorio: IngresoRepository) {
-    operator fun invoke(): Flow<List<VentaFrecuente>> = repositorio.observarIngresos().map { it.ventasFrecuentes() }
+    operator fun invoke(categoria: Categoria = Categoria.NEGOCIO): Flow<List<VentaFrecuente>> =
+        repositorio.observarIngresos().map { it.ventasFrecuentes(categoria) }
 }
 
-/** Registra una venta (o un ingreso personal) nueva, o edita una existente. */
+/**
+ * Registra una venta, un ingreso personal o un retiro para la casa, o edita uno existente.
+ * Un retiro siempre es personal: sale de la caja del negocio y entra a la plata de la casa.
+ */
 class GuardarIngresoUseCase(
     private val repositorio: IngresoRepository,
     private val reloj: Reloj,
@@ -51,6 +57,7 @@ class GuardarIngresoUseCase(
         categoria: Categoria,
         fecha: LocalDate,
         descripcion: String?,
+        retiroDelNegocio: Boolean = false,
     ): Resultado {
         if (monto <= Monto.CERO) return Resultado.MontoInvalido
         if (fecha > reloj.hoy()) return Resultado.FechaFutura
@@ -61,11 +68,22 @@ class GuardarIngresoUseCase(
         } else {
             repositorio.obtener(idExistente)?.id ?: return Resultado.NoEncontrado
         }
-        val ingreso = Ingreso(id, monto, fecha, categoria, descripcionLimpia)
+        val ingreso = Ingreso(
+            id = id,
+            monto = monto,
+            fecha = fecha,
+            categoria = if (retiroDelNegocio) Categoria.PERSONAL else categoria,
+            descripcion = descripcionLimpia,
+            retiroDelNegocio = retiroDelNegocio,
+        )
         repositorio.guardar(ingreso)
 
         val accion = if (idExistente == null) "Registraste" else "Editaste"
-        val que = if (categoria == Categoria.NEGOCIO) "una venta" else "un ingreso personal"
+        val que = when (ingreso.tipo) {
+            TipoEntrada.VENTA -> "una venta"
+            TipoEntrada.INGRESO -> "un ingreso personal"
+            TipoEntrada.RETIRO -> "un retiro para la casa"
+        }
         val nombre = descripcionLimpia?.let { " \"$it\"" }.orEmpty()
         actividades.registrar("$accion $que$nombre de ${monto.enSoles()}.", reloj.ahora())
         if (idExistente == null) uso.registrar(EventoUso(TipoEventoUso.REGISTRO, reloj.ahora()))
@@ -83,7 +101,11 @@ class EliminarIngresoUseCase(
     suspend operator fun invoke(id: String) {
         val ingreso = repositorio.obtener(id) ?: return
         repositorio.eliminar(id)
-        val que = if (ingreso.esDeNegocio) "la venta" else "el ingreso"
+        val que = when (ingreso.tipo) {
+            TipoEntrada.VENTA -> "la venta"
+            TipoEntrada.INGRESO -> "el ingreso"
+            TipoEntrada.RETIRO -> "el retiro para la casa"
+        }
         val nombre = ingreso.descripcion?.let { " \"$it\"" }.orEmpty()
         actividades.registrar("Eliminaste $que$nombre de ${ingreso.monto.enSoles()}.", reloj.ahora())
     }

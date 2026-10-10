@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Periodo
 import com.app.centavot.presentation.components.EstadoVacio
@@ -66,11 +67,11 @@ fun MovimientosScreen(
                 modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                FiltroMovimientos.entries.forEach { filtro ->
+                FiltroMovimientos.para(estado.modo).forEach { filtro ->
                     FilterChip(
                         selected = estado.filtro == filtro,
                         onClick = { viewModel.onFiltro(filtro) },
-                        label = { Text(filtro.etiqueta) },
+                        label = { Text(filtro.etiqueta(estado.modo)) },
                     )
                 }
             }
@@ -106,10 +107,14 @@ fun MovimientosScreen(
                 }
                 !estado.hayMovimientos -> EstadoVacio(
                     titulo = "Aún no hay movimientos",
-                    mensaje = "Cuando registres ventas y gastos, aparecerán aquí agrupados por día.",
+                    mensaje = if (estado.modo == Modo.NEGOCIO) {
+                        "Cuando registres ventas y gastos, aparecerán aquí agrupados por día."
+                    } else {
+                        "Cuando registres lo que te entra y lo que gastas, aparecerá aquí agrupado por día."
+                    },
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-                        Button(onClick = onRegistrarVenta) { Text("Registrar venta") }
+                        Button(onClick = onRegistrarVenta) { Text(if (estado.modo == Modo.NEGOCIO) "Registrar venta" else "Registrar ingreso") }
                         Button(onClick = onRegistrarGasto) { Text("Registrar gasto") }
                     }
                 }
@@ -121,9 +126,10 @@ fun MovimientosScreen(
                     item(key = "totales") {
                         Text(
                             text = buildString {
-                                append("Vendiste ${estado.totalVendido.formatear()} · Gastaste ${estado.totalGastado.formatear()}")
-                                if (estado.totalIngresosPersonales > Monto.CERO) {
-                                    append(" · Ingresos personales ${estado.totalIngresosPersonales.formatear()}")
+                                append(if (estado.modo == Modo.NEGOCIO) "Vendiste " else "Te entró ")
+                                append("${estado.totalEntro.formatear()} · Gastaste ${estado.totalGastado.formatear()}")
+                                if (estado.totalParaLaCasa > Monto.CERO) {
+                                    append(" · Para la casa ${estado.totalParaLaCasa.formatear()}")
                                 }
                             },
                             style = MaterialTheme.typography.titleSmall,
@@ -144,9 +150,8 @@ fun MovimientosScreen(
                                 )
                                 Text(
                                     text = listOfNotNull(
-                                        grupo.vendido.takeIf { it > Monto.CERO }?.let { "+${it.formatear()}" },
-                                        grupo.ingresosPersonales.takeIf { it > Monto.CERO }?.let { "(personal +${it.formatear()})" },
-                                        grupo.gastado.takeIf { it > Monto.CERO }?.let { "−${it.formatear()}" },
+                                        grupo.entro.takeIf { it > Monto.CERO }?.let { "+${it.formatear()}" },
+                                        grupo.salio.takeIf { it > Monto.CERO }?.let { "−${it.formatear()}" },
                                     ).joinToString("  "),
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -154,7 +159,7 @@ fun MovimientosScreen(
                             }
                         }
                         items(grupo.movimientos, key = { "${it::class.simpleName}-${it.id}" }) { movimiento ->
-                            FilaMovimiento(movimiento, estado.hoy, onClick = { onAbrirMovimiento(movimiento) }, mostrarFecha = false)
+                            FilaMovimiento(movimiento, estado.hoy, onClick = { onAbrirMovimiento(movimiento) }, mostrarFecha = false, modo = estado.modo)
                         }
                     }
                 }

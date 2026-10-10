@@ -101,7 +101,8 @@ class ModulosTest {
         koin.get<ActividadViewModel>()
         koin.get<NotificacionesViewModel>()
         koin.get<GastoViewModel> { parametersOf(null) }
-        koin.get<VentaViewModel> { parametersOf(null) }
-        koin.get<VentaViewModel> { parametersOf("venta-1") }
+        koin.get<VentaViewModel> { parametersOf(null, false) }
+        koin.get<VentaViewModel> { parametersOf(null, true) }
+        koin.get<VentaViewModel> { parametersOf("venta-1", false) }
     }
 }

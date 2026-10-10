@@ -61,6 +61,10 @@ object Iconos {
     val Calendario by lazy {
         icono("M19,4h-1V2h-2v2H8V2H6v2H5c-1.11,0 -1.99,0.9 -1.99,2L3,20c0,1.1 0.89,2 2,2h14c1.1,0 2,-0.9 2,-2V6c0,-1.1 -0.9,-2 -2,-2zM19,20H5V9h14v11z")
     }
+    val Negocio by lazy { icono("M20,4H4v2h16V4zM21,14v-2l-1,-5H4l-1,5v2h1v6h10v-6h4v6h2v-6h1zM12,18H6v-4h6v4z") }
+    val Personal by lazy {
+        icono("M12,12c2.21,0 4,-1.79 4,-4s-1.79,-4 -4,-4 -4,1.79 -4,4 1.79,4 4,4zM12,14c-2.67,0 -8,1.34 -8,4v2h16v-2c0,-2.66 -5.33,-4 -8,-4z")
+    }
     val Desplegar by lazy { icono("M16.59,8.59L12,13.17 7.41,8.59 6,10l6,6 6,-6z") }
     val Plegar by lazy { icono("M12,8l-6,6 1.41,1.41L12,10.83l4.59,4.58L18,14z") }
     val MasOpciones by lazy {

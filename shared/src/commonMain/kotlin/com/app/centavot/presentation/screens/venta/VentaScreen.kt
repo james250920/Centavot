@@ -32,9 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -53,7 +50,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.centavot.domain.model.Categoria
+import com.app.centavot.domain.model.TipoEntrada
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.presentation.components.CampoFecha
 import com.app.centavot.presentation.components.DetallesPlegables
@@ -68,9 +65,11 @@ import org.koin.core.parameter.parametersOf
 fun VentaScreen(
     id: String?,
     onCerrar: () -> Unit,
-    viewModel: VentaViewModel = koinViewModel { parametersOf(id) },
+    retiro: Boolean = false,
+    viewModel: VentaViewModel = koinViewModel { parametersOf(id, retiro) },
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
+    val textos = textosDe(estado.tipo)
 
     LaunchedEffect(estado.terminado) {
         if (estado.terminado) onCerrar()
@@ -79,14 +78,14 @@ fun VentaScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (estado.esEdicion) "Editar venta" else "Registrar venta") },
+                title = { Text(if (estado.esEdicion) textos.tituloEditar else textos.tituloNuevo) },
                 navigationIcon = {
                     IconButton(onClick = onCerrar) { Icon(Iconos.Atras, contentDescription = "Volver") }
                 },
                 actions = {
                     if (estado.esEdicion) {
                         IconButton(onClick = viewModel::pedirEliminar) {
-                            Icon(Iconos.Eliminar, contentDescription = "Eliminar venta")
+                            Icon(Iconos.Eliminar, contentDescription = "Eliminar ${estado.tipo.nombre}")
                         }
                     } else if (estado.ventasEnEstaSesion > 0) {
                         TextButton(onClick = onCerrar) { Text("Listo") }
@@ -105,7 +104,7 @@ fun VentaScreen(
                     .padding(16.dp)
                     .height(56.dp),
             ) {
-                Text(if (estado.esEdicion) "Guardar cambios" else "Guardar venta")
+                Text(if (estado.esEdicion) "Guardar cambios" else textos.guardar)
             }
         },
     ) { padding ->
@@ -153,7 +152,7 @@ fun VentaScreen(
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 ) {
                     Text(
-                        "Quitaste la venta de ${monto.formatear()}.",
+                        "Quitaste ${textos.articulo} ${estado.tipo.nombre} de ${monto.formatear()}.",
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                     )
@@ -161,7 +160,7 @@ fun VentaScreen(
             }
 
             if (!estado.esEdicion && estado.frecuentes.isNotEmpty()) {
-                Seccion("Tus ventas frecuentes (un toque y listo)") {
+                Seccion(textos.frecuentes) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         estado.frecuentes.forEach { frecuente ->
                             FilledTonalButton(
@@ -179,7 +178,7 @@ fun VentaScreen(
             OutlinedTextField(
                 value = estado.montoTexto,
                 onValueChange = viewModel::onMontoCambiado,
-                label = { Text("¿Cuánto vendiste?") },
+                label = { Text(textos.monto) },
                 prefix = { Text("S/ ") },
                 placeholder = { Text("0.00") },
                 textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
@@ -201,42 +200,24 @@ fun VentaScreen(
                 }
             }
 
-            // Lo habitual (venta del negocio, hoy, sin nombre) no se pregunta: queda plegado con su resumen.
+            // Lo habitual (hoy, sin nombre) no se pregunta: queda plegado con su resumen.
             var detallesAbiertos by rememberSaveable(estado.esEdicion) { mutableStateOf(estado.detallesAbiertosAlInicio()) }
             LaunchedEffect(estado.errorFecha) { if (estado.errorFecha != null) detallesAbiertos = true }
             DetallesPlegables(
                 abiertos = detallesAbiertos,
-                resumen = resumenDetallesVenta(estado.categoria, estado.fecha, estado.hoy, estado.descripcion),
+                resumen = resumenDetallesVenta(estado.fecha, estado.hoy, estado.descripcion),
                 onCambiar = { detallesAbiertos = !detallesAbiertos },
             ) {
                 OutlinedTextField(
                     value = estado.descripcion,
                     onValueChange = viewModel::onDescripcionCambiada,
-                    label = { Text("¿Qué vendiste? (opcional)") },
-                    placeholder = { Text("Ej. gaseosa, menú, arreglo de zapatos") },
-                    supportingText = { Text("Con nombre, la próxima vez aparece arriba para un toque.") },
+                    label = { Text(textos.descripcion) },
+                    placeholder = { Text(textos.ejemplo) },
+                    supportingText = textos.ayudaDescripcion?.let { { Text(it) } },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     modifier = Modifier.fillMaxWidth(),
                 )
-
-                Seccion("¿De dónde vino la plata?") {
-                    val opciones = listOf(Categoria.NEGOCIO to "Venta del negocio", Categoria.PERSONAL to "Ingreso personal")
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        opciones.forEachIndexed { i, (categoria, etiqueta) ->
-                            SegmentedButton(
-                                selected = estado.categoria == categoria,
-                                onClick = { viewModel.onCategoriaElegida(categoria) },
-                                shape = SegmentedButtonDefaults.itemShape(index = i, count = opciones.size),
-                            ) { Text(etiqueta) }
-                        }
-                    }
-                    Text(
-                        text = "Ingreso personal: un sueldo, un regalo o plata que no es del negocio. No cuenta para tu tope.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
 
                 Seccion("Fecha") {
                     CampoFecha(estado.fecha, estado.hoy, viewModel::onFechaElegida, estado.errorFecha)
@@ -247,8 +228,9 @@ fun VentaScreen(
 
     if (estado.confirmandoEliminar) {
         DialogoConfirmar(
-            titulo = "¿Eliminar esta venta?",
-            mensaje = "Úsalo solo si la registraste por error. Ya no se contará en tus totales ni en tu tope, y quedará anotado en tu actividad.",
+            titulo = "¿Eliminar ${if (estado.tipo == TipoEntrada.VENTA) "esta" else "este"} ${estado.tipo.nombre}?",
+            mensaje = "Úsalo solo si lo registraste por error. Ya no se contará en tus totales" +
+                (if (estado.tipo == TipoEntrada.VENTA) " ni en tu tope" else "") + ", y quedará anotado en tu actividad.",
             textoConfirmar = "Eliminar",
             onConfirmar = viewModel::confirmarEliminar,
             onCancelar = viewModel::cancelarEliminar,
@@ -262,4 +244,53 @@ private fun Seccion(titulo: String, contenido: @Composable () -> Unit) {
         Text(titulo, style = MaterialTheme.typography.titleSmall)
         contenido()
     }
+}
+
+/** Los textos de la pantalla según lo que se anota. */
+private data class TextosEntrada(
+    val tituloNuevo: String,
+    val tituloEditar: String,
+    val guardar: String,
+    val monto: String,
+    val frecuentes: String,
+    val descripcion: String,
+    val ejemplo: String,
+    val ayudaDescripcion: String?,
+    val articulo: String,
+)
+
+private fun textosDe(tipo: TipoEntrada): TextosEntrada = when (tipo) {
+    TipoEntrada.VENTA -> TextosEntrada(
+        tituloNuevo = "Registrar venta",
+        tituloEditar = "Editar venta",
+        guardar = "Guardar venta",
+        monto = "¿Cuánto vendiste?",
+        frecuentes = "Tus ventas frecuentes (un toque y listo)",
+        descripcion = "¿Qué vendiste? (opcional)",
+        ejemplo = "Ej. gaseosa, menú, arreglo de zapatos",
+        ayudaDescripcion = "Con nombre, la próxima vez aparece arriba para un toque.",
+        articulo = "la",
+    )
+    TipoEntrada.INGRESO -> TextosEntrada(
+        tituloNuevo = "Registrar ingreso",
+        tituloEditar = "Editar ingreso",
+        guardar = "Guardar ingreso",
+        monto = "¿Cuánto te entró?",
+        frecuentes = "Tus ingresos frecuentes (un toque y listo)",
+        descripcion = "¿De qué es? (opcional)",
+        ejemplo = "Ej. sueldo, propina, cachuelo",
+        ayudaDescripcion = "Con nombre, la próxima vez aparece arriba para un toque.",
+        articulo = "el",
+    )
+    TipoEntrada.RETIRO -> TextosEntrada(
+        tituloNuevo = "Saqué para la casa",
+        tituloEditar = "Editar retiro",
+        guardar = "Guardar",
+        monto = "¿Cuánto sacaste de la caja?",
+        frecuentes = "",
+        descripcion = "¿Para qué? (opcional)",
+        ejemplo = "Ej. mercado, pasajes, colegio",
+        ayudaDescripcion = "Se resta de tu caja y aparece como ingreso en tu plata personal.",
+        articulo = "el",
+    )
 }

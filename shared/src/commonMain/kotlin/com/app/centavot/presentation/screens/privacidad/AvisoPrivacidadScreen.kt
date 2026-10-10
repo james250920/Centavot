@@ -37,7 +37,8 @@ private val APARTADOS = listOf(
     ),
     Apartado(
         "Qué datos guarda",
-        "Tu nombre, el rubro de tu negocio y tu régimen; tus ventas, gastos y cobros; los nombres y " +
+        "Tu nombre y si usas la app para tu plata personal o tu negocio (y, si es negocio, su rubro y tu régimen); " +
+            "tus ventas, ingresos, gastos y cobros; los nombres y " +
             "celulares de los contactos que agregues; y cuántas veces usas la app.",
     ),
     Apartado(

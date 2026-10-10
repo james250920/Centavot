@@ -26,11 +26,15 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.app.centavot.domain.model.Modo
+import com.app.centavot.domain.model.delModo
+import com.app.centavot.domain.usecase.ObservarModoUseCase
 import kotlinx.datetime.LocalDate
 
 data class CobrosUiState(
     val hoy: LocalDate,
     val cargando: Boolean = true,
+    val modo: Modo = Modo.NEGOCIO,
     val cobros: List<Cobro> = emptyList(),
     val resumen: ResumenCobros? = null,
     val porEliminar: Cobro? = null,
@@ -52,21 +56,26 @@ class CobrosViewModel(
     private val avisos: Avisos,
     observarPerfil: ObservarPerfilUseCase,
     private val abridor: AbridorEnlaces,
+    observarModo: ObservarModoUseCase,
     reloj: Reloj,
 ) : ViewModel() {
 
     private val porEliminar = MutableStateFlow<Cobro?>(null)
     private val abono = MutableStateFlow<DialogoAbono?>(null)
 
+    /** Solo los del modo actual: los fiados del negocio y los préstamos personales no se mezclan. */
+    private val cobrosDelModo = combine(observarModo(), observarCobros()) { modo, cobros -> modo to cobros.delModo(modo) }
+
     val estado: StateFlow<CobrosUiState> = combine(
-        observarCobros(),
+        cobrosDelModo,
         porEliminar,
         observarPerfil(),
         abono,
-    ) { cobros, eliminando, perfil, dialogoAbono ->
+    ) { (modo, cobros), eliminando, perfil, dialogoAbono ->
         CobrosUiState(
             hoy = reloj.hoy(),
             cargando = false,
+            modo = modo,
             cobros = cobros,
             resumen = ResumenCobros.de(cobros),
             porEliminar = eliminando,

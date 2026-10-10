@@ -30,15 +30,17 @@ fun FilaGasto(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         headlineContent = {
             Text(
-                text = gasto.descripcion ?: "Sin descripción",
+                text = gasto.descripcion ?: gasto.subcategoria?.etiqueta ?: "Gasto",
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         },
         supportingContent = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                EtiquetaCategoria(gasto.categoria)
-                gasto.subcategoria?.let {
+                // Cada modo ve solo lo suyo: "Negocio" o "Personal" ya no hace falta, solo si falta clasificarlo.
+                if (gasto.categoria == null) EtiquetaCategoria(null)
+                // Si la subcategoría ya es el título (gasto sin descripción), no se repite.
+                gasto.subcategoria?.takeIf { gasto.descripcion != null }?.let {
                     Text(it.etiqueta, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 if (mostrarFecha) {

@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.centavot.domain.model.Historial
+import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.TipoCobro
 import com.app.centavot.domain.model.sumar
@@ -76,8 +77,9 @@ fun ReporteScreen(
         },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            PrimaryTabRow(selectedTabIndex = estado.pestana.ordinal) {
-                PestanaReporte.entries.forEach { pestana ->
+            val pestanas = PestanaReporte.para(estado.modo)
+            PrimaryTabRow(selectedTabIndex = pestanas.indexOf(estado.pestana).coerceAtLeast(0)) {
+                pestanas.forEach { pestana ->
                     Tab(
                         selected = pestana == estado.pestana,
                         onClick = { viewModel.onPestana(pestana) },
@@ -103,7 +105,7 @@ fun ReporteScreen(
                 }
                 when (estado.pestana) {
                     PestanaReporte.NEGOCIO -> contenidoNegocio(estado, onAbrirGasto, onAbrirVenta)
-                    PestanaReporte.PERSONAL -> contenidoPersonal(estado, onAbrirGasto)
+                    PestanaReporte.PERSONAL -> contenidoPersonal(estado, onAbrirGasto, onAbrirVenta)
                     PestanaReporte.ME_DEBEN -> contenidoMeDeben(estado)
                 }
             }
@@ -202,24 +204,46 @@ private fun lecturasDe(historial: Historial): List<String> = listOfNotNull(
     },
 )
 
-private fun LazyListScope.contenidoPersonal(estado: ReporteUiState, onAbrirGasto: (String) -> Unit) {
+private fun LazyListScope.contenidoPersonal(
+    estado: ReporteUiState,
+    onAbrirGasto: (String) -> Unit,
+    onAbrirIngreso: (String) -> Unit,
+) {
     val gastos = estado.gastosPersonales
+    val ingresos = estado.ingresosPersonales
+    val entro = ingresos.map { it.monto }.sumar()
+    val gasto = gastos.map { it.monto }.sumar()
     item {
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
-            Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Gastos de tu casa", style = MaterialTheme.typography.labelLarge)
-                Text(gastos.map { it.monto }.sumar().formatear(), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
+            Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilaTotal("Te entró", entro)
+                FilaTotal("Gastaste", gasto)
+                val quedo = entro - gasto
+                FilaTotal(if (quedo < Monto.CERO) "Gastaste de más" else "Te quedó", Monto(kotlin.math.abs(quedo.centimos)), destacado = true)
                 Text(
-                    "Este reporte es solo para ti: no es para SUNAT ni se mezcla con tu negocio.",
+                    "Este reporte es solo para ti: no es para SUNAT.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
     }
-    if (gastos.isEmpty()) {
-        item { EstadoVacio("Sin gastos personales", "No registraste gastos personales en ${estado.periodo.formatear().lowercase()}.") }
-    } else {
-        item { Lista { gastos.forEach { gasto -> FilaGasto(gasto, estado.hoy, onClick = { onAbrirGasto(gasto.id) }) } } }
+    if (gastos.isEmpty() && ingresos.isEmpty()) {
+        item { EstadoVacio("Sin movimientos", "No registraste ingresos ni gastos en ${estado.periodo.formatear().lowercase()}.") }
+        return
+    }
+    if (ingresos.isNotEmpty()) {
+        item { Text("Lo que te entró (${ingresos.size})", style = MaterialTheme.typography.titleMedium) }
+        item {
+            Lista {
+                ingresos.forEach { ingreso ->
+                    FilaIngreso(ingreso, estado.hoy, onClick = { onAbrirIngreso(ingreso.id) }, modo = Modo.PERSONAL)
+                }
+            }
+        }
+    }
+    if (gastos.isNotEmpty()) {
+        item { Text("Gastos (${gastos.size})", style = MaterialTheme.typography.titleMedium) }
+        item { Lista { gastos.forEach { g -> FilaGasto(g, estado.hoy, onClick = { onAbrirGasto(g.id) }) } } }
     }
 }
 
