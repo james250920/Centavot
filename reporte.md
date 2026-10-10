@@ -15,7 +15,7 @@ y datos de demostración, en un Samsung Galaxy A15 con Android 16.
 | 6 | Detalles finales | [P3] Montos, gráfico, compartir y controles distintos | ✅ |
 | 7 | Aviso al guardar Ajustes y Régimen | [P2] Segunda revisión: las dos únicas pantallas que se cerraban sin aviso | ✅ |
 | 8 | Registrar cobro más corto | [P2] Segunda revisión: el formulario más largo, 6 grupos | ✅ |
-| 9 | Ajustes por secciones | [P2] Segunda revisión: 4 temas en una sola página | ⏳ |
+| 9 | Ajustes por secciones | [P2] Segunda revisión: 4 temas en una sola página | ✅ |
 
 ---
 
@@ -295,9 +295,41 @@ motivo y Registrar.
 
 ---
 
+## Paso 9 · Ajustes por secciones
+
+**Problema.** Ajustes mezclaba en una sola página, sin separación clara, el perfil, la meta de ahorro,
+el régimen, los indicadores de uso y la gestión de datos. La tarjeta "Tus datos son tuyos" iba arriba
+de todo, lejos de exportar y borrar.
+
+**Qué se hizo.** La página se ordena en cinco secciones con título (marcadas como encabezado para
+TalkBack) y más espacio entre secciones que dentro de ellas:
+
+| Sección | Contenido |
+|---|---|
+| Tu perfil | Nombre y a qué se dedica |
+| Tu meta de ahorro | Explicación, ingreso mensual y porcentaje |
+| Tu régimen | Régimen en dos líneas (nombre y "Tope: S/ 8,000.00 al mes") con "Cambiar" |
+| Cómo vienes usando Centavot | "Tu actividad" e indicadores de uso |
+| Tus datos | "Tus datos son tuyos", ver aviso, exportar y borrar |
+
+- Cada sección tiene **un solo título**: se quitaron los títulos repetidos dentro de las tarjetas
+  ("Régimen tributario", "Cómo vienes usando Centavot", "Tus datos").
+- En el **registro inicial** no cambia el orden: arriba la bienvenida y "Tus datos son tuyos", antes de
+  pedir cualquier dato; luego "Tu perfil" y "Tu meta de ahorro".
+
+**Verificación.**
+- En el teléfono: las cinco secciones en orden, el régimen en dos líneas, "Guardar cambios" sigue
+  guardando y avisa "Ajustes guardados"; la bienvenida del registro inicial muestra la privacidad
+  arriba y luego "Tu perfil".
+- **90 tests, 0 fallas** (este paso no cambia lógica).
+
+**Archivos.** `AjustesScreen.kt` (`SeccionAjustes`).
+
+---
+
 ## Resumen
 
-| | Antes | Después |
+| | Antes | Después (pasos 1–9) |
 |---|---|---|
 | Decisiones visibles al registrar una venta | ~15 | 3 grupos (frecuentes, monto, "Cambiar detalles") |
 | Acciones visibles por cobro | 5, con el tacho junto a WhatsApp | 3 + menú ⋮ (Editar y Eliminar con texto) |
@@ -306,8 +338,11 @@ motivo y Registrar.
 | Significados del ámbar | 6 | 1 (avisos de tope) |
 | Íconos sin texto arriba en Inicio | 4 | 3 reconocibles (avisos, ayuda, ajustes) |
 | Formas de pedir un monto | 3 | 1 |
-| Tests | 75 | 85 |
+| Pantallas que guardan sin avisar | Gasto, cobro, cobrar, abonar, Ajustes, Régimen | Ninguna |
+| Grupos visibles al registrar un cobro | 6 | 4 + "Cambiar detalles" |
+| Secciones con título en Ajustes | 1 | 5 |
+| Tests | 75 | 90 |
 
 Todo se probó en un Samsung Galaxy A15 (Android 16) con una copia de prueba aparte, en tema oscuro,
-tema claro (paso 4) y texto grande (paso 6). La revisión UX/UI puede volver a correrse para comparar
-con el puntaje inicial de 28/40.
+tema claro (paso 4) y texto grande (paso 6). Puntaje de la revisión UX/UI: **28/40** al inicio,
+**31/40** tras los pasos 1–6; los pasos 7–9 resuelven los tres P2 que quedaban.
