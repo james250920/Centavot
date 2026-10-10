@@ -1,6 +1,14 @@
 package com.app.centavot.presentation.screens.inicio
 
-import androidx.compose.foundation.clickable
+import com.app.centavot.domain.model.NivelAlerta
+import com.app.centavot.domain.model.EstadoTope
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.Tab
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -113,6 +121,9 @@ fun InicioScreen(
             return@Scaffold
         }
 
+        var pestana by rememberSaveable { mutableStateOf(PestanaInicio.HOY) }
+        val alertaTope = estado.tope?.takeIf { it.nivelAlerta != NivelAlerta.NINGUNA }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
@@ -120,71 +131,142 @@ fun InicioScreen(
         ) {
             item { BotonesRegistro(onRegistrarVenta, onRegistrarGasto) }
 
-            estado.uso?.takeIf { it.debePreguntarCuaderno }?.let {
-                item { TarjetaPreguntaCuaderno(onResponder = viewModel::responderCuaderno) }
-            }
+            item { PestanasInicio(pestana, conAlerta = alertaTope != null, onCambiar = { pestana = it }) }
 
-            if (!estado.hayMovimientos) {
-                item { PrimerosPasos(onRegistrarVenta, onRegistrarGasto, onAbrirAyuda) }
-            }
+            when (pestana) {
+                PestanaInicio.HOY -> {
+                    estado.uso?.takeIf { it.debePreguntarCuaderno }?.let {
+                        item { TarjetaPreguntaCuaderno(onResponder = viewModel::responderCuaderno) }
+                    }
 
-            item { TarjetaCaja(estado.periodo, estado.caja, viewModel::onPeriodo) }
+                    if (!estado.hayMovimientos) {
+                        item { PrimerosPasos(onRegistrarVenta, onRegistrarGasto, onAbrirAyuda) }
+                    }
 
-            estado.uso?.takeIf { it.primerUso != null && estado.hayMovimientos }?.let { uso ->
-                item { TarjetaConstancia(uso) }
-            }
+                    alertaTope?.let { tope ->
+                        item { AvisoTopeCorto(tope, onVer = { pestana = PestanaInicio.NEGOCIO }) }
+                    }
 
-            estado.tope?.let { tope -> item { TarjetaTope(tope) } }
-
-            item { Indicadores(estado, onAbrirAjustes, onVerCobros) }
-
-            estado.gastosMes?.takeIf { it.porSubcategoria.isNotEmpty() }?.let { resumen ->
-                item {
-                    Seccion("En qué se fue tu plata este mes") {
-                        GraficoDistribucion(
-                            partes = resumen.porSubcategoria.map { (subcategoria, monto) ->
-                                ParteGrafico(subcategoria?.etiqueta ?: "Sin categoría", monto)
-                            },
-                            modifier = Modifier.padding(16.dp),
+                    item {
+                        TarjetaCaja(
+                            periodo = estado.periodo,
+                            caja = estado.caja,
+                            uso = estado.uso?.takeIf { it.primerUso != null && estado.hayMovimientos },
+                            onPeriodo = viewModel::onPeriodo,
                         )
                     }
-                }
-            }
 
-            estado.cobros?.takeIf { it.porContacto.isNotEmpty() }?.let { cobros ->
-                item {
-                    Seccion("Te deben", accion = "Ver cobros", onAccion = onVerCobros) {
-                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            cobros.porContacto.take(MAX_DEUDORES).forEach { deuda ->
-                                Row(Modifier.fillMaxWidth()) {
-                                    Text(deuda.contacto.nombre, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                    Text(deuda.total.formatear(), fontWeight = FontWeight.SemiBold)
+                    if (estado.recientes.isNotEmpty()) {
+                        item {
+                            Seccion("Últimos movimientos", accion = "Ver todos", onAccion = onVerMovimientos) {
+                                Column {
+                                    estado.recientes.forEach { movimiento ->
+                                        FilaMovimiento(movimiento, estado.hoy, onClick = { onAbrirMovimiento(movimiento) })
+                                    }
                                 }
                             }
-                            val otros = cobros.porContacto.size - MAX_DEUDORES
-                            if (otros > 0) {
-                                Text(
-                                    text = "y $otros ${if (otros == 1) "persona más" else "personas más"}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        }
+                    }
+                }
+
+                PestanaInicio.NEGOCIO -> {
+                    estado.tope?.let { tope -> item { TarjetaTope(tope) } }
+
+                    estado.cobros?.takeIf { it.porContacto.isNotEmpty() }?.let { cobros ->
+                        item {
+                            Seccion(
+                                titulo = "Te deben ${cobros.totalPendiente.formatear()}",
+                                accion = "Ver cobros",
+                                onAccion = onVerCobros,
+                            ) {
+                                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    cobros.porContacto.take(MAX_DEUDORES).forEach { deuda ->
+                                        Row(Modifier.fillMaxWidth()) {
+                                            Text(deuda.contacto.nombre, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            Text(deuda.total.formatear(), fontWeight = FontWeight.SemiBold)
+                                        }
+                                    }
+                                    val otros = cobros.porContacto.size - MAX_DEUDORES
+                                    if (otros > 0) {
+                                        Text(
+                                            text = "y $otros ${if (otros == 1) "persona más" else "personas más"}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    item { TarjetaAhorro(estado, onAbrirAjustes) }
+
+                    estado.gastosMes?.takeIf { it.porSubcategoria.isNotEmpty() }?.let { resumen ->
+                        item {
+                            Seccion("En qué se fue tu plata este mes") {
+                                GraficoDistribucion(
+                                    partes = resumen.porSubcategoria.map { (subcategoria, monto) ->
+                                        ParteGrafico(subcategoria?.etiqueta ?: "Sin categoría", monto)
+                                    },
+                                    modifier = Modifier.padding(16.dp),
                                 )
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
 
-            if (estado.recientes.isNotEmpty()) {
-                item {
-                    Seccion("Últimos movimientos", accion = "Ver todos", onAccion = onVerMovimientos) {
-                        Column {
-                            estado.recientes.forEach { movimiento ->
-                                FilaMovimiento(movimiento, estado.hoy, onClick = { onAbrirMovimiento(movimiento) })
-                            }
-                        }
+/** Inicio separa lo del día de la foto del negocio, para no mostrar todo a la vez. */
+private enum class PestanaInicio(val titulo: String) {
+    HOY("Hoy"),
+    NEGOCIO("Mi negocio"),
+}
+
+@Composable
+private fun PestanasInicio(actual: PestanaInicio, conAlerta: Boolean, onCambiar: (PestanaInicio) -> Unit) {
+    PrimaryTabRow(selectedTabIndex = actual.ordinal, containerColor = Color.Transparent) {
+        PestanaInicio.entries.forEach { pestana ->
+            Tab(
+                selected = pestana == actual,
+                onClick = { onCambiar(pestana) },
+                text = {
+                    if (pestana == PestanaInicio.NEGOCIO && conAlerta) {
+                        BadgedBox(badge = { Badge() }) { Text(pestana.titulo) }
+                    } else {
+                        Text(pestana.titulo)
                     }
-                }
-            }
+                },
+                modifier = Modifier.semantics {
+                    if (pestana == PestanaInicio.NEGOCIO && conAlerta) contentDescription = "Mi negocio, tienes un aviso de tope"
+                },
+            )
+        }
+    }
+}
+
+/** En "Hoy", el aviso del tope cabe en una línea y lleva a "Mi negocio". */
+@Composable
+private fun AvisoTopeCorto(tope: EstadoTope, onVer: () -> Unit) {
+    val (medida, proximidad) = tope.principal
+    Card(
+        onClick = onVer,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Iconos.Aviso, contentDescription = null)
+            Text(
+                "Tus ${medida.etiqueta} van en ${proximidad.porcentaje} % de tu tope",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f),
+            )
+            Text("Ver", fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -215,7 +297,7 @@ private val Periodo.etiquetaCorta: String
 /** Cierre de caja: lo vendido, lo gastado y lo que quedó, por día, semana o mes. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TarjetaCaja(periodo: Periodo, caja: ResumenPeriodo, onPeriodo: (Periodo) -> Unit) {
+private fun TarjetaCaja(periodo: Periodo, caja: ResumenPeriodo, uso: ResumenUso?, onPeriodo: (Periodo) -> Unit) {
     val colores = MaterialTheme.colorScheme
     Card(colors = CardDefaults.cardColors(containerColor = colores.surfaceContainerLow)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -247,6 +329,7 @@ private fun TarjetaCaja(periodo: Periodo, caja: ResumenPeriodo, onPeriodo: (Peri
                     color = colores.onSurfaceVariant,
                 )
             }
+            uso?.let { LineaConstancia(it) }
         }
     }
 }
@@ -270,18 +353,16 @@ private fun FilaCaja(titulo: String, monto: Monto, color: Color, destacado: Bool
 
 /** Refuerza el hábito: el valor de la app aparece con el uso diario, no en un día. */
 @Composable
-private fun TarjetaConstancia(uso: ResumenUso) {
+private fun LineaConstancia(uso: ResumenUso) {
     val dias = uso.diasConRegistroUltimos7
     val mensaje = when {
         dias >= 5 -> "¡Bien! Anotaste $dias de los últimos 7 días."
-        dias > 0 -> "Anotaste $dias de los últimos 7 días. Anotar cada día es lo que hace que tus cuentas cuadren."
+        dias > 0 -> "Anotaste $dias de los últimos 7 días. Anotar cada día hace que tus cuentas cuadren."
         else -> "Esta semana no anotaste nada. Un minuto al cerrar el día basta."
     }
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
-        Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Icon(Iconos.Calendario, contentDescription = null)
-            Text(mensaje, style = MaterialTheme.typography.bodyMedium)
-        }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(Iconos.Calendario, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+        Text(mensaje, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -325,29 +406,36 @@ private fun PrimerosPasos(onRegistrarVenta: () -> Unit, onRegistrarGasto: () -> 
     }
 }
 
-/** Lo que te deben y la meta de ahorro del mes. */
+/** La meta de ahorro del mes; lo que te deben ya está en su propia sección. */
 @Composable
-private fun Indicadores(estado: InicioUiState, onAbrirAjustes: () -> Unit, onVerCobros: () -> Unit) {
+private fun TarjetaAhorro(estado: InicioUiState, onAbrirAjustes: () -> Unit) {
     val perfil = estado.perfil
     val tasa = perfil?.tasaAhorro?.formatear() ?: "0 %"
-    val sinBase = estado.baseAhorro <= Monto.CERO
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            TarjetaTotal(
-                titulo = "Te deben",
-                monto = estado.cobros?.totalPendiente ?: Monto.CERO,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.weight(1f).clickable(onClick = onVerCobros),
+    val sinMeta = estado.baseAhorro <= Monto.CERO || perfil?.tasaAhorro?.decimas == 0
+    Card(
+        onClick = onAbrirAjustes,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                if (estado.baseAhorroEsGanancia) "Ahorro del mes ($tasa de tu ganancia)" else "Meta de ahorro del mes ($tasa)",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            TarjetaTotal(
-                titulo = if (estado.baseAhorroEsGanancia) "Ahorro ($tasa de tu ganancia)" else "Meta de ahorro ($tasa)",
-                monto = estado.metaAhorro,
+            Text(
+                estado.metaAhorro.formatear(),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f).clickable(onClick = onAbrirAjustes),
             )
-        }
-        if (sinBase || perfil?.tasaAhorro?.decimas == 0) {
-            TextButton(onClick = onAbrirAjustes) { Text("Define cuánto quieres ahorrar en Ajustes") }
+            if (sinMeta) {
+                Text(
+                    "Toca aquí para definir cuánto quieres ahorrar",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
@@ -368,18 +456,5 @@ private fun Seccion(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         ) { contenido() }
-    }
-}
-
-@Composable
-private fun TarjetaTotal(titulo: String, monto: Monto, color: Color, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(titulo, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(monto.formatear(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = color)
-        }
     }
 }
