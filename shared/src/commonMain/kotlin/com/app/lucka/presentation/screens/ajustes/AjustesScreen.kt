@@ -1,5 +1,6 @@
 package com.app.lucka.presentation.screens.ajustes
 
+import com.app.lucka.presentation.components.LogoLucka
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -113,6 +114,7 @@ fun AjustesScreen(
         ) {
             if (esPrimeraVez) {
                 Column(Modifier.padding(top = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LogoLucka(tamano = 88.dp)
                     Text(
                         text = "Te damos la bienvenida a Lucka",
                         style = MaterialTheme.typography.headlineMedium,

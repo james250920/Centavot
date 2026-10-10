@@ -1,5 +1,7 @@
 package com.app.lucka.presentation.screens.privacidad
 
+import com.app.lucka.presentation.components.LogoLucka
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -99,6 +101,13 @@ fun AvisoPrivacidadScreen(
             modifier = Modifier.padding(padding).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            if (pideConsentimiento) {
+                LogoLucka(
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 8.dp),
+                    tamano = 140.dp,
+                    animado = true,
+                )
+            }
             Text(
                 text = if (pideConsentimiento) {
                     "Antes de empezar, lee cómo Lucka cuida tus datos. Es corto."

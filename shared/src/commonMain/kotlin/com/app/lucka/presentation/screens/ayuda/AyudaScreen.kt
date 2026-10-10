@@ -1,5 +1,7 @@
 package com.app.lucka.presentation.screens.ayuda
 
+import com.app.lucka.presentation.components.LogoLucka
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -54,6 +56,7 @@ fun AyudaScreen(onCerrar: () -> Unit) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            LogoLucka(modifier = Modifier.align(Alignment.CenterHorizontally), tamano = 112.dp)
             Text(
                 "Lucka es tu cuaderno, pero que suma solo. Úsalo varias veces al día, cada vez que vendas o gastes.",
                 style = MaterialTheme.typography.bodyLarge,

@@ -82,6 +82,11 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+compose.resources {
+    packageOfResClass = "com.app.lucka.resources"
+    generateResClass = always
+}
+
 dependencies {
     // ui-tooling solo en debug (androidApp): en release dejaría PreviewActivity exportada.
     add("kspAndroid", libs.room.compiler)
