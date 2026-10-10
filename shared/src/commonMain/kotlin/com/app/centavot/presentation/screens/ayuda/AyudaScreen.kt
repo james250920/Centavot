@@ -72,7 +72,7 @@ fun AyudaScreen(onCerrar: () -> Unit) {
                     }
                 }
             }
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("¿No quieres dejar tu cuaderno?", style = MaterialTheme.typography.titleSmall)
                     Text(
@@ -82,9 +82,9 @@ fun AyudaScreen(onCerrar: () -> Unit) {
                     )
                 }
             }
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Icon(Iconos.Candado, contentDescription = null)
+                    Icon(Iconos.Candado, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("Tus datos son tuyos", style = MaterialTheme.typography.titleSmall)
                         Text(

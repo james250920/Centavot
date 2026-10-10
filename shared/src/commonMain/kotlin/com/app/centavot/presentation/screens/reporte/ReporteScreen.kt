@@ -220,7 +220,7 @@ private fun LazyListScope.contenidoPersonal(estado: ReporteUiState, onAbrirGasto
 private fun LazyListScope.contenidoMeDeben(estado: ReporteUiState) {
     val resumen = estado.resumenCobros
     item {
-        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
+        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
             Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Te deben en total", style = MaterialTheme.typography.labelLarge)
                 Text(resumen.totalPendiente.formatear(), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)

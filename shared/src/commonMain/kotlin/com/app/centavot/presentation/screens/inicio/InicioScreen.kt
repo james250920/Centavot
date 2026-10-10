@@ -131,7 +131,7 @@ fun InicioScreen(
         ) {
             item { BotonesRegistro(onRegistrarVenta, onRegistrarGasto) }
 
-            item { PestanasInicio(pestana, conAlerta = alertaTope != null, onCambiar = { pestana = it }) }
+            item { PestanasInicio(pestana, alerta = alertaTope?.nivelAlerta, onCambiar = { pestana = it }) }
 
             when (pestana) {
                 PestanaInicio.HOY -> {
@@ -226,7 +226,9 @@ private enum class PestanaInicio(val titulo: String) {
 }
 
 @Composable
-private fun PestanasInicio(actual: PestanaInicio, conAlerta: Boolean, onCambiar: (PestanaInicio) -> Unit) {
+private fun PestanasInicio(actual: PestanaInicio, alerta: NivelAlerta?, onCambiar: (PestanaInicio) -> Unit) {
+    val conAlerta = alerta != null
+    val colorPunto = if (alerta == NivelAlerta.TOPE_ALCANZADO) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
     PrimaryTabRow(selectedTabIndex = actual.ordinal, containerColor = Color.Transparent) {
         PestanaInicio.entries.forEach { pestana ->
             Tab(
@@ -234,7 +236,7 @@ private fun PestanasInicio(actual: PestanaInicio, conAlerta: Boolean, onCambiar:
                 onClick = { onCambiar(pestana) },
                 text = {
                     if (pestana == PestanaInicio.NEGOCIO && conAlerta) {
-                        BadgedBox(badge = { Badge() }) { Text(pestana.titulo) }
+                        BadgedBox(badge = { Badge(containerColor = colorPunto) }) { Text(pestana.titulo) }
                     } else {
                         Text(pestana.titulo)
                     }
@@ -251,9 +253,13 @@ private fun PestanasInicio(actual: PestanaInicio, conAlerta: Boolean, onCambiar:
 @Composable
 private fun AvisoTopeCorto(tope: EstadoTope, onVer: () -> Unit) {
     val (medida, proximidad) = tope.principal
+    val alcanzado = proximidad.nivelAlerta == NivelAlerta.TOPE_ALCANZADO
     Card(
         onClick = onVer,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+        colors = CardDefaults.cardColors(
+            containerColor = if (alcanzado) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = if (alcanzado) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onTertiaryContainer,
+        ),
     ) {
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
@@ -312,7 +318,7 @@ private fun TarjetaCaja(periodo: Periodo, caja: ResumenPeriodo, uso: ResumenUso?
                 }
             }
             FilaCaja("Vendiste", caja.ventas, colores.primary)
-            FilaCaja("Gastaste en el negocio", caja.gastosNegocio, colores.tertiary)
+            FilaCaja("Gastaste en el negocio", caja.gastosNegocio, colores.onSurface)
             HorizontalDivider(color = colores.outlineVariant)
             val ganancia = caja.ganancia
             FilaCaja(
@@ -369,7 +375,7 @@ private fun LineaConstancia(uso: ResumenUso) {
 /** "¿Te resulta más fácil que tu cuaderno?": la prueba de fondo de si la app sirve. */
 @Composable
 private fun TarjetaPreguntaCuaderno(onResponder: (Boolean) -> Unit) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Una pregunta rápida", style = MaterialTheme.typography.titleMedium)
             Text(
@@ -387,7 +393,7 @@ private fun TarjetaPreguntaCuaderno(onResponder: (Boolean) -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PrimerosPasos(onRegistrarVenta: () -> Unit, onRegistrarGasto: () -> Unit, onAbrirAyuda: () -> Unit) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Empieza en 3 pasos", style = MaterialTheme.typography.titleMedium)
             Text("1. Cada vez que vendas algo, toca Venta y pon el monto.", style = MaterialTheme.typography.bodyMedium)

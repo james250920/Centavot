@@ -10,7 +10,7 @@ y datos de demostración, en un Samsung Galaxy A15 con Android 16.
 | 1 | Registrar venta más simple | [P1] Demasiadas decisiones para la acción más frecuente | ✅ |
 | 2 | Cobros sin acciones tapadas | [P1] El botón flotante tapa acciones; 5 acciones por cobro | ✅ |
 | 3 | Confirmación y deshacer al guardar | [P2] Gasto, cobro y abono se cierran sin decir nada | ✅ |
-| 4 | Colores con un solo significado | [P2] Ámbar para alertas y para cosas neutras | ⏳ |
+| 4 | Colores con un solo significado | [P2] Ámbar para alertas y para cosas neutras | ✅ |
 | 5 | Barra superior de Inicio | [P2] 4 íconos sin texto | ⏳ |
 | 6 | Detalles finales | [P3] Montos, gráfico, compartir y controles distintos | ⏳ |
 
@@ -122,3 +122,42 @@ se llega con la tecla "siguiente" del teclado, pero no se ve.
 **Archivos.** `Avisos.kt` (nuevo), `NavegacionPrincipal.kt` (snackbar), `GastoViewModel.kt`,
 `VentaViewModel.kt`, `VentaScreen.kt`, `CobroViewModel.kt`, `CobrosViewModel.kt`, `CobroUseCases.kt`,
 `Modulos.kt`, `PendientesTest.kt`, `DeshacerTest.kt` (nuevo).
+
+---
+
+## Paso 4 · Colores con un solo significado
+
+**Problema.** El ámbar marcaba el aviso del tope, pero también la encuesta "Una pregunta rápida",
+"Te deben" en Reportes, la línea de gastos del gráfico, el monto "Gastaste" y la etiqueta
+"Sin clasificar". El verde oscuro se usaba a la vez para lo que te deben y para el mensaje de
+privacidad. Si el color no es confiable, el aviso del tope pierde fuerza.
+
+**Qué se hizo.** Se fijó una regla (escrita en `Tema.kt`) y se aplicó en toda la app, sin salir del
+tema Material actual:
+
+| Color | Significa | Dónde |
+|---|---|---|
+| Verde (primary) | Plata a favor o algo que salió bien | Ventas, ganancia, "Guardaste", "Cobrado", tope sin problemas |
+| Ámbar (tertiary) | Atención | Solo avisos de tope al 80 % y 90 % (tarjeta, línea en "Hoy", punto en "Mi negocio", notificaciones) |
+| Rojo (error) | Límite o acción sin vuelta atrás | Tope alcanzado (tarjeta, línea y punto), Eliminar |
+| Neutro (superficies) | Información | Encuesta, primeros pasos, "Te deben" (Cobros y Reportes), privacidad, ayuda, "Sin clasificar" |
+
+Cambios puntuales:
+- "Una pregunta rápida" y "Empieza en 3 pasos": de ámbar y verde a superficie neutra.
+- "Te deben" en Cobros (verde oscuro) y en Reportes › Me deben (ámbar): superficie neutra en los dos.
+- "Tus datos son tuyos" (Ajustes, bienvenida y Ayuda) y "¿No quieres dejar tu cuaderno?": neutras;
+  el candado se pinta en verde.
+- "Gastaste en el negocio": de ámbar al color del texto. La línea de gastos del gráfico: de ámbar
+  a gris (sigue punteada, así no se distingue solo por color).
+- La línea del tope en "Hoy" y el punto de "Mi negocio" pasan a **rojo** cuando se llega al tope
+  (antes siempre ámbar).
+- "Sin clasificar": de ámbar a gris.
+
+**Verificación.**
+- En el teléfono, Inicio, Cobros, el gráfico de Reportes y Me deben en **tema oscuro y tema claro**:
+  el ámbar solo aparece en el aviso del tope y el punto de "Mi negocio". El teléfono volvió a su tema
+  original (oscuro).
+- **83 tests, 0 fallas** (este paso no cambia lógica).
+
+**Archivos.** `Tema.kt`, `InicioScreen.kt`, `CobrosScreen.kt`, `ReporteScreen.kt`, `AjustesScreen.kt`,
+`AyudaScreen.kt`, `EtiquetaCategoria.kt`, `GraficoLineas.kt`.

@@ -38,7 +38,7 @@ private val MESES_CORTOS = listOf("ene", "feb", "mar", "abr", "may", "jun", "jul
 @Composable
 fun GraficoLineas(historial: Historial, modifier: Modifier = Modifier) {
     val colorVentas = MaterialTheme.colorScheme.primary
-    val colorGastos = MaterialTheme.colorScheme.tertiary
+    val colorGastos = MaterialTheme.colorScheme.onSurfaceVariant
     val colorGuia = MaterialTheme.colorScheme.outlineVariant
     val maximo = historial.meses.maxOf { maxOf(it.ventas.centimos, it.gastosNegocio.centimos) }.coerceAtLeast(1)
     val descripcion = historial.meses.joinToString("; ") { mes ->

@@ -275,9 +275,9 @@ private fun TarjetaTusDatos(
 /** Lo que la entrevista pidió dejar claro: sin banco, sin SUNAT, los datos son del usuario. */
 @Composable
 private fun TarjetaPrivacidad() {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Icon(Iconos.Candado, contentDescription = null)
+            Icon(Iconos.Candado, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Tus datos son tuyos", style = MaterialTheme.typography.titleSmall)
                 Text("• No pedimos tus claves ni tu cuenta del banco.", style = MaterialTheme.typography.bodyMedium)
