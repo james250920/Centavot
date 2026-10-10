@@ -136,7 +136,7 @@ private fun LazyListScope.contenidoNegocio(
 ) {
     val reporte = estado.reporte
     if (reporte == null) {
-        item { EstadoVacio("Elige tu régimen", "Ve a Ajustes para elegir tu régimen y ver este resumen.") }
+        item { EstadoVacio("Elige tu régimen", "Está en Ajustes.") }
         return
     }
     item {
@@ -194,12 +194,12 @@ private fun LazyListScope.contenidoNegocio(
 /** Frases simples sobre el historial: el comerciante ya lo intuye, aquí lo ve en números. */
 private fun lecturasDe(historial: Historial): List<String> = listOfNotNull(
     historial.mejorMes?.let { "Tu mejor mes fue ${it.mes.formatear().lowercase()}: vendiste ${it.ventas.formatear()}." },
-    historial.peorMes?.let { "El mes más flojo fue ${it.mes.formatear().lowercase()}: ${it.ventas.formatear()}. Si se repite cada año, prepárate con tiempo." },
+    historial.peorMes?.let { "Tu mes más flojo fue ${it.mes.formatear().lowercase()}: ${it.ventas.formatear()}." },
     historial.variacionUltimoMes?.let { variacion ->
         when {
-            variacion > 0 -> "Este mes vas vendiendo $variacion % más que el mes pasado."
-            variacion < 0 -> "Este mes vas vendiendo ${-variacion} % menos que el mes pasado."
-            else -> "Este mes vas igual que el mes pasado."
+            variacion > 0 -> "Este mes vendes $variacion % más que el pasado."
+            variacion < 0 -> "Este mes vendes ${-variacion} % menos que el pasado."
+            else -> "Este mes vas igual que el pasado."
         }
     },
 )
@@ -221,7 +221,7 @@ private fun LazyListScope.contenidoPersonal(
                 val quedo = entro - gasto
                 FilaTotal(if (quedo < Monto.CERO) "Gastaste de más" else "Te quedó", Monto(kotlin.math.abs(quedo.centimos)), destacado = true)
                 Text(
-                    "Este reporte es solo para ti: no es para SUNAT.",
+                    "Solo para ti: no es para SUNAT.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -264,7 +264,7 @@ private fun LazyListScope.contenidoMeDeben(estado: ReporteUiState) {
         }
     }
     if (estado.cobrosPendientes.isEmpty()) {
-        item { EstadoVacio("Nadie te debe", "Cuando fíes o tengas pedidos por cobrar, aparecerán aquí.") }
+        item { EstadoVacio("Nadie te debe", if (estado.modo == Modo.NEGOCIO) "Aquí aparecen los fiados y pedidos por cobrar." else "Aquí aparece la plata que prestaste.") }
         return
     }
     item {
@@ -309,8 +309,7 @@ private fun AvisoPrivacidad() {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Icon(Iconos.Candado, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(
-            text = "Centavot no declara ni envía nada a SUNAT: este resumen es tuyo. Revísalo con tu contador antes de " +
-                "declarar. Con el botón de compartir lo envías en un archivo que se abre en Excel.",
+            text = "No se envía a SUNAT. Revísalo con tu contador antes de declarar.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

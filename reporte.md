@@ -362,7 +362,7 @@ verificación, para saber en qué nos quedamos.
 | 13 | Bienvenida y Ajustes con menos texto | Una explicación debajo de cada sección y de cada campo | ✅ |
 | 14 | Cobros con menos texto | Ayudas largas en el formulario y en la lista vacía | ✅ |
 | 15 | Venta, gasto y retiro con menos texto | Ayudas que repiten lo que ya dice el campo | ✅ |
-| 16 | Reportes con menos texto | Notas largas encima de los números | ⏳ |
+| 16 | Reportes con menos texto | Notas largas encima de los números | ✅ |
 | 17 | Ayuda más corta | 402 palabras: la pantalla con más texto | ⏳ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
@@ -503,3 +503,23 @@ detalles abiertos (adelanto, "Contarlo como venta" y fecha). 99 tests, 0 fallas.
 **Verificación.** En el teléfono: venta y "Saqué para la casa" con los detalles abiertos. 99 tests, 0 fallas.
 
 **Archivos.** `VentaScreen.kt`, `GastoScreen.kt`.
+
+---
+
+## Paso 16 · Reportes con menos texto
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Nota bajo el resumen | "Centavot no declara ni envía nada a SUNAT: este resumen es tuyo. Revísalo con tu contador antes de declarar. Con el botón de compartir lo envías en un archivo que se abre en Excel." | "No se envía a SUNAT. Revísalo con tu contador antes de declarar." (el botón "Enviar al contador" ya está arriba) |
+| Lectura del mes flojo | "El mes más flojo fue julio 2026: S/ 4,300.00. Si se repite cada año, prepárate con tiempo." | "Tu mes más flojo fue julio 2026: S/ 4,300.00." |
+| Variación | "Este mes vas vendiendo 6 % menos que el mes pasado." | "Este mes vendes 6 % menos que el pasado." |
+| Sin régimen | "Ve a Ajustes para elegir tu régimen y ver este resumen." | "Está en Ajustes." (bajo el título "Elige tu régimen") |
+| Mi plata | "Este reporte es solo para ti: no es para SUNAT." | "Solo para ti: no es para SUNAT." |
+| Me deben vacío | "Cuando fíes o tengas pedidos por cobrar, aparecerán aquí." | Según el modo: "Aquí aparecen los fiados y pedidos por cobrar." / "Aquí aparece la plata que prestaste." |
+
+Se mantuvo "(línea continua)" y "(punteada)" en la leyenda del gráfico: sin eso, las dos líneas solo
+se distinguen por el color.
+
+**Verificación.** En el teléfono: resumen, nota de una línea, gráfico y lecturas. 99 tests, 0 fallas.
+
+**Archivos.** `ReporteScreen.kt`.
