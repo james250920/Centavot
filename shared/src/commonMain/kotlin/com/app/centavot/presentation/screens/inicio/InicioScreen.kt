@@ -12,8 +12,6 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -167,7 +165,7 @@ fun InicioScreen(
                     }
 
                     if (!estado.hayMovimientos) {
-                        item { PrimerosPasos(modo, onRegistrarVenta, onRegistrarGasto, onAbrirAyuda) }
+                        item { PrimerosPasos(modo, onAbrirAyuda) }
                     }
 
                     alertaTope?.let { tope ->
@@ -331,7 +329,7 @@ private fun AvisoTopeCorto(tope: EstadoTope, onVer: () -> Unit) {
         ) {
             Icon(Iconos.Aviso, contentDescription = null)
             Text(
-                "Tus ${medida.etiqueta} van en ${proximidad.porcentaje} % de tu tope",
+                "${medida.etiqueta.replaceFirstChar { it.uppercase() }}: ${proximidad.porcentaje} % del tope",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f),
             )
@@ -452,8 +450,8 @@ private fun LineaConstancia(uso: ResumenUso) {
     val dias = uso.diasConRegistroUltimos7
     val mensaje = when {
         dias >= 5 -> "¡Bien! Anotaste $dias de los últimos 7 días."
-        dias > 0 -> "Anotaste $dias de los últimos 7 días. Anotar cada día hace que tus cuentas cuadren."
-        else -> "Esta semana no anotaste nada. Un minuto al cerrar el día basta."
+        dias > 0 -> "Anotaste $dias de los últimos 7 días."
+        else -> "No anotaste nada en los últimos 7 días."
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(Iconos.Calendario, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
@@ -466,11 +464,7 @@ private fun LineaConstancia(uso: ResumenUso) {
 private fun TarjetaPreguntaCuaderno(onResponder: (Boolean) -> Unit) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Una pregunta rápida", style = MaterialTheme.typography.titleMedium)
-            Text(
-                "¿Te resulta más fácil llevar tus cuentas con Centavot que con tu cuaderno y la calculadora?",
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            Text("¿Es más fácil que tu cuaderno?", style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(onClick = { onResponder(true) }, modifier = Modifier.weight(1f).height(48.dp)) { Text("Sí, más fácil") }
                 OutlinedButton(onClick = { onResponder(false) }, modifier = Modifier.weight(1f).height(48.dp)) { Text("Todavía no") }
@@ -479,35 +473,22 @@ private fun TarjetaPreguntaCuaderno(onResponder: (Boolean) -> Unit) {
     }
 }
 
-private fun pasosDe(modo: Modo): List<String> = when (modo) {
-    Modo.NEGOCIO -> listOf(
-        "1. Cada vez que vendas algo, toca Venta y pon el monto.",
-        "2. Cuando compres mercadería o pagues algo, toca Gasto.",
-        "3. Al cerrar el día, mira tu caja: cuánto vendiste y cuánto te quedó.",
-    )
-    Modo.PERSONAL -> listOf(
-        "1. Cuando te paguen o te entre plata, toca Ingreso y pon el monto.",
-        "2. Cuando pagues algo (pasaje, comida, luz), toca Gasto.",
-        "3. Al final del día, mira tu plata: cuánto entró y cuánto te quedó.",
-    )
-}
-
-@OptIn(ExperimentalLayoutApi::class)
+/** Primera vez, sin movimientos: una sola frase y la ayuda. Los botones grandes ya están arriba. */
 @Composable
-private fun PrimerosPasos(modo: Modo, onRegistrarEntrada: () -> Unit, onRegistrarGasto: () -> Unit, onAbrirAyuda: () -> Unit) {
+private fun PrimerosPasos(modo: Modo, onAbrirAyuda: () -> Unit) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
-        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Empieza en 3 pasos", style = MaterialTheme.typography.titleMedium)
-            pasosDe(modo).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        Row(
+            Modifier.fillMaxWidth().padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
-                "¿Sigues usando tu cuaderno? No pasa nada: al final del día pasa aquí los totales.",
-                style = MaterialTheme.typography.bodySmall,
+                if (modo == Modo.NEGOCIO) "Toca Venta cada vez que vendas y Gasto cuando pagues algo."
+                else "Toca Ingreso cuando te entre plata y Gasto cuando pagues algo.",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f),
             )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = onRegistrarEntrada) { Text(if (modo == Modo.NEGOCIO) "Mi primera venta" else "Mi primer ingreso") }
-                TextButton(onClick = onRegistrarGasto) { Text("Mi primer gasto") }
-                TextButton(onClick = onAbrirAyuda) { Text("Ver ayuda") }
-            }
+            TextButton(onClick = onAbrirAyuda) { Text("Ayuda") }
         }
     }
 }
@@ -541,7 +522,7 @@ private fun TarjetaAhorro(estado: InicioUiState, onAbrirAjustes: () -> Unit) {
             )
             if (sinMeta) {
                 Text(
-                    "Toca aquí para definir cuánto quieres ahorrar",
+                    "Toca para definir tu meta",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

@@ -50,19 +50,19 @@ fun TarjetaTope(
     val estilo = when (proximidad.nivelAlerta) {
         NivelAlerta.NINGUNA -> EstiloAlerta(
             colores.primary, colores.primaryContainer, colores.onPrimaryContainer, Iconos.Correcto,
-            "Vas bien. Te quedan $restante antes de llegar a tu tope.",
+            "Vas bien: te quedan $restante.",
         )
         NivelAlerta.AVISO_80 -> EstiloAlerta(
             colores.tertiary, colores.tertiaryContainer, colores.onTertiaryContainer, Iconos.Aviso,
-            "Tus ${medida.etiqueta} ya pasaron el 80 % del tope. Te quedan $restante $periodo.",
+            "En ${medida.etiqueta} te quedan $restante $periodo.",
         )
         NivelAlerta.AVISO_90 -> EstiloAlerta(
             colores.tertiary, colores.tertiaryContainer, colores.onTertiaryContainer, Iconos.Aviso,
-            "Tus ${medida.etiqueta} están muy cerca del tope: te quedan $restante. Consulta con tu contador.",
+            "En ${medida.etiqueta} te quedan $restante. Habla con tu contador.",
         )
         NivelAlerta.TOPE_ALCANZADO -> EstiloAlerta(
             colores.error, colores.errorContainer, colores.onErrorContainer, Iconos.Aviso,
-            "Tus ${medida.etiqueta} llegaron al tope. Habla con tu contador: puede que te toque cambiar de categoría.",
+            "Llegaste al tope. Habla con tu contador.",
         )
     }
 
@@ -72,7 +72,7 @@ fun TarjetaTope(
     ) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
-                text = "Tope de tu régimen · ${regimen.nombre} · ${proximidad.tope.formatear()} ${if (regimen.periodo == PeriodoTope.MENSUAL) "al mes" else "al año"}",
+                text = "${regimen.nombre} · tope ${proximidad.tope.formatear()} ${if (regimen.periodo == PeriodoTope.MENSUAL) "al mes" else "al año"}",
                 style = MaterialTheme.typography.labelLarge,
                 color = colores.onSurfaceVariant,
             )

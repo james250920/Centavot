@@ -346,3 +346,78 @@ TalkBack) y más espacio entre secciones que dentro de ellas:
 Todo se probó en un Samsung Galaxy A15 (Android 16) con una copia de prueba aparte, en tema oscuro,
 tema claro (paso 4) y texto grande (paso 6). Puntaje de la revisión UX/UI: **28/40** al inicio,
 **31/40** tras los pasos 1–6; los pasos 7–9 resuelven los tres P2 que quedaban.
+
+---
+
+# Ronda 2 · Modos y menos texto
+
+Cambios desde el 10 de octubre por la tarde. Cada paso se registra aquí al terminarlo, con su
+verificación, para saber en qué nos quedamos.
+
+| # | Paso | Motivo | Estado |
+|---|---|---|---|
+| 10 | Modo personal o negocio | Reunión con asesores de negocio: no mezclar lo personal con el negocio | ✅ |
+| 11 | Inicio con menos texto | "Veo mucho texto": tarjetas con párrafos y frases repetidas | ✅ |
+| 12 | Régimen con menos texto | La misma explicación repetida en cada opción | ⏳ |
+| 13 | Bienvenida y Ajustes con menos texto | Una explicación debajo de cada sección y de cada campo | ⏳ |
+| 14 | Cobros con menos texto | Ayudas largas en el formulario y en la lista vacía | ⏳ |
+| 15 | Venta, gasto y retiro con menos texto | Ayudas que repiten lo que ya dice el campo | ⏳ |
+| 16 | Reportes con menos texto | Notas largas encima de los números | ⏳ |
+| 17 | Ayuda más corta | 402 palabras: la pantalla con más texto | ⏳ |
+
+**Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
+título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
+el texto legal del aviso de privacidad (Ley 29733).
+
+---
+
+## Paso 10 · Modo personal o negocio
+
+**Motivo.** En una reunión con personas con experiencia en negocios se recomendó separar lo personal
+de lo del negocio: hay quienes solo quieren llevar su presupuesto, y mostrar las dos cosas junta
+demasiada información.
+
+**Qué se hizo.**
+- **Registro:** aviso de privacidad → solo el **nombre** y **Mi plata personal** o **Mi negocio**.
+  El régimen se pide solo en modo negocio. Rubro, ingreso mensual y % de ahorro pasan a Ajustes.
+- **Cada modo ve solo lo suyo, con las mismas funciones:**
+
+| | Negocio | Personal |
+|---|---|---|
+| Entrada | Venta | Ingreso |
+| Gastos | Subcategorías de negocio | Subcategorías de casa |
+| Cobros | Fiados y pedidos | Préstamos |
+| Inicio | "Tu caja" y "Mi negocio" (tope) | "Tu plata" y "Mi mes" |
+| Reportes | Negocio y Me deben | Mi plata y Me deben |
+
+- El selector "Negocio / Personal" desapareció de los formularios: lo pone el modo.
+- **Cambiar de modo** desde la etiqueta de arriba en Inicio o desde Ajustes; no se borra nada.
+- **"Saqué para la casa"**: retiro que resta de la caja ("Queda en caja") sin bajar la ganancia, y
+  aparece como ingreso "De tu negocio" en lo personal.
+- Base de datos v4 (`perfil.modo`, `ingresos.retiroDelNegocio`, `cobros.categoria`); quien ya usaba
+  la app queda en modo negocio.
+
+**Verificación.** 99 tests. En el teléfono: registro en los dos modos, cambio de modo, volver a lo
+personal desde el régimen, retiro, préstamo personal, reportes y migración v3 → v4 de los datos de
+demostración. PR #8 (fusionado).
+
+---
+
+## Paso 11 · Inicio con menos texto
+
+**Problema.** Inicio tenía párrafos dentro de las tarjetas y repetía lo mismo en dos lugares (el
+porcentaje del tope estaba en la barra y otra vez en el mensaje).
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Pregunta del cuaderno | Título "Una pregunta rápida" + "¿Te resulta más fácil llevar tus cuentas con Centavot que con tu cuaderno y la calculadora?" | "¿Es más fácil que tu cuaderno?" y los dos botones |
+| Primera vez (sin movimientos) | "Empieza en 3 pasos", tres pasos numerados, una nota sobre el cuaderno y tres enlaces | Una frase ("Toca Venta cada vez que vendas y Gasto cuando pagues algo.") y "Ayuda". Los botones grandes ya están arriba |
+| Constancia | "Anotaste 3 de los últimos 7 días. Anotar cada día hace que tus cuentas cuadren." | "Anotaste 3 de los últimos 7 días." |
+| Aviso del tope en "Hoy" | "Tus ventas van en 84 % de tu tope" | "Ventas: 84 % del tope" |
+| Tarjeta del tope | "Tope de tu régimen · RUS · Categoría 2 · S/ 8,000.00 al mes" y "Tus ventas ya pasaron el 80 % del tope. Te quedan S/ 1,250.30 este mes." | "RUS · Categoría 2 · tope S/ 8,000.00 al mes" y "En ventas te quedan S/ 1,250.30 este mes." (el 84 % ya está en la barra) |
+| Meta de ahorro sin definir | "Toca aquí para definir cuánto quieres ahorrar" | "Toca para definir tu meta" |
+
+**Verificación.** En el teléfono con los datos de demostración: "Hoy" y "Mi negocio" (tope al 84 %).
+99 tests, 0 fallas.
+
+**Archivos.** `InicioScreen.kt`, `TarjetaTope.kt`.
