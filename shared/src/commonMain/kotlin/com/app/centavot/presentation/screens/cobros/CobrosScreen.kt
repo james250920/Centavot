@@ -1,5 +1,17 @@
 package com.app.centavot.presentation.screens.cobros
 
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +31,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -52,6 +63,12 @@ import com.app.centavot.presentation.components.formatearRelativo
 import kotlinx.datetime.LocalDate
 import org.koin.compose.viewmodel.koinViewModel
 
+/** Relleno lateral más corto para que Cobrar, Abonar y WhatsApp quepan en una fila. */
+private val RellenoAccion = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+
+/** Posición del botón "Registrar cobro" en la lista (después de "Te deben"). */
+private const val INDICE_BOTON_REGISTRAR = 1
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CobrosScreen(
@@ -61,6 +78,17 @@ fun CobrosScreen(
     viewModel: CobrosViewModel = koinViewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
+    val lista = rememberLazyListState()
+    // "Registrar cobro" vive en la lista, con su texto; el "+" flotante solo aparece cuando ese botón ya no se ve.
+    val mostrarBotonFlotante by remember {
+        derivedStateOf {
+            val info = lista.layoutInfo
+            val boton = info.visibleItemsInfo.firstOrNull { it.index == INDICE_BOTON_REGISTRAR }
+            // Cuenta como oculto si ya salió de la vista o le queda menos de la mitad a la vista.
+            info.visibleItemsInfo.isNotEmpty() &&
+                (boton == null || boton.offset + boton.size / 2 < info.viewportStartOffset)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -74,12 +102,10 @@ fun CobrosScreen(
             )
         },
         floatingActionButton = {
-            if (estado.cobros.isNotEmpty()) {
-                ExtendedFloatingActionButton(
-                    onClick = onRegistrarCobro,
-                    icon = { Icon(Iconos.Agregar, contentDescription = null) },
-                    text = { Text("Registrar cobro") },
-                )
+            AnimatedVisibility(visible = estado.cobros.isNotEmpty() && mostrarBotonFlotante, enter = scaleIn(), exit = scaleOut()) {
+                FloatingActionButton(onClick = onRegistrarCobro) {
+                    Icon(Iconos.Agregar, contentDescription = "Registrar cobro")
+                }
             }
         },
     ) { padding ->
@@ -102,11 +128,18 @@ fun CobrosScreen(
         }
 
         LazyColumn(
+            state = lista,
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 120.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            estado.resumen?.let { resumen -> item { TarjetaTeDeben(resumen) } }
+            item { estado.resumen?.let { resumen -> TarjetaTeDeben(resumen) } }
+            item {
+                FilledTonalButton(onClick = onRegistrarCobro, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                    Icon(Iconos.Agregar, contentDescription = null)
+                    Text("Registrar cobro", modifier = Modifier.padding(start = 8.dp))
+                }
+            }
 
             item { Text("Fiados, préstamos y pedidos", style = MaterialTheme.typography.titleMedium) }
             item {
@@ -193,8 +226,8 @@ private fun TarjetaTeDeben(resumen: ResumenCobros) {
 }
 
 /**
- * Un cobro con sus datos arriba y todas sus acciones en una fila de ancho completo debajo,
- * para que no se apilen ni se corte el motivo con texto grande.
+ * Un cobro con sus datos arriba y, debajo, solo las acciones del día a día: Cobrar, Abonar y
+ * recordar por WhatsApp. Editar y Eliminar van en el menú ⋮, lejos de las otras para no tocarlas sin querer.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -227,7 +260,12 @@ private fun FilaCobro(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = if (cobro.estaPendiente) colores.onSurface else colores.onSurfaceVariant,
-                modifier = Modifier.padding(start = 12.dp),
+                modifier = Modifier.padding(start = 12.dp, top = 12.dp),
+            )
+            MenuCobro(
+                nombre = cobro.contacto.nombre,
+                onEditar = onEditar.takeIf { cobro.estaPendiente },
+                onEliminar = onEliminar,
             )
         }
         if (cobro.pagado > Monto.CERO) {
@@ -251,15 +289,11 @@ private fun FilaCobro(
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             if (cobro.estaPendiente) {
-                FilledTonalButton(onClick = onCobrar) { Text("Cobrar") }
-                OutlinedButton(onClick = onAbonar) { Text("Abonar") }
-                TextButton(onClick = onEditar) {
-                    Icon(Iconos.Editar, contentDescription = null)
-                    Text("Editar", modifier = Modifier.padding(start = 6.dp))
-                }
+                FilledTonalButton(onClick = onCobrar, contentPadding = RellenoAccion) { Text("Cobrar") }
+                OutlinedButton(onClick = onAbonar, contentPadding = RellenoAccion) { Text("Abonar") }
                 if (cobro.contacto.telefono != null) {
                     TextButton(onClick = onRecordar) {
                         Icon(Iconos.Mensaje, contentDescription = null)
@@ -276,9 +310,31 @@ private fun FilaCobro(
                     Text("Cobrado", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
                 }
             }
-            IconButton(onClick = onEliminar) {
-                Icon(Iconos.Eliminar, contentDescription = "Eliminar cobro de ${cobro.contacto.nombre}", tint = colores.onSurfaceVariant)
+        }
+    }
+}
+
+/** Acciones que se usan poco o no tienen vuelta atrás, con su nombre escrito. */
+@Composable
+private fun MenuCobro(nombre: String, onEditar: (() -> Unit)?, onEliminar: () -> Unit) {
+    var abierto by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { abierto = true }) {
+            Icon(Iconos.MasOpciones, contentDescription = "Más opciones del cobro de $nombre")
+        }
+        DropdownMenu(expanded = abierto, onDismissRequest = { abierto = false }) {
+            if (onEditar != null) {
+                DropdownMenuItem(
+                    text = { Text("Editar") },
+                    leadingIcon = { Icon(Iconos.Editar, contentDescription = null) },
+                    onClick = { abierto = false; onEditar() },
+                )
             }
+            DropdownMenuItem(
+                text = { Text("Eliminar", color = MaterialTheme.colorScheme.error) },
+                leadingIcon = { Icon(Iconos.Eliminar, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+                onClick = { abierto = false; onEliminar() },
+            )
         }
     }
 }
