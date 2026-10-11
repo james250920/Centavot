@@ -364,6 +364,7 @@ verificación, para saber en qué nos quedamos.
 | 15 | Venta, gasto y retiro con menos texto | Ayudas que repiten lo que ya dice el campo | ✅ |
 | 16 | Reportes con menos texto | Notas largas encima de los números | ✅ |
 | 17 | Ayuda más corta | 402 palabras: la pantalla con más texto | ✅ |
+| 18 | Botones y elementos de tamaño normal | "Que no estén muy grandes" | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -574,5 +575,36 @@ plegadas, que no se ven hasta tocarlas):
   diciendo qué corregir.
 - 99 tests. Todo se probó en el teléfono con una copia aparte (`com.app.centavot.prueba`).
 
-**Dónde nos quedamos.** Rama `ux/menos-texto`, un commit por paso, sin subir. Siguiente: decidir si se
-sube y se fusiona, y actualizar las capturas.
+**Estado.** Fusionado en `main` (PR #9) e instalado en el teléfono.
+
+---
+
+## Paso 18 · Botones y elementos de tamaño normal
+
+**Problema.** Varios elementos se veían grandes. Se midieron en el teléfono (densidad 450, 384 dp de
+ancho) todos los elementos tocables: casi todos medían exactamente **48 dp**, el mínimo para tocar
+con el dedo, así que no sobraban. Los grandes eran los que tenían un alto fijo mayor al estándar o
+números con letra de cartel.
+
+| Elemento | Antes | Ahora |
+|---|---|---|
+| Botones Venta / Gasto de Inicio | 64 dp | 56 dp (siguen siendo los más grandes: son la acción principal) |
+| Botón principal de cada formulario (Guardar, Registrar, Continuar, Empezar, Entiendo y acepto) | 56 dp | 48 dp |
+| "Registrar cobro" en la lista | 56 dp | 48 dp |
+| Montos rápidos, ventas frecuentes, "Sí, más fácil / Todavía no", "Saqué para la casa" | Dibujados de 48 dp | Alto estándar: 40 dp a la vista y 48 dp para tocar |
+| Campo del monto (venta, gasto, cobro) | 76 dp, letra `headlineMedium` | 72 dp, letra `headlineSmall` |
+| Total de "Te deben" (Cobros y Reportes) | `displaySmall` | `headlineMedium` |
+| Porcentaje del tope | `headlineMedium` | `headlineSmall` |
+| Tarjetas de modo | Mín. 72 dp con 16 dp de relleno | Mín. 64 dp con 12 dp arriba y abajo |
+
+- Ningún elemento tocable quedó por debajo de 48 dp.
+- El aviso que aparece al guardar se corrió para quedar encima del botón, ahora más bajo
+  (`ALTO_BOTON_INFERIOR` 88 → 80 dp).
+
+**Verificación.** Medido de nuevo en el teléfono (ej. "Guardar venta" 352 × 48 dp, montos rápidos
+74 × 48 dp para tocar) y revisado en Inicio, Mi negocio, Registrar venta, Cobros, Me deben y
+Ajustes. 99 tests, 0 fallas.
+
+**Archivos.** `InicioScreen.kt`, `VentaScreen.kt`, `GastoScreen.kt`, `CobroScreen.kt`,
+`CobrosScreen.kt`, `ReporteScreen.kt`, `AjustesScreen.kt`, `RegimenScreen.kt`,
+`AvisoPrivacidadScreen.kt`, `TarjetaTope.kt`, `SelectorModo.kt`, `NavegacionPrincipal.kt`.

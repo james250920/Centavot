@@ -93,7 +93,7 @@ fun AvisoPrivacidadScreen(
             if (onAceptar != null) {
                 Button(
                     onClick = onAceptar,
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp).height(56.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp).height(48.dp),
                 ) { Text("Entiendo y acepto") }
             }
         },

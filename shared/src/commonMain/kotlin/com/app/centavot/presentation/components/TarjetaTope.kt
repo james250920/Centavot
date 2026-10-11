@@ -101,7 +101,7 @@ private fun BarraTope(medida: MedidaTope, proximidad: ProximidadTope, periodo: S
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = "${proximidad.porcentaje} %",
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = color,
             )

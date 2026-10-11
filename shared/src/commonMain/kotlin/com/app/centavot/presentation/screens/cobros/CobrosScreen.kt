@@ -137,7 +137,7 @@ fun CobrosScreen(
         ) {
             item { estado.resumen?.let { resumen -> TarjetaTeDeben(resumen) } }
             item {
-                FilledTonalButton(onClick = onRegistrarCobro, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                FilledTonalButton(onClick = onRegistrarCobro, modifier = Modifier.fillMaxWidth().height(48.dp)) {
                     Icon(Iconos.Agregar, contentDescription = null)
                     Text(if (estado.modo == Modo.NEGOCIO) "Registrar cobro" else "Registrar préstamo", modifier = Modifier.padding(start = 8.dp))
                 }
@@ -209,7 +209,7 @@ private fun TarjetaTeDeben(resumen: ResumenCobros) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Te deben", style = MaterialTheme.typography.labelLarge)
-            Text(resumen.totalPendiente.formatear(), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
+            Text(resumen.totalPendiente.formatear(), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             if (resumen.porContacto.isEmpty()) {
                 Text("Todos te pagaron. ¡Bien!", style = MaterialTheme.typography.bodyMedium)
             }

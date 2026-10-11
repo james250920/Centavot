@@ -75,7 +75,7 @@ fun RegimenScreen(
             Button(
                 onClick = { viewModel.guardar(avisar = !esPrimeraVez) },
                 enabled = estado.seleccionado != null && !estado.guardando,
-                modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp).height(56.dp),
+                modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp).height(48.dp),
             ) {
                 Text(if (esPrimeraVez) "Empezar" else "Guardar")
             }

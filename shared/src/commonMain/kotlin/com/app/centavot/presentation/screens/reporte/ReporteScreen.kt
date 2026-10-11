@@ -253,7 +253,7 @@ private fun LazyListScope.contenidoMeDeben(estado: ReporteUiState) {
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
             Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Te deben en total", style = MaterialTheme.typography.labelLarge)
-                Text(resumen.totalPendiente.formatear(), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
+                Text(resumen.totalPendiente.formatear(), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                 resumen.porContacto.forEach { deuda ->
                     Row(Modifier.fillMaxWidth()) {
                         Text(deuda.contacto.nombre, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)

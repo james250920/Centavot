@@ -60,7 +60,7 @@ private fun OpcionModo(modo: Modo, seleccionado: Boolean, onSeleccionar: () -> U
         border = if (seleccionado) BorderStroke(2.dp, colores.primary) else null,
     ) {
         Row(
-            Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(16.dp),
+            Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

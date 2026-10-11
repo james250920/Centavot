@@ -99,7 +99,7 @@ fun AjustesScreen(
                     .navigationBarsPadding()
                     .imePadding()
                     .padding(16.dp)
-                    .height(56.dp),
+                    .height(48.dp),
             ) {
                 Text(if (esPrimeraVez) "Continuar" else "Guardar cambios")
             }
