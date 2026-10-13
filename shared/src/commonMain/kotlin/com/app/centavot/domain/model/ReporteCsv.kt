@@ -12,6 +12,14 @@ fun ReporteSunat.aCsv(): String = csv {
     appendLine(fila("Ventas", totalVentas.enDecimal()))
     appendLine(fila("Compras y gastos", total.enDecimal()))
     appendLine(fila("Ganancia", ganancia.enDecimal()))
+    if (gastos.isNotEmpty()) {
+        appendLine()
+        appendLine(fila("COMPRAS Y GASTOS POR CATEGORÍA"))
+        appendLine(fila("Categoría", "Monto (S/)"))
+        porSubcategoria.forEach { (subcategoria, monto) ->
+            appendLine(fila(subcategoria?.etiqueta ?: ETIQUETA_SIN_CATEGORIA, monto.enDecimal()))
+        }
+    }
     appendLine()
     appendLine(fila("COMPRAS Y GASTOS DEL NEGOCIO"))
     appendLine(fila("Fecha", "Descripción", "Categoría", "Proveedor", "Monto (S/)"))

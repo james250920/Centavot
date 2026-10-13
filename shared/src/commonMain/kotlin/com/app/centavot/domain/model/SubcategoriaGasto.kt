@@ -17,6 +17,9 @@ enum class SubcategoriaGasto(val etiqueta: String) {
     companion object
 }
 
+/** Cómo se nombra un gasto que no tiene subcategoría, en el gráfico y en los reportes. */
+const val ETIQUETA_SIN_CATEGORIA = "Sin categoría"
+
 private val SOLO_NEGOCIO = setOf(SubcategoriaGasto.MERCADERIA, SubcategoriaGasto.ALQUILER, SubcategoriaGasto.PERSONAL_NEGOCIO)
 private val SOLO_PERSONAL = setOf(
     SubcategoriaGasto.ALIMENTACION,

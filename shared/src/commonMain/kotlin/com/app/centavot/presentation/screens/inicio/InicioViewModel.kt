@@ -26,6 +26,7 @@ import com.app.centavot.domain.usecase.ObservarResumenMesUseCase
 import com.app.centavot.domain.usecase.ObservarResumenPeriodoUseCase
 import com.app.centavot.domain.usecase.ObservarResumenUsoUseCase
 import com.app.centavot.domain.usecase.ResponderEncuestaCuadernoUseCase
+import com.app.centavot.domain.usecase.RevisarCobrosAntiguosUseCase
 import com.app.centavot.presentation.components.Movimiento
 import com.app.centavot.presentation.components.movimientosDe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -103,8 +104,14 @@ class InicioViewModel(
     private val responderEncuesta: ResponderEncuestaCuadernoUseCase,
     observarModo: ObservarModoUseCase,
     private val cambiarModo: CambiarModoUseCase,
+    revisarCobrosAntiguos: RevisarCobrosAntiguosUseCase,
     reloj: Reloj,
 ) : ViewModel() {
+
+    init {
+        // Al abrir la app: los fiados de hace más de un mes dejan un aviso en Notificaciones (P7).
+        viewModelScope.launch { revisarCobrosAntiguos() }
+    }
 
     private val periodo = MutableStateFlow(Periodo.HOY)
 
