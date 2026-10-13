@@ -366,6 +366,8 @@ verificación, para saber en qué nos quedamos.
 | 17 | Ayuda más corta | 402 palabras: la pantalla con más texto | ✅ |
 | 18 | Botones y elementos de tamaño normal | "Que no estén muy grandes" | ✅ |
 | 19 | Ventas frecuentes sin el total del día | P13: el total de cada noche llenaba las 6 ventas frecuentes | ✅ |
+| 20 | Lector de pantalla (TalkBack) | Q3: ayudas plegables, títulos y botones de cobros | ✅ (falta escucharlo una persona) |
+| 21 | Teléfono de gama baja | Q5: peso, arranque, memoria y pantalla angosta con letra grande | ✅ (medido en el A15, sin emulador) |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -648,3 +650,86 @@ veces con la misma descripción y el mismo monto**. Lo demás queda igual:
 - `ResumenYUsoTest.kt`, `IngresoUseCasesTest.kt` y `ModoTest.kt`.
 - Nuevos `scripts/prueba.sh` y `scripts/ui.py`: instalan y manejan la copia de prueba. Ahora quedan
   en el repo.
+
+---
+
+## Paso 20 · Lector de pantalla (TalkBack)
+
+**Problema (Q3).** No se había probado la app con TalkBack. Q3 pide revisar Inicio, Venta y Cobros,
+los avisos con "Deshacer" y los detalles plegables.
+
+**Cómo se revisó.**
+
+1. Primero se intentó con TalkBack prendido en el teléfono. Los gestos enviados por adb no mueven el
+   foco: un aviso del sistema tapa la pantalla. Se apagó enseguida y el teléfono quedó como estaba.
+2. Por eso se revisó el árbol de accesibilidad de cada pantalla, que es lo que lee TalkBack, y el
+   código de los componentes.
+
+**Lo que ya estaba bien.**
+
+- **Elementos tocables:** ninguno está sin nombre en Inicio (los dos modos), Venta ni Cobros.
+- **Íconos:** todos los botones de ícono tienen nombre ("Volver", "Notificaciones, 1 sin leer",
+  "Más opciones del cobro de Don Lucho").
+- **Avisos al guardar:** se anuncian solos. El de Venta es una región que se lee al cambiar, y la
+  barra de "Deshacer" da más tiempo cuando el lector está prendido.
+- **Barras del tope:** dicen "Ventas: 81 por ciento del tope usado".
+- **Gráficos:**
+  - la dona lee cada parte con su monto y su porcentaje;
+  - el de líneas lee el resumen de los meses.
+- **"Cambiar detalles":** dice si está abierto o cerrado.
+
+**Lo que se cambió.**
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Ayudas plegables ("¿No sabes cuál elegir?", "¿Cómo se calcula?") | Se anunciaban como interruptor ("activado / desactivado") | Botón que dice "Abierto" o "Cerrado", igual que "Cambiar detalles" |
+| Títulos de sección (Tu caja, Te deben, Fiados y pedidos, títulos de Reportes y de Venta) | Texto común | Marcados como título: con TalkBack se salta de uno a otro |
+| Botones de cada cobro | "Cobrar", "Abonar", "WhatsApp", sin decir de quién | "Cobrar todo a Don Lucho", "Registrar abono de Don Lucho", "Recordarle a Don Lucho por WhatsApp" |
+
+**Falta.** Que una persona recorra Inicio, Venta y Cobros con TalkBack prendido y escuche cómo se leen
+los montos. Puede que "S/ 3.50" se lea "ese barra tres punto cincuenta".
+
+**Archivos.**
+
+- `AyudaPlegable.kt`.
+- `InicioScreen.kt`, `CobrosScreen.kt`, `ReporteScreen.kt` y `VentaScreen.kt`.
+
+---
+
+## Paso 21 · Teléfono de gama baja
+
+**Problema (Q5).** El segmento usa teléfonos económicos y no se había medido el peso del APK de
+release.
+
+**Cómo se probó.**
+
+1. El emulador no arranca en esta computadora: se cierra al iniciar con cualquier modelo, incluido el
+   Pixel 7 que ya estaba creado. Por eso se midió en el Galaxy A15.
+2. En el A15 se instaló la versión de release como copia de prueba, con los datos de demostración
+   (4,800 ventas).
+3. Para la pantalla, el A15 se puso un momento como un teléfono angosto con letra grande: 360 dp de
+   ancho (720 px) y letra al 130 %. Después se restauró.
+
+| Medida | Resultado |
+|---|---|
+| APK debug | 20.8 MB |
+| APK release, como está configurado (sin comprimir) | 16.9 MB |
+| APK release con R8 (`isMinifyEnabled` + `isShrinkResources`) | **7.6 MB** |
+| Arranque en frío (5 veces, release con R8) | 0.45 – 0.51 s |
+| Desplazar Movimientos con 4,800 ventas | 1,692 cuadros: 0.06 % lentos, 99 % en menos de 18 ms |
+| Memoria (PSS) | ≈104 MB |
+
+- **R8:** la versión comprimida se recorrió entera (venta, movimientos, cobros, reportes, enviar al
+  contador, ajustes y notificaciones) y no hubo ningún cierre. Se probó, pero no se activó en
+  `build.gradle.kts`: queda como decisión.
+- **Pantalla angosta con letra grande:** todo entra, salvo "Movimientos" en la barra de abajo, que se
+  cortaba. Ahora la letra de esa barra se achica lo justo para que entre.
+- **Límite de la prueba:** el A15 es más rápido que un teléfono de 2 GB con Android 8–10. En uno de
+  esos, el arranque puede tardar 2 o 3 veces más. Para confirmarlo hace falta probar en un teléfono
+  así.
+
+**Archivos.**
+
+- `NavegacionPrincipal.kt`.
+- Nuevo `scripts/demo.py`, que llena la copia de prueba con la bodega de Rosa (mayo a hoy) para las
+  capturas y las mediciones.

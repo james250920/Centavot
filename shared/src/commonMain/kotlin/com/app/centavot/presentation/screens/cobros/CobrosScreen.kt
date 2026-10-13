@@ -1,5 +1,8 @@
 package com.app.centavot.presentation.screens.cobros
 
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.animation.scaleOut
@@ -144,7 +147,11 @@ fun CobrosScreen(
             }
 
             item {
-                Text(if (estado.modo == Modo.NEGOCIO) "Fiados y pedidos" else "Lo que prestaste", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    if (estado.modo == Modo.NEGOCIO) "Fiados y pedidos" else "Lo que prestaste",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.semantics { heading() },
+                )
             }
             item {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
@@ -296,10 +303,20 @@ private fun FilaCobro(
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             if (cobro.estaPendiente) {
-                FilledTonalButton(onClick = onCobrar, contentPadding = RellenoAccion) { Text("Cobrar") }
-                OutlinedButton(onClick = onAbonar, contentPadding = RellenoAccion) { Text("Abonar") }
+                // TalkBack lee cada botón por separado: con el nombre se sabe de qué cobro es.
+                val quien = cobro.contacto.nombre
+                FilledTonalButton(
+                    onClick = onCobrar,
+                    contentPadding = RellenoAccion,
+                    modifier = Modifier.semantics { contentDescription = "Cobrar todo a $quien" },
+                ) { Text("Cobrar") }
+                OutlinedButton(
+                    onClick = onAbonar,
+                    contentPadding = RellenoAccion,
+                    modifier = Modifier.semantics { contentDescription = "Registrar abono de $quien" },
+                ) { Text("Abonar") }
                 if (cobro.contacto.telefono != null) {
-                    TextButton(onClick = onRecordar) {
+                    TextButton(onClick = onRecordar, modifier = Modifier.semantics { contentDescription = "Recordarle a $quien por WhatsApp" }) {
                         Icon(Iconos.Mensaje, contentDescription = null)
                         Text("WhatsApp", modifier = Modifier.padding(start = 6.dp))
                     }
