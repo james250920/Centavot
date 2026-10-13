@@ -9,8 +9,13 @@ import java.io.File
 class CompartidorArchivosAndroid(private val context: Context) : CompartidorArchivos {
     private val carpeta get() = File(context.cacheDir, "reportes")
 
-    override fun compartir(nombreArchivo: String, contenido: String, tipoMime: String) {
-        val archivo = File(carpeta.apply { mkdirs() }, nombreArchivo).apply { writeText(contenido) }
+    override fun compartir(nombreArchivo: String, contenido: String, tipoMime: String) =
+        enviar(File(carpeta.apply { mkdirs() }, nombreArchivo).apply { writeText(contenido) }, tipoMime)
+
+    override fun compartir(nombreArchivo: String, contenido: ByteArray, tipoMime: String) =
+        enviar(File(carpeta.apply { mkdirs() }, nombreArchivo).apply { writeBytes(contenido) }, tipoMime)
+
+    private fun enviar(archivo: File, tipoMime: String) {
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.archivos", archivo)
         val enviar = Intent(Intent.ACTION_SEND).apply {
             type = tipoMime

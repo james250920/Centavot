@@ -52,6 +52,11 @@ import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.formatear
 import com.app.centavot.presentation.components.formatearRelativo
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,12 +73,29 @@ fun ReporteScreen(
                 title = { Text("Reportes") },
                 actions = {
                     // Con texto: un ícono de compartir solo no dice qué se manda ni a quién.
-                    TextButton(onClick = viewModel::exportar, enabled = estado.puedeExportar) {
-                        Icon(Iconos.Compartir, contentDescription = null)
-                        Text(
-                            if (estado.pestana == PestanaReporte.NEGOCIO) "Enviar al contador" else "Compartir",
-                            modifier = Modifier.padding(start = 8.dp),
-                        )
+                    var elegirFormato by remember { mutableStateOf(false) }
+                    Box {
+                        TextButton(
+                            onClick = { if (estado.pestana == PestanaReporte.NEGOCIO) elegirFormato = true else viewModel.exportar() },
+                            enabled = estado.puedeExportar,
+                        ) {
+                            Icon(Iconos.Compartir, contentDescription = null)
+                            Text(
+                                if (estado.pestana == PestanaReporte.NEGOCIO) "Enviar al contador" else "Compartir",
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        }
+                        // Al contador: PDF para leerlo tal cual, o Excel si quiere trabajar los números (P5).
+                        DropdownMenu(expanded = elegirFormato, onDismissRequest = { elegirFormato = false }) {
+                            DropdownMenuItem(
+                                text = { Text("En PDF") },
+                                onClick = { elegirFormato = false; viewModel.exportarPdf() },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("En Excel") },
+                                onClick = { elegirFormato = false; viewModel.exportar() },
+                            )
+                        }
                     }
                 },
             )

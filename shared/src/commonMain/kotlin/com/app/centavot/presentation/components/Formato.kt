@@ -1,18 +1,15 @@
 package com.app.centavot.presentation.components
 
 import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.NOMBRES_MES
 import com.app.centavot.domain.model.TasaAhorro
 import com.app.centavot.domain.model.enSoles
+import com.app.centavot.domain.model.nombre
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.minus
-
-private val MESES = listOf(
-    "enero", "febrero", "marzo", "abril", "mayo", "junio",
-    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-)
 
 private val REGEX_MONTO = Regex("""\d{1,9}(\.\d{0,2})?""")
 private val REGEX_TASA = Regex("""\d{1,3}(\.\d?)?""")
@@ -43,15 +40,14 @@ fun parsearMonto(texto: String): Monto? {
 fun esEntradaDeMontoValida(texto: String): Boolean = REGEX_ENTRADA_MONTO.matches(texto)
 
 /** "Septiembre 2026" */
-fun YearMonth.formatear(): String =
-    "${MESES[month.ordinal].replaceFirstChar { it.uppercase() }} $year"
+fun YearMonth.formatear(): String = nombre()
 
 /** "Hoy", "Ayer", "12 de septiembre" o "12 de septiembre de 2025". */
 fun LocalDate.formatearRelativo(hoy: LocalDate): String = when (this) {
     hoy -> "Hoy"
     hoy.minus(1, DateTimeUnit.DAY) -> "Ayer"
     else -> buildString {
-        append("$day de ${MESES[month.ordinal]}")
+        append("$day de ${NOMBRES_MES[month.ordinal]}")
         if (year != hoy.year) append(" de $year")
     }
 }

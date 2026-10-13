@@ -372,6 +372,7 @@ verificación, para saber en qué nos quedamos.
 | 23 | Tres arreglos chicos | P8 caja después de medianoche · P9 aviso de tope repetido · P10 rubro de servicios | ✅ |
 | 24 | Cobros antiguos y gastos por categoría | P7 aviso de fiados de más de un mes · P11 total por subcategoría en el reporte | ✅ |
 | 25 | Tema claro siempre | Con el teléfono en modo oscuro, la app se veía oscura | ✅ |
+| 26 | Resumen del contador en PDF | P5: solo se podía mandar en CSV | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -913,3 +914,55 @@ veían oscuras. Se pidió que todas las vistas se vean siempre con el tema claro
 bodega de demostración, que ahora incluye el fiado de hace 38 días.
 
 **Archivos.** `Tema.kt` y `MainActivity.kt`.
+
+---
+
+## Paso 26 · Resumen del contador en PDF (P5)
+
+**Problema.** El resumen para el contador solo salía en CSV. El CSV sirve para trabajar los números
+en Excel, pero no para leerlo tal cual en el celular o imprimirlo. Además, con cientos de ventas al mes
+se vuelve una lista larga.
+
+**Cambio.**
+
+- **Botón:** en Reportes › Negocio, "Enviar al contador" abre un menú con **"En PDF"** y **"En Excel"**.
+  Las otras pestañas siguen compartiendo en Excel.
+- **Contenido del PDF** (`ReporteSunat.aDocumento`, en el código común):
+  - título "Resumen para el contador" y debajo el mes y el régimen;
+  - resumen del mes: ventas, compras y gastos, y ganancia o pérdida;
+  - compras y gastos por categoría;
+  - **ventas por día**, con la cantidad anotada y el monto. Una bodega anota cientos al mes; el
+    detalle de cada venta sigue en el Excel;
+  - detalle de compras y gastos, con fecha, descripción, categoría, proveedor y monto;
+  - en cada hoja, el aviso "Centavot no envía nada a SUNAT…", la fecha y el número de página.
+- **Dibujo:** en Android lo hace `GeneradorPdfAndroid` con `PdfDocument`, que ya trae el sistema, así
+  que no suma librerías ni peso.
+  - Hojas A4.
+  - Si una tabla no entra, sigue en la hoja siguiente y repite el encabezado.
+  - Si un texto no entra en su celda, se corta con "…".
+- **Formato:** las fechas van como las usa el contador (13/10/2026) y los montos con "S/".
+
+**Verificación.**
+
+- **Tests:** 5 nuevos en `ReportePdfTest`:
+  - título, régimen y aviso;
+  - ganancia o pérdida;
+  - ventas por día en orden;
+  - gastos por categoría y en detalle;
+  - mes sin movimientos.
+
+  Pasan los 113 tests.
+- **Teléfono:** con la copia de prueba y la bodega de demostración, "En PDF" abrió el menú de
+  compartir. Se bajó el archivo y se revisaron sus 2 hojas A4:
+  - resumen con ganancia de S/ 4,397.72;
+  - categorías;
+  - 13 días de ventas (766 ventas, S/ 6,481.10);
+  - detalle de 7 gastos.
+
+**Archivos.**
+
+- Nuevos: `ReportePdf.kt`, `GeneradorPdf.kt` y `GeneradorPdfAndroid.kt`.
+- `CompartidorArchivos.kt` y `CompartidorArchivosAndroid.kt`, que ahora también comparten archivos
+  binarios.
+- `ReporteViewModel.kt`, `ReporteScreen.kt`, `Formato.kt` (usa los nombres de mes del dominio),
+  `ModuloAndroid.kt` y `ModulosTest.kt`.

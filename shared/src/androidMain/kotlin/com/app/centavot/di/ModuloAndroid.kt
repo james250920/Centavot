@@ -4,6 +4,8 @@ import com.app.centavot.core.util.AbridorEnlaces
 import com.app.centavot.core.util.AbridorEnlacesAndroid
 import com.app.centavot.core.util.CompartidorArchivos
 import com.app.centavot.core.util.CompartidorArchivosAndroid
+import com.app.centavot.core.util.GeneradorPdf
+import com.app.centavot.core.util.GeneradorPdfAndroid
 import com.app.centavot.data.local.crearDatabase
 import com.app.centavot.data.local.crearDatabaseBuilder
 import org.koin.android.ext.koin.androidContext
@@ -13,4 +15,5 @@ val moduloAndroid = module {
     single { crearDatabase(crearDatabaseBuilder(androidContext())) }
     single<CompartidorArchivos> { CompartidorArchivosAndroid(androidContext()) }
     single<AbridorEnlaces> { AbridorEnlacesAndroid(androidContext()) }
+    single<GeneradorPdf> { GeneradorPdfAndroid() }
 }
