@@ -368,6 +368,7 @@ verificación, para saber en qué nos quedamos.
 | 19 | Ventas frecuentes sin el total del día | P13: el total de cada noche llenaba las 6 ventas frecuentes | ✅ |
 | 20 | Lector de pantalla (TalkBack) | Q3: ayudas plegables, títulos y botones de cobros | ✅ (falta escucharlo una persona) |
 | 21 | Teléfono de gama baja | Q5: peso, arranque, memoria y pantalla angosta con letra grande | ✅ (medido en el A15, sin emulador) |
+| 22 | Versión de release comprimida (R8) | El APK de release pesaba 16.9 MB | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -720,8 +721,7 @@ release.
 | Memoria (PSS) | ≈104 MB |
 
 - **R8:** la versión comprimida se recorrió entera (venta, movimientos, cobros, reportes, enviar al
-  contador, ajustes y notificaciones) y no hubo ningún cierre. Se probó, pero no se activó en
-  `build.gradle.kts`: queda como decisión.
+  contador, ajustes y notificaciones) y no hubo ningún cierre. Se activó en el paso 22.
 - **Pantalla angosta con letra grande:** todo entra, salvo "Movimientos" en la barra de abajo, que se
   cortaba. Ahora la letra de esa barra se achica lo justo para que entre.
 - **Límite de la prueba:** el A15 es más rápido que un teléfono de 2 GB con Android 8–10. En uno de
@@ -733,3 +733,42 @@ release.
 - `NavegacionPrincipal.kt`.
 - Nuevo `scripts/demo.py`, que llena la copia de prueba con la bodega de Rosa (mayo a hoy) para las
   capturas y las mediciones.
+
+---
+
+## Paso 22 · Versión de release comprimida (R8)
+
+**Problema.** La versión de release pesaba 16.9 MB. Para quien tiene un teléfono económico con poca
+memoria y datos móviles limitados, eso pesa al descargar e instalar.
+
+**Cambio.** En `androidApp/build.gradle.kts`, el tipo de compilación `release` ahora usa R8:
+
+- `isMinifyEnabled = true` quita el código que no se usa y acorta los nombres;
+- `isShrinkResources = true` quita los recursos que no se usan.
+
+No hizo falta ninguna regla en `proguard-rules.pro`: Room, Koin, la navegación y el CSV funcionan sin
+reglas propias. La versión de debug no cambia.
+
+| APK | Peso |
+|---|---|
+| Debug | 20.8 MB |
+| Release antes | 16.9 MB |
+| **Release ahora** | **7.6 MB (−55 %)** |
+
+**Verificación.**
+
+1. `./gradlew :androidApp:assembleRelease` compila y pasa la revisión de `lint` de release. Hace
+   falta conexión la primera vez, para descargar `lint`.
+2. La versión comprimida, con el código actual, se instaló desde cero como copia de prueba y se
+   recorrió:
+   - aviso de privacidad y bienvenida;
+   - régimen, con la ayuda plegable;
+   - venta y gasto, revisados en Movimientos;
+   - contacto nuevo, cobro y abono;
+   - reporte y "Enviar al contador";
+   - "Exportar todos mis datos";
+   - cambio a modo personal y un ingreso;
+   - "Borrar todos mis datos", que vuelve al aviso de privacidad.
+3. No hubo ningún cierre en el registro del teléfono. Pasan los 101 tests.
+
+**Archivos.** `androidApp/build.gradle.kts`.

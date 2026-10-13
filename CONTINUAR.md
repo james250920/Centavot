@@ -4,7 +4,7 @@
 
 ## Estado
 
-- `main` tiene todo lo hecho hasta el **paso 21** (PR #13), instalado en el teléfono (`com.app.centavot`).
+- `main` tiene todo lo hecho hasta el **paso 22** (PR #15), instalado en el teléfono (`com.app.centavot`).
 - Ronda 1 (pasos 1–9): mejoras de la revisión UX/UI.
 - Ronda 2 (pasos 10–18):
   - modo personal o negocio;
@@ -22,14 +22,14 @@
 | 18 | Tamaños: Venta/Gasto 56 dp, botones de formulario 48 dp, números menos grandes | #10 |
 | 19 | P13: solo son frecuentes las ventas que se repiten (el total del día ya no llena la lista) | #11 |
 | 20–21 | TalkBack (plegables, títulos, botones de cobros) y gama baja (barra de abajo, peso y rendimiento medidos) | #13 |
+| 22 | R8 en release: el APK baja de 16.9 a 7.6 MB | #15 |
 
 ## Para retomar
 
-1. Decidir si se activa R8 en release: el APK baja de 16.9 a 7.6 MB y ya se probó (paso 21).
-2. Pendientes que necesitan a una persona o un teléfono:
+1. Pendientes que necesitan a una persona o un teléfono:
    - **Q3**: escuchar Inicio, Venta y Cobros con TalkBack, sobre todo cómo se leen los montos.
    - **Q5**: probar en un teléfono de 2 GB con Android 8–10.
-3. **P4**: opciones RMT y "aún no tengo RUC". Espera lo que diga el contador.
+2. **P4**: opciones RMT y "aún no tengo RUC". Espera lo que diga el contador.
 3. Regla hasta diciembre: no se agregan funciones nuevas. Solo entra lo que sirva para validar con
    usuarios.
 
@@ -43,7 +43,7 @@
     (la bodega de Rosa, de mayo a hoy) y se vuelve a subir.
   - Al terminar: `adb uninstall com.app.centavot.prueba`.
 - Tests: `./gradlew :shared:testAndroidHostTest --offline`.
-- APK: `./gradlew :androidApp:assembleDebug`.
+- APK: `./gradlew :androidApp:assembleDebug`. Release (con R8): `./gradlew :androidApp:assembleRelease`; la primera vez necesita conexión.
 - Teléfono: Samsung Galaxy A15 con Android 16, densidad 450 (384 dp de ancho).
 - El emulador no arranca en esta computadora (se cierra al iniciar).
 - Cada cambio va así:
