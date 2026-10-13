@@ -1,5 +1,6 @@
 package com.app.centavot.presentation.screens.inicio
 
+import com.app.centavot.domain.model.lecturaDelMes
 import com.app.centavot.domain.model.ETIQUETA_SIN_CATEGORIA
 import com.app.centavot.domain.model.NivelAlerta
 import com.app.centavot.domain.model.EstadoTope
@@ -54,6 +55,7 @@ import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Periodo
 import com.app.centavot.domain.model.ResumenPeriodo
 import com.app.centavot.domain.model.ResumenUso
+import com.app.centavot.presentation.components.TarjetaEsteMes
 import com.app.centavot.presentation.components.FilaMovimiento
 import com.app.centavot.presentation.components.GraficoDistribucion
 import com.app.centavot.presentation.components.Iconos
@@ -86,6 +88,9 @@ fun InicioScreen(
     onAbrirNotificaciones: () -> Unit,
     onAbrirAjustes: () -> Unit,
     onAbrirAyuda: () -> Unit,
+    onAbrirPresupuesto: () -> Unit,
+    onArmarPresupuesto: () -> Unit,
+    onAbrirMetas: () -> Unit,
     viewModel: InicioViewModel = koinViewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -161,6 +166,9 @@ fun InicioScreen(
 
             when (pestana) {
                 PestanaInicio.HOY -> {
+                    // Lo primero al abrir: entró vs gastaste en el mes, con una frase (reunión con usuarios, 10 oct).
+                    if (estado.mes.lecturaDelMes(modo) != null) item { TarjetaEsteMes(modo, estado.mes) }
+
                     estado.uso?.takeIf { it.debePreguntarCuaderno }?.let {
                         item { TarjetaPreguntaCuaderno(onResponder = viewModel::responderCuaderno) }
                     }
@@ -226,6 +234,12 @@ fun InicioScreen(
                             }
                         }
                     }
+
+                    estado.presupuesto?.let { presupuesto ->
+                        item { TarjetaPresupuesto(presupuesto, onAbrir = onAbrirPresupuesto, onArmar = onArmarPresupuesto) }
+                    }
+
+                    item { TarjetaMetas(estado.metas, onAbrir = onAbrirMetas) }
 
                     item { TarjetaAhorro(estado, onAbrirAjustes) }
 

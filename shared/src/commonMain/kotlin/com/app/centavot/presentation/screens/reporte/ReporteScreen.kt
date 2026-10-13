@@ -268,6 +268,22 @@ private fun LazyListScope.contenidoPersonal(
         item { EstadoVacio("Sin movimientos", "No registraste ingresos ni gastos en ${estado.periodo.formatear().lowercase()}.") }
         return
     }
+    // Ingresos variables: cuánto vino de cada fuente (clases, comisiones...). Solo si armó sus fuentes.
+    if (estado.fuentes.isNotEmpty() && ingresos.isNotEmpty()) {
+        val nombres = estado.fuentes.associate { it.id to it.nombre }
+        val porFuente = ingresos
+            .groupBy { ingreso -> if (ingreso.retiroDelNegocio) "De tu negocio" else nombres[ingreso.partidaId] ?: "Sin fuente" }
+            .map { (fuente, lista) -> fuente to lista.map { it.monto }.sumar() }
+            .sortedByDescending { it.second }
+        item {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("De dónde vino", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+                    porFuente.forEach { (fuente, monto) -> FilaTotal(fuente, monto) }
+                }
+            }
+        }
+    }
     if (ingresos.isNotEmpty()) {
         item { Text("Lo que te entró (${ingresos.size})", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() }) }
         item {

@@ -32,8 +32,11 @@ import com.app.centavot.presentation.screens.cobros.CobrosViewModel
 import com.app.centavot.presentation.screens.cobros.ContactosViewModel
 import com.app.centavot.presentation.screens.gasto.GastoViewModel
 import com.app.centavot.presentation.screens.inicio.InicioViewModel
+import com.app.centavot.presentation.screens.metas.MetasViewModel
 import com.app.centavot.presentation.screens.movimientos.MovimientosViewModel
 import com.app.centavot.presentation.screens.notificaciones.NotificacionesViewModel
+import com.app.centavot.presentation.screens.presupuesto.ArmarPresupuestoViewModel
+import com.app.centavot.presentation.screens.presupuesto.PresupuestoViewModel
 import com.app.centavot.presentation.screens.regimen.RegimenViewModel
 import com.app.centavot.presentation.screens.reporte.ReporteViewModel
 import com.app.centavot.presentation.screens.venta.VentaViewModel
@@ -112,5 +115,8 @@ class ModulosTest {
         koin.get<VentaViewModel> { parametersOf(null, false) }
         koin.get<VentaViewModel> { parametersOf(null, true) }
         koin.get<VentaViewModel> { parametersOf("venta-1", false) }
+        koin.get<PresupuestoViewModel>()
+        koin.get<ArmarPresupuestoViewModel>()
+        koin.get<MetasViewModel>()
     }
 }

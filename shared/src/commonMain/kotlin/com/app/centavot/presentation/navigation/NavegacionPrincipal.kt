@@ -39,6 +39,9 @@ import com.app.centavot.presentation.screens.cobros.CobrosScreen
 import com.app.centavot.presentation.screens.cobros.ContactosScreen
 import com.app.centavot.presentation.screens.gasto.GastoScreen
 import com.app.centavot.presentation.screens.inicio.InicioScreen
+import com.app.centavot.presentation.screens.metas.MetasScreen
+import com.app.centavot.presentation.screens.presupuesto.ArmarPresupuestoScreen
+import com.app.centavot.presentation.screens.presupuesto.PresupuestoScreen
 import com.app.centavot.presentation.screens.movimientos.MovimientosScreen
 import com.app.centavot.presentation.screens.notificaciones.NotificacionesScreen
 import com.app.centavot.presentation.screens.privacidad.AvisoPrivacidadScreen
@@ -128,7 +131,28 @@ fun NavegacionPrincipal() {
                     onAbrirNotificaciones = { nav.navigate(RutaNotificaciones) },
                     onAbrirAjustes = { nav.navigate(RutaAjustes) },
                     onAbrirAyuda = { nav.navigate(RutaAyuda) },
+                    onAbrirPresupuesto = { nav.navigate(RutaPresupuesto) },
+                    onArmarPresupuesto = { nav.navigate(RutaArmarPresupuesto) },
+                    onAbrirMetas = { nav.navigate(RutaMetas) },
                 )
+            }
+            composable<RutaPresupuesto> {
+                PresupuestoScreen(onCerrar = { nav.popBackStack() }, onArmar = { nav.navigate(RutaArmarPresupuesto) })
+            }
+            composable<RutaArmarPresupuesto> {
+                ArmarPresupuestoScreen(
+                    onCerrar = { nav.popBackStack() },
+                    // Al terminar, se ve el presupuesto armado (sin volver a la plantilla con Atrás).
+                    onListo = {
+                        nav.navigate(RutaPresupuesto) {
+                            popUpTo(RutaInicio)
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+            composable<RutaMetas> {
+                MetasScreen(onCerrar = { nav.popBackStack() })
             }
             composable<RutaMovimientos> {
                 MovimientosScreen(

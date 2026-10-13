@@ -93,6 +93,9 @@ import com.app.centavot.presentation.screens.cobros.CobrosViewModel
 import com.app.centavot.presentation.screens.cobros.ContactosViewModel
 import com.app.centavot.presentation.screens.gasto.GastoViewModel
 import com.app.centavot.presentation.screens.inicio.InicioViewModel
+import com.app.centavot.presentation.screens.metas.MetasViewModel
+import com.app.centavot.presentation.screens.presupuesto.ArmarPresupuestoViewModel
+import com.app.centavot.presentation.screens.presupuesto.PresupuestoViewModel
 import com.app.centavot.presentation.screens.movimientos.MovimientosViewModel
 import com.app.centavot.presentation.screens.notificaciones.NotificacionesViewModel
 import com.app.centavot.presentation.screens.regimen.RegimenViewModel
@@ -211,8 +214,11 @@ val moduloPresentation = module {
     viewModelOf(::ContactosViewModel)
     viewModelOf(::ActividadViewModel)
     viewModelOf(::NotificacionesViewModel)
-    viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get(), get(), get()) }
-    viewModel { (id: String?, retiro: Boolean) -> VentaViewModel(id, retiro, get(), get(), get(), get(), get(), get(), get()) }
+    viewModelOf(::PresupuestoViewModel)
+    viewModelOf(::ArmarPresupuestoViewModel)
+    viewModelOf(::MetasViewModel)
+    viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { (id: String?, retiro: Boolean) -> VentaViewModel(id, retiro, get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { (id: String?) -> CobroViewModel(id, get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 }
 

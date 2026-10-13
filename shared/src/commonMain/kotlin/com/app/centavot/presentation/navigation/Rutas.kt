@@ -46,3 +46,12 @@ data object RutaAyuda
 
 @Serializable
 data object RutaPrivacidad
+
+@Serializable
+data object RutaPresupuesto
+
+@Serializable
+data object RutaArmarPresupuesto
+
+@Serializable
+data object RutaMetas

@@ -4,24 +4,28 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.EstadoTope
+import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Perfil
 import com.app.centavot.domain.model.Periodo
+import com.app.centavot.domain.model.PresupuestoMes
+import com.app.centavot.domain.model.ProgresoMeta
 import com.app.centavot.domain.model.ResumenCobros
 import com.app.centavot.domain.model.ResumenMes
 import com.app.centavot.domain.model.ResumenPeriodo
 import com.app.centavot.domain.model.ResumenUso
 import com.app.centavot.domain.model.TasaAhorro
+import com.app.centavot.domain.model.delModo
+import com.app.centavot.domain.usecase.CambiarModoUseCase
+import com.app.centavot.domain.usecase.ObservarCobrosUseCase
 import com.app.centavot.domain.usecase.ObservarEstadoTopeUseCase
 import com.app.centavot.domain.usecase.ObservarGastosUseCase
 import com.app.centavot.domain.usecase.ObservarIngresosUseCase
+import com.app.centavot.domain.usecase.ObservarMetasUseCase
+import com.app.centavot.domain.usecase.ObservarModoUseCase
 import com.app.centavot.domain.usecase.ObservarNoLeidasUseCase
 import com.app.centavot.domain.usecase.ObservarPerfilUseCase
-import com.app.centavot.domain.usecase.ObservarCobrosUseCase
-import com.app.centavot.domain.usecase.ObservarModoUseCase
-import com.app.centavot.domain.usecase.CambiarModoUseCase
-import com.app.centavot.domain.model.Modo
-import com.app.centavot.domain.model.delModo
+import com.app.centavot.domain.usecase.ObservarPresupuestoMesUseCase
 import com.app.centavot.domain.usecase.ObservarResumenMesUseCase
 import com.app.centavot.domain.usecase.ObservarResumenPeriodoUseCase
 import com.app.centavot.domain.usecase.ObservarResumenUsoUseCase
@@ -39,6 +43,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.yearMonth
 
 data class InicioUiState(
     val hoy: LocalDate,
@@ -58,6 +63,9 @@ data class InicioUiState(
     val noLeidas: Int = 0,
     val recientes: List<Movimiento> = emptyList(),
     val hayMovimientos: Boolean = false,
+    /** El presupuesto del mes del modo (sin partidas, la tarjeta invita a armarlo). */
+    val presupuesto: PresupuestoMes? = null,
+    val metas: List<ProgresoMeta> = emptyList(),
 ) {
     /** Lo que entró en el mes según el modo: las ventas del negocio o el ingreso personal. */
     private val entradasDelMes: Monto get() = if (modo == Modo.NEGOCIO) mes.ventas else mes.ingresosPersonales
@@ -105,6 +113,8 @@ class InicioViewModel(
     observarModo: ObservarModoUseCase,
     private val cambiarModo: CambiarModoUseCase,
     revisarCobrosAntiguos: RevisarCobrosAntiguosUseCase,
+    observarPresupuestoMes: ObservarPresupuestoMesUseCase,
+    observarMetas: ObservarMetasUseCase,
     reloj: Reloj,
 ) : ViewModel() {
 
@@ -150,12 +160,19 @@ class InicioViewModel(
 
     private val avisosYUso = combine(observarNoLeidas(), observarResumenUso(), reloj.dias(), ::Triple)
 
+    /** Presupuesto del mes en curso y metas, ambos del modo (reunión con usuarios, 10 oct). */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val planes = combine(modo, reloj.dias(), ::Pair).flatMapLatest { (modoActual, hoy) ->
+        combine(observarPresupuestoMes(hoy.yearMonth, modoActual), observarMetas(modoActual), ::Pair)
+    }
+
     val estado: StateFlow<InicioUiState> = combine(
         base,
         caja,
         cobros,
         avisosYUso,
-    ) { b, (elegido, resumenCaja), cobros, (noLeidas, uso, hoy) ->
+        planes,
+    ) { b, (elegido, resumenCaja), cobros, (noLeidas, uso, hoy), (presupuesto, metas) ->
         InicioUiState(
             hoy = hoy,
             cargando = false,
@@ -171,6 +188,8 @@ class InicioViewModel(
             noLeidas = noLeidas,
             recientes = b.recientes,
             hayMovimientos = b.hayMovimientos,
+            presupuesto = presupuesto,
+            metas = metas,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InicioUiState(hoy = reloj.hoy()))
 

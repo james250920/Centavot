@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.Partida
+import com.app.centavot.domain.model.TipoPartida
 import com.app.centavot.domain.model.SubcategoriaGasto
 import com.app.centavot.domain.model.aplicaA
 import com.app.centavot.domain.usecase.EliminarGastoUseCase
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import com.app.centavot.domain.usecase.ObservarModoUseCase
+import com.app.centavot.domain.usecase.ObservarPartidasUseCase
 import kotlinx.datetime.LocalDate
 
 private const val MAX_DESCRIPCION = 60
@@ -36,6 +39,9 @@ data class GastoUiState(
     /** La pone el modo (negocio o personal); al editar, la del gasto. */
     val categoria: Categoria = Categoria.NEGOCIO,
     val subcategoria: SubcategoriaGasto? = null,
+    /** Las partidas de gasto del presupuesto del modo; si hay, "¿En qué?" muestra estas en vez de la lista fija. */
+    val partidas: List<Partida> = emptyList(),
+    val partidaId: String? = null,
     val descripcion: String = "",
     val errorMonto: String? = null,
     val errorFecha: String? = null,
@@ -52,6 +58,7 @@ class GastoViewModel(
     private val eliminarGasto: EliminarGastoUseCase,
     private val avisos: Avisos,
     private val observarModo: ObservarModoUseCase,
+    private val observarPartidas: ObservarPartidasUseCase,
     reloj: Reloj,
 ) : ViewModel() {
 
@@ -62,7 +69,10 @@ class GastoViewModel(
 
     init {
         viewModelScope.launch {
-            val categoriaDelModo = observarModo().first().categoria
+            val modo = observarModo().first()
+            val categoriaDelModo = modo.categoria
+            val partidas = observarPartidas(modo).first().filter { it.tipo == TipoPartida.GASTO }
+            _estado.update { it.copy(partidas = partidas) }
             if (id != null) cargar(id, categoriaDelModo) else _estado.update { it.copy(cargando = false, categoria = categoriaDelModo) }
         }
     }
@@ -80,6 +90,7 @@ class GastoViewModel(
                 // Un gasto antiguo sin clasificar toma la categoría del modo en que se abre.
                 categoria = gasto.categoria ?: categoriaDelModo,
                 subcategoria = gasto.subcategoria,
+                partidaId = gasto.partidaId,
                 descripcion = gasto.descripcion.orEmpty(),
                 fecha = gasto.fecha,
             )
@@ -91,6 +102,10 @@ class GastoViewModel(
     }
 
     fun onSubcategoriaElegida(subcategoria: SubcategoriaGasto?) = _estado.update { it.copy(subcategoria = subcategoria) }
+
+    /** Elegir una partida también fija su subcategoría, para que la dona, el tope y los reportes sigan igual. */
+    fun onPartidaElegida(partida: Partida?) =
+        _estado.update { it.copy(partidaId = partida?.id, subcategoria = partida?.subcategoria) }
 
     fun onDescripcionCambiada(texto: String) =
         _estado.update { it.copy(descripcion = texto.take(MAX_DESCRIPCION)) }
@@ -108,7 +123,7 @@ class GastoViewModel(
 
         viewModelScope.launch {
             _estado.update { it.copy(guardando = true) }
-            val resultado = guardarGasto(id, monto, categoria, actual.fecha, actual.descripcion, actual.subcategoria)
+            val resultado = guardarGasto(id, monto, categoria, actual.fecha, actual.descripcion, actual.subcategoria, actual.partidaId)
             if (resultado is GuardarGastoUseCase.Resultado.Guardado) avisarGuardado(resultado.gasto)
             _estado.update {
                 when (resultado) {

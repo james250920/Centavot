@@ -39,6 +39,7 @@ private val PASOS_NEGOCIO = listOf(
     Paso(Iconos.Inicio, "Mira tu caja", "Lo que vendiste, gastaste y te quedó. Si sacas para la casa, anótalo."),
     Paso(Iconos.Cobros, "Lo que te deben", "Fiados y pedidos, con recordatorio por WhatsApp."),
     Paso(Iconos.Aviso, "Tu tope", "Te avisamos antes de que llegues."),
+    Paso(Iconos.Negocio, "Tu presupuesto y tus metas", "En «Mi negocio»: cuánto llevas gastado y lo que juntas."),
     Paso(Iconos.Reporte, "Para tu contador", "Mándale el resumen del mes en PDF o Excel."),
 )
 
@@ -47,7 +48,7 @@ private val PASOS_PERSONAL = listOf(
     Paso(Iconos.Gasto, "Anota tus gastos", "Pasajes, comida, luz."),
     Paso(Iconos.Inicio, "Mira tu plata", "Lo que te entró, gastaste y te quedó."),
     Paso(Iconos.Cobros, "Lo que te deben", "La plata que prestaste, con recordatorio por WhatsApp."),
-    Paso(Iconos.Personal, "Tu ahorro", "En «Mi mes», según tu meta de Ajustes."),
+    Paso(Iconos.Personal, "Tu presupuesto y tus metas", "En «Mi mes»: cuánto llevas gastado y lo que juntas."),
     Paso(Iconos.Reporte, "Tus reportes", "Lo que entró y gastaste cada mes, en Excel."),
 )
 
