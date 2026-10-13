@@ -8,8 +8,10 @@ import com.app.centavot.domain.model.ResumenPeriodo
 import com.app.centavot.domain.model.rango
 import com.app.centavot.domain.repository.GastoRepository
 import com.app.centavot.domain.repository.IngresoRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.minusMonth
 
@@ -19,9 +21,10 @@ class ObservarResumenPeriodoUseCase(
     private val gastos: GastoRepository,
     private val reloj: Reloj,
 ) {
-    operator fun invoke(periodo: Periodo): Flow<ResumenPeriodo> {
-        val rango = periodo.rango(reloj.hoy())
-        return combine(
+    @OptIn(ExperimentalCoroutinesApi::class)
+    operator fun invoke(periodo: Periodo): Flow<ResumenPeriodo> = reloj.dias().flatMapLatest { hoy ->
+        val rango = periodo.rango(hoy)
+        combine(
             ingresos.observarIngresosEntre(rango.start, rango.endInclusive),
             gastos.observarGastosEntre(rango.start, rango.endInclusive),
         ) { listaIngresos, listaGastos -> ResumenPeriodo.de(listaIngresos, listaGastos) }

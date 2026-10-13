@@ -9,6 +9,8 @@ interface NotificacionRepository {
 
     fun observarNoLeidas(): Flow<Int>
 
+    suspend fun existe(id: String): Boolean
+
     /** No hace nada si ya existe una notificación con el mismo id. */
     suspend fun agregarSiNoExiste(notificacion: Notificacion)
 

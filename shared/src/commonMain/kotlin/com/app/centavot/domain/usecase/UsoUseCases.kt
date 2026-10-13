@@ -6,8 +6,8 @@ import com.app.centavot.domain.model.ResumenUso
 import com.app.centavot.domain.model.TipoEventoUso
 import com.app.centavot.domain.repository.UsoRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -35,7 +35,7 @@ class RegistrarAperturaUseCase(private val repositorio: UsoRepository, private v
 }
 
 class ObservarResumenUsoUseCase(private val repositorio: UsoRepository, private val reloj: Reloj) {
-    operator fun invoke(): Flow<ResumenUso> = repositorio.observar().map { ResumenUso.de(it, reloj.hoy()) }
+    operator fun invoke(): Flow<ResumenUso> = combine(repositorio.observar(), reloj.dias()) { eventos, hoy -> ResumenUso.de(eventos, hoy) }
 }
 
 /** Guarda la respuesta a "¿te resulta más fácil Centavot que tu cuaderno?". */

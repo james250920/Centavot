@@ -69,6 +69,8 @@ class FakeNotificacionRepository : NotificacionRepository {
 
     override fun observarNoLeidas(): Flow<Int> = notificaciones.map { lista -> lista.count { !it.leida } }
 
+    override suspend fun existe(id: String): Boolean = notificaciones.value.any { it.id == id }
+
     override suspend fun agregarSiNoExiste(notificacion: Notificacion) =
         notificaciones.update { lista -> if (lista.any { it.id == notificacion.id }) lista else lista + notificacion }
 

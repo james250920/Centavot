@@ -3,7 +3,8 @@ package com.app.centavot.domain.model
 enum class Rubro(val etiqueta: String) {
     COMERCIO("Comercio o bodega"),
     ALIMENTOS("Comida y restaurantes"),
-    SERVICIOS("Servicios profesionales"),
+    // Con ejemplos de negocios con local: "profesionales" atraía a quien da recibos por honorarios (4.ª categoría), fuera del alcance.
+    SERVICIOS("Servicios (peluquería, lavandería)"),
     OFICIO("Oficio técnico"),
     TRANSPORTE("Transporte"),
     OTRO("Otro"),

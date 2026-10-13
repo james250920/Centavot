@@ -141,15 +141,16 @@ class InicioViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     private val caja = periodo.flatMapLatest { elegido -> observarResumenPeriodo(elegido).map { elegido to it } }
 
+    private val avisosYUso = combine(observarNoLeidas(), observarResumenUso(), reloj.dias(), ::Triple)
+
     val estado: StateFlow<InicioUiState> = combine(
         base,
         caja,
         cobros,
-        observarNoLeidas(),
-        observarResumenUso(),
-    ) { b, (elegido, resumenCaja), cobros, noLeidas, uso ->
+        avisosYUso,
+    ) { b, (elegido, resumenCaja), cobros, (noLeidas, uso, hoy) ->
         InicioUiState(
-            hoy = reloj.hoy(),
+            hoy = hoy,
             cargando = false,
             modo = b.modo,
             perfil = b.perfil,
