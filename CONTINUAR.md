@@ -4,8 +4,7 @@
 
 ## Estado
 
-- `main` tiene todo lo hecho hasta el **paso 21** (PR #13), instalado en el teléfono (`com.app.centavot`).
-- **Paso 22** (R8 en release: APK de 7.6 MB) en la rama `build/r8-release`.
+- `main` tiene todo lo hecho hasta el **paso 22** (PR #15), instalado en el teléfono (`com.app.centavot`).
 - Ronda 1 (pasos 1–9): mejoras de la revisión UX/UI.
 - Ronda 2 (pasos 10–18):
   - modo personal o negocio;
@@ -23,6 +22,7 @@
 | 18 | Tamaños: Venta/Gasto 56 dp, botones de formulario 48 dp, números menos grandes | #10 |
 | 19 | P13: solo son frecuentes las ventas que se repiten (el total del día ya no llena la lista) | #11 |
 | 20–21 | TalkBack (plegables, títulos, botones de cobros) y gama baja (barra de abajo, peso y rendimiento medidos) | #13 |
+| 22 | R8 en release: el APK baja de 16.9 a 7.6 MB | #15 |
 
 ## Para retomar
 
