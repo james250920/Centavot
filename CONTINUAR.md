@@ -4,8 +4,7 @@
 
 ## Estado
 
-- `main` tiene todo lo hecho hasta el **paso 18** (PR #10), instalado en el teléfono (`com.app.centavot`).
-- **Paso 19 (P13)** en la rama `feat/ventas-frecuentes`: solo son frecuentes las ventas que se repiten.
+- `main` tiene todo lo hecho hasta el **paso 19** (PR #11), instalado en el teléfono (`com.app.centavot`).
 - Ronda 1 (pasos 1–9): mejoras de la revisión UX/UI.
 - Ronda 2 (pasos 10–18):
   - modo personal o negocio;
@@ -21,6 +20,7 @@
 | 10 | Modo personal o negocio: se elige en la bienvenida y se cambia desde Inicio y Ajustes. "Saqué para la casa" | #7 |
 | 11–17 | Menos texto: ayudas plegables (`AyudaPlegable`), una línea por mensaje y Ayuda en lista | #9 |
 | 18 | Tamaños: Venta/Gasto 56 dp, botones de formulario 48 dp, números menos grandes | #10 |
+| 19 | P13: solo son frecuentes las ventas que se repiten (el total del día ya no llena la lista) | #11 |
 
 ## Para retomar
 
