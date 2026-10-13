@@ -2,7 +2,7 @@
 
 Actualizado el **13 de octubre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el paso 24 y está instalado en el teléfono
+- **Dónde está la app:** `main` incluye todo hasta el paso 25 y está instalado en el teléfono
   (`com.app.centavot`).
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
 - **Lista completa de pendientes:** está en `Centavot_Pendientes.md`, en el repositorio de documentos.
@@ -17,6 +17,7 @@ Actualizado el **13 de octubre de 2026**.
 | P5 | Exportar el resumen del contador en PDF (hoy solo CSV) | 🟠 | M |
 | Q2 | Pruebas de interfaz automatizadas (hoy se prueba a mano en el teléfono) | 🟠 | M |
 | Q7 | Actualizar `Centavot_Prototipo_App.md` con las pantallas actuales | 🟠 | S |
+| — | Volver a tomar las capturas (`capturas-app/` y la galería) con el tema claro: las actuales son oscuras | 🟠 | S |
 
 ### 2. Necesita a una persona o un teléfono
 
@@ -61,6 +62,8 @@ Actualizado el **13 de octubre de 2026**.
   | APK de debug | `./gradlew :androidApp:assembleDebug` |
   | APK de release (con R8) | `./gradlew :androidApp:assembleRelease` (la primera vez necesita conexión) |
 
+- **Tema:** todas las pantallas van siempre en claro, aunque el teléfono esté en oscuro. Las
+  capturas también se toman en claro.
 - **Teléfono:** Samsung Galaxy A15 con Android 16, densidad 450 (384 dp de ancho).
 - **Cada cambio va así:**
   1. una rama nueva;
