@@ -14,7 +14,6 @@ import com.app.centavot.domain.model.ResumenCobros
 import com.app.centavot.domain.model.ResumenMes
 import com.app.centavot.domain.model.ResumenPeriodo
 import com.app.centavot.domain.model.ResumenUso
-import com.app.centavot.domain.model.TasaAhorro
 import com.app.centavot.domain.model.delModo
 import com.app.centavot.domain.usecase.CambiarModoUseCase
 import com.app.centavot.domain.usecase.ObservarCobrosUseCase
@@ -67,24 +66,6 @@ data class InicioUiState(
     val presupuesto: PresupuestoMes? = null,
     val metas: List<ProgresoMeta> = emptyList(),
 ) {
-    /** Lo que entró en el mes según el modo: las ventas del negocio o el ingreso personal. */
-    private val entradasDelMes: Monto get() = if (modo == Modo.NEGOCIO) mes.ventas else mes.ingresosPersonales
-
-    /**
-     * Base de la meta de ahorro: lo que de verdad entró en el mes (en el negocio, la ganancia);
-     * si todavía no hay nada, el ingreso mensual que puso en Ajustes.
-     */
-    val baseAhorro: Monto
-        get() = when {
-            entradasDelMes <= Monto.CERO -> perfil?.ingresoMensual ?: Monto.CERO
-            modo == Modo.NEGOCIO -> maxOf(mes.ganancia, Monto.CERO)
-            else -> mes.ingresosPersonales
-        }
-
-    val baseAhorroEsGanancia: Boolean get() = entradasDelMes > Monto.CERO
-
-    val metaAhorro: Monto
-        get() = Monto(baseAhorro.centimos * (perfil?.tasaAhorro?.decimas ?: 0) / TasaAhorro.MAXIMA)
 }
 
 private const val CANTIDAD_RECIENTES = 5

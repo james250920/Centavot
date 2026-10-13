@@ -229,16 +229,10 @@ private fun LazyListScope.contenidoNegocio(
 }
 
 /** Frases simples sobre el historial: el comerciante ya lo intuye, aquí lo ve en números. */
+// Una sola lectura: el gráfico ya muestra lo demás. (La comparación con el mes pasado se quitó: con el mes
+// en curso a medias, siempre decía "vendes menos".)
 private fun lecturasDe(historial: Historial): List<String> = listOfNotNull(
-    historial.mejorMes?.let { "Tu mejor mes fue ${it.mes.formatear().lowercase()}: vendiste ${it.ventas.formatear()}." },
-    historial.peorMes?.let { "Tu mes más flojo fue ${it.mes.formatear().lowercase()}: ${it.ventas.formatear()}." },
-    historial.variacionUltimoMes?.let { variacion ->
-        when {
-            variacion > 0 -> "Este mes vendes $variacion % más que el pasado."
-            variacion < 0 -> "Este mes vendes ${-variacion} % menos que el pasado."
-            else -> "Este mes vas igual que el pasado."
-        }
-    },
+    historial.mejorMes?.let { "Tu mejor mes fue ${it.mes.formatear().lowercase()}: ${it.ventas.formatear()}." },
 )
 
 private fun LazyListScope.contenidoPersonal(

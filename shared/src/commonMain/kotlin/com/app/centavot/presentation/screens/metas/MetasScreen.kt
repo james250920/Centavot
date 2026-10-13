@@ -151,8 +151,8 @@ private fun TarjetaMeta(progreso: ProgresoMeta, hoy: LocalDate, onAbonar: () -> 
             val nota = when {
                 progreso.cumplida -> "¡La cumpliste!"
                 progreso.porSemana(hoy) != null && meta.fechaLimite != null ->
-                    "Separa ${progreso.porSemana(hoy)!!.formatear()} por semana para llegar al ${meta.fechaLimite.formatearRelativo(hoy).lowercase()}."
-                else -> "Te faltan ${progreso.falta.formatear()}."
+                    "${progreso.porSemana(hoy)!!.formatear()} por semana hasta el ${meta.fechaLimite.formatearRelativo(hoy).lowercase()}"
+                else -> "Faltan ${progreso.falta.formatear()}"
             }
             Text(nota, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (!progreso.cumplida) {

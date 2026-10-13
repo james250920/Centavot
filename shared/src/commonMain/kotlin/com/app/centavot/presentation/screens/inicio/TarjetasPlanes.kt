@@ -46,13 +46,7 @@ private fun TarjetaPlan(titulo: String, accion: String, onAccion: () -> Unit, co
 @Composable
 internal fun TarjetaPresupuesto(presupuesto: PresupuestoMes, onAbrir: () -> Unit, onArmar: () -> Unit) {
     if (!presupuesto.hayPartidas) {
-        TarjetaPlan("Tu presupuesto", "Armar", onArmar) {
-            Text(
-                "Marca en una lista lo que tienes cada mes y aquí verás si vas bien.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        TarjetaPlan("Tu presupuesto", "Armar", onArmar) {}
         return
     }
     TarjetaPlan("Tu presupuesto", "Ver", onAbrir) {
@@ -74,8 +68,9 @@ internal fun TarjetaPresupuesto(presupuesto: PresupuestoMes, onAbrir: () -> Unit
             )
         }
         BarraAvance(porcentaje, estado.color(), if (total > Monto.CERO) "Gastaste el $porcentaje por ciento de tu presupuesto" else "Gastaste ${real.formatear()}")
-        (presupuesto.lectura ?: "Ponle monto a tus partidas para saber si vas bien.").let {
-            Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        // Solo se dice algo cuando hay que actuar: si ya se pasó en alguna partida.
+        if (presupuesto.pasadas.isNotEmpty()) {
+            presupuesto.lectura?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error) }
         }
     }
 }
@@ -84,13 +79,7 @@ internal fun TarjetaPresupuesto(presupuesto: PresupuestoMes, onAbrir: () -> Unit
 @Composable
 internal fun TarjetaMetas(metas: List<ProgresoMeta>, onAbrir: () -> Unit) {
     if (metas.isEmpty()) {
-        TarjetaPlan("Tus metas", "Nueva", onAbrir) {
-            Text(
-                "Junta para un viaje, tus estudios o algo para el negocio, y mira cuánto llevas.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        TarjetaPlan("Tus metas", "Nueva", onAbrir) {}
         return
     }
     TarjetaPlan("Tus metas", "Ver", onAbrir) {

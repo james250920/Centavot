@@ -288,7 +288,7 @@ private fun TarjetaTusDatos(
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                "No se copia a la nube. Si cambias de celular, exporta tus datos para no perderlos.",
+                "Si cambias de celular, expórtalos antes.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -336,11 +336,6 @@ private fun FilaActividad(onAbrir: () -> Unit) {
             Icon(Iconos.Historial, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("Tu actividad", style = MaterialTheme.typography.titleSmall)
-                Text(
-                    "Todo lo que hiciste, con fecha y hora.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
             Icon(Iconos.Siguiente, contentDescription = null)
         }
@@ -353,35 +348,29 @@ private fun TarjetaPrivacidad() {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(Iconos.Candado, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Tus datos son tuyos", style = MaterialTheme.typography.titleSmall)
-                Text("• No pedimos tus claves ni tu cuenta del banco.", style = MaterialTheme.typography.bodyMedium)
-                Text("• No le enviamos nada a SUNAT. Los reportes solo los ves tú y a quien tú se los mandes.", style = MaterialTheme.typography.bodyMedium)
-                Text("• Todo se guarda solo en tu celular.", style = MaterialTheme.typography.bodyMedium)
-            }
+            // Lo esencial en una frase; el detalle está en "Ver aviso de privacidad".
+            Text(
+                "Todo queda en tu celular. No pedimos claves del banco ni enviamos nada a SUNAT.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
     }
 }
 
-/** Indicadores de uso de la primera fase (se miden solo en este celular). */
+/**
+ * Indicadores de uso de la primera fase (se miden solo en este celular). Sirven al equipo en el piloto,
+ * no al comerciante: quedan plegados.
+ */
 @Composable
 private fun TarjetaUso(uso: ResumenUso) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            val respuesta = uso.respuestasCuaderno.lastOrNull()?.let { if (it) "más fácil" else "todavía no" } ?: "sin responder"
-            listOf(
-                "Veces que usaste la app hoy" to "${uso.aperturasHoy} ${if (uso.aperturasHoy == 1) "vez" else "veces"}",
-                "Registros de hoy" to "${uso.registrosHoy}",
-                "Días con registros (últimos 7)" to "${uso.diasConRegistroUltimos7} de 7",
-                "Días con registros desde que empezaste" to "${uso.diasConRegistro} de ${uso.diasDesdePrimerUso + 1}",
-                "Registros por día (cuando registras)" to "${uso.registrosPorDiaActivo}",
-                "¿Más fácil que el cuaderno?" to respuesta,
-            ).forEach { (titulo, valor) ->
-                Row(Modifier.fillMaxWidth()) {
-                    Text(titulo, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                    Text(valor, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                }
-            }
-        }
-    }
+    val respuesta = uso.respuestasCuaderno.lastOrNull()?.let { if (it) "más fácil" else "todavía no" } ?: "sin responder"
+    AyudaPlegable(
+        pregunta = "Ver tus números de uso",
+        respuestas = listOf(
+            "Hoy: ${uso.aperturasHoy} ${if (uso.aperturasHoy == 1) "vez" else "veces"}, ${uso.registrosHoy} registros",
+            "Días con registros: ${uso.diasConRegistroUltimos7} de 7 · ${uso.diasConRegistro} de ${uso.diasDesdePrimerUso + 1} desde que empezaste",
+            "Registros por día: ${uso.registrosPorDiaActivo}",
+            "¿Más fácil que el cuaderno?: $respuesta",
+        ),
+    )
 }
