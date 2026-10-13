@@ -17,7 +17,6 @@ Actualizado el **13 de octubre de 2026**.
 | P5 | Exportar el resumen del contador en PDF (hoy solo CSV) | 🟠 | M |
 | Q2 | Pruebas de interfaz automatizadas (hoy se prueba a mano en el teléfono) | 🟠 | M |
 | Q7 | Actualizar `Centavot_Prototipo_App.md` con las pantallas actuales | 🟠 | S |
-| — | Volver a tomar las capturas (`capturas-app/` y la galería) con el tema claro: las actuales son oscuras | 🟠 | S |
 
 ### 2. Necesita a una persona o un teléfono
 
