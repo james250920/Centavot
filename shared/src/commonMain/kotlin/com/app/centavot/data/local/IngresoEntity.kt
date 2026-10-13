@@ -19,6 +19,8 @@ data class IngresoEntity(
     val descripcion: String?,
     /** v4: plata sacada de la caja del negocio para la casa. */
     @ColumnInfo(defaultValue = "0") val retiroDelNegocio: Boolean = false,
+    /** v5: de dónde vino, una partida de ingreso del presupuesto. */
+    val partidaId: String? = null,
 )
 
 @Dao

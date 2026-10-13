@@ -7,6 +7,8 @@ import com.app.centavot.core.util.RelojSistema
 import com.app.centavot.data.local.CentavotDatabase
 import com.app.centavot.data.repository.ActividadRepositoryImpl
 import com.app.centavot.data.repository.DatosRepositoryImpl
+import com.app.centavot.data.repository.MetaRepositoryImpl
+import com.app.centavot.data.repository.PresupuestoRepositoryImpl
 import com.app.centavot.data.repository.CobroRepositoryImpl
 import com.app.centavot.data.repository.GastoRepositoryImpl
 import com.app.centavot.data.repository.IngresoRepositoryImpl
@@ -17,6 +19,8 @@ import com.app.centavot.data.repository.RegimenRepositoryImpl
 import com.app.centavot.domain.repository.ActividadRepository
 import com.app.centavot.domain.repository.CobroRepository
 import com.app.centavot.domain.repository.DatosRepository
+import com.app.centavot.domain.repository.MetaRepository
+import com.app.centavot.domain.repository.PresupuestoRepository
 import com.app.centavot.domain.repository.GastoRepository
 import com.app.centavot.domain.repository.IngresoRepository
 import com.app.centavot.domain.repository.UsoRepository
@@ -41,6 +45,18 @@ import com.app.centavot.domain.usecase.ObtenerCobroUseCase
 import com.app.centavot.domain.usecase.RegistrarAbonoUseCase
 import com.app.centavot.domain.usecase.RegistrarCobroYVentaUseCase
 import com.app.centavot.domain.usecase.MarcarNotificacionesLeidasUseCase
+import com.app.centavot.domain.usecase.AbonarMetaUseCase
+import com.app.centavot.domain.usecase.AgregarPartidaUseCase
+import com.app.centavot.domain.usecase.CrearPresupuestoUseCase
+import com.app.centavot.domain.usecase.EliminarMetaUseCase
+import com.app.centavot.domain.usecase.EliminarPartidaUseCase
+import com.app.centavot.domain.usecase.FijarMontoPartidaUseCase
+import com.app.centavot.domain.usecase.GuardarMetaUseCase
+import com.app.centavot.domain.usecase.ObservarMetasUseCase
+import com.app.centavot.domain.usecase.ObservarPartidasUseCase
+import com.app.centavot.domain.usecase.ObservarPresupuestoMesUseCase
+import com.app.centavot.domain.usecase.QuitarAbonoMetaUseCase
+import com.app.centavot.domain.usecase.RenombrarPartidaUseCase
 import com.app.centavot.domain.usecase.ObservarActividadesUseCase
 import com.app.centavot.domain.usecase.ObservarCobrosUseCase
 import com.app.centavot.domain.usecase.ObservarContactosUseCase
@@ -102,6 +118,8 @@ val moduloData = module {
     single { get<CentavotDatabase>().ingresoDao() }
     single { get<CentavotDatabase>().eventoUsoDao() }
     single { get<CentavotDatabase>().datosDao() }
+    single { get<CentavotDatabase>().presupuestoDao() }
+    single { get<CentavotDatabase>().metaDao() }
     single<GastoRepository> { GastoRepositoryImpl(get()) }
     single<RegimenRepository> { RegimenRepositoryImpl(get()) }
     single<PerfilRepository> { PerfilRepositoryImpl(get()) }
@@ -111,6 +129,8 @@ val moduloData = module {
     single<IngresoRepository> { IngresoRepositoryImpl(get()) }
     single<UsoRepository> { UsoRepositoryImpl(get()) }
     single<DatosRepository> { DatosRepositoryImpl(get()) }
+    single<PresupuestoRepository> { PresupuestoRepositoryImpl(get()) }
+    single<MetaRepository> { MetaRepositoryImpl(get()) }
 }
 
 @OptIn(ExperimentalUuidApi::class)
@@ -166,6 +186,18 @@ val moduloDomain = module {
     factoryOf(::ObservarNotificacionesUseCase)
     factoryOf(::ObservarNoLeidasUseCase)
     factoryOf(::MarcarNotificacionesLeidasUseCase)
+    factoryOf(::ObservarPartidasUseCase)
+    factoryOf(::ObservarPresupuestoMesUseCase)
+    factory { CrearPresupuestoUseCase(get(), get(), get(), generarId) }
+    factory { AgregarPartidaUseCase(get(), get(), generarId) }
+    factoryOf(::FijarMontoPartidaUseCase)
+    factoryOf(::RenombrarPartidaUseCase)
+    factoryOf(::EliminarPartidaUseCase)
+    factoryOf(::ObservarMetasUseCase)
+    factory { GuardarMetaUseCase(get(), get(), get(), generarId) }
+    factory { AbonarMetaUseCase(get(), get(), get(), get(), generarId) }
+    factoryOf(::QuitarAbonoMetaUseCase)
+    factoryOf(::EliminarMetaUseCase)
 }
 
 val moduloPresentation = module {

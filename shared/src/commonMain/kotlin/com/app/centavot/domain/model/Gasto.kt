@@ -13,6 +13,8 @@ data class Gasto(
     val subcategoria: SubcategoriaGasto? = null,
     val proveedor: String? = null,
     val descripcion: String? = null,
+    /** v5: la partida del presupuesto en que cae, si el usuario la eligió. */
+    val partidaId: String? = null,
     /** Si es true, el backend no puede sobrescribir la categoría: el usuario siempre gana. */
     val corregidoManualmente: Boolean = false,
 ) {

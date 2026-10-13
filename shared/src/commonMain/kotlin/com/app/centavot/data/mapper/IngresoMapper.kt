@@ -17,6 +17,7 @@ fun IngresoEntity.toDomain() = Ingreso(
     categoria = Categoria.valueOf(categoria),
     descripcion = descripcion,
     retiroDelNegocio = retiroDelNegocio,
+    partidaId = partidaId,
 )
 
 fun Ingreso.toEntity() = IngresoEntity(
@@ -26,6 +27,7 @@ fun Ingreso.toEntity() = IngresoEntity(
     categoria = categoria.name,
     descripcion = descripcion,
     retiroDelNegocio = retiroDelNegocio,
+    partidaId = partidaId,
 )
 
 fun EventoUsoEntity.toDomain() = EventoUso(

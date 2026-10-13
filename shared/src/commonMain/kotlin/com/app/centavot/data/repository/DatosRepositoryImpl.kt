@@ -11,6 +11,10 @@ class DatosRepositoryImpl(private val dao: DatosDao) : DatosRepository {
         dao.borrarGastos()
         dao.borrarActividades()
         dao.borrarNotificaciones()
+        dao.borrarMontosPresupuesto()
+        dao.borrarPresupuesto()
+        dao.borrarAbonosMetas()
+        dao.borrarMetas()
         // Primero el régimen y el perfil: así la app vuelve al inicio aunque algo falle después.
         dao.borrarRegimen()
         dao.borrarPerfil()

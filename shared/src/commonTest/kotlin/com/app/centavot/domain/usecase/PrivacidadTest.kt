@@ -2,19 +2,25 @@ package com.app.centavot.domain.usecase
 
 import com.app.centavot.core.util.CompartidorArchivos
 import com.app.centavot.core.util.Reloj
+import com.app.centavot.domain.model.AbonoMeta
 import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Cobro
 import com.app.centavot.domain.model.Contacto
 import com.app.centavot.domain.model.EventoUso
 import com.app.centavot.domain.model.Ingreso
+import com.app.centavot.domain.model.Meta
 import com.app.centavot.domain.model.Monto
-import com.app.centavot.domain.model.PeriodoTope
+import com.app.centavot.domain.model.MontoPresupuesto
+import com.app.centavot.domain.model.Partida
 import com.app.centavot.domain.model.Perfil
+import com.app.centavot.domain.model.PeriodoTope
 import com.app.centavot.domain.model.RegimenTributario
 import com.app.centavot.domain.model.Rubro
+import com.app.centavot.domain.model.SubcategoriaGasto
 import com.app.centavot.domain.model.TasaAhorro
 import com.app.centavot.domain.model.TipoCobro
 import com.app.centavot.domain.model.TipoEventoUso
+import com.app.centavot.domain.model.TipoPartida
 import com.app.centavot.domain.model.TipoRegimen
 import com.app.centavot.domain.model.VERSION_AVISO_PRIVACIDAD
 import com.app.centavot.domain.repository.DatosRepository
@@ -23,20 +29,23 @@ import com.app.centavot.fakes.FakeActividadRepository
 import com.app.centavot.fakes.FakeCobroRepository
 import com.app.centavot.fakes.FakeGastoRepository
 import com.app.centavot.fakes.FakeIngresoRepository
+import com.app.centavot.fakes.FakeMetaRepository
+import com.app.centavot.fakes.FakePresupuestoRepository
 import com.app.centavot.fakes.FakeRegimenRepository
 import com.app.centavot.fakes.FakeUsoRepository
 import com.app.centavot.presentation.EstadoApp
 import com.app.centavot.presentation.estadoApp
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlinx.datetime.YearMonth
 
 /** P1 (aviso, consentimiento y borrado) y P3 (exportar todos los datos). */
 class PrivacidadTest {
@@ -117,6 +126,14 @@ class PrivacidadTest {
             gastos = FakeGastoRepository(),
             cobros = cobros,
             actividades = actividades,
+            presupuesto = FakePresupuestoRepository().apply {
+                partidas.value = listOf(Partida("p1", "Alimentación", TipoPartida.GASTO, Categoria.PERSONAL, SubcategoriaGasto.ALIMENTACION))
+                montos.value = listOf(MontoPresupuesto("p1", YearMonth(2026, 10), Monto.soles(600)))
+            },
+            metas = FakeMetaRepository().apply {
+                metas.value = listOf(Meta("m1", "Viaje", Monto.soles(1_200), Categoria.PERSONAL, ahora.date))
+                abonos.value = listOf(AbonoMeta("a1", "m1", Monto.soles(100), ahora.date))
+            },
             reloj = reloj,
         )
 
@@ -125,10 +142,12 @@ class PrivacidadTest {
 
         assertEquals("centavot-mis-datos-2026-10-09.csv", archivo.nombre)
         assertTrue("Rosa Quispe,Mi negocio,Comercio o bodega,0.00,10.0,RUS · Categoría 2,8000.00" in lineas)
-        assertTrue("2026-10-09,Venta,Pan,5.00" in lineas)
+        assertTrue("2026-10-09,Venta,Pan,5.00," in lineas)
+        assertTrue("Alimentación,Personal,Gasto,2026-10,600.00" in lineas)
+        assertTrue("Viaje,Personal,,,2026-10-09,100.00" in lineas)
         assertTrue("Señora Juana,987654321" in lineas)
         assertTrue("2026-10-03,Señora Juana,Negocio,Fiado o préstamo,Abarrotes,85.00,0.00,30.00,55.00,Pendiente," in lineas)
-        listOf("PERFIL", "VENTAS E INGRESOS (1)", "GASTOS (0)", "CONTACTOS (1)", "COBROS (1)", "HISTORIAL DE ACTIVIDAD (1)").forEach {
+        listOf("PERFIL", "VENTAS E INGRESOS (1)", "GASTOS (0)", "CONTACTOS (1)", "COBROS (1)", "PRESUPUESTO (1 partidas)", "METAS (1)", "HISTORIAL DE ACTIVIDAD (1)").forEach {
             assertTrue(it in lineas, "Falta la sección $it")
         }
     }

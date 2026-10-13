@@ -119,7 +119,12 @@ fun exportarTodoCsv(
     cobros: List<Cobro>,
     actividades: List<Actividad>,
     generado: kotlinx.datetime.LocalDateTime,
+    partidas: List<Partida> = emptyList(),
+    montosPresupuesto: List<MontoPresupuesto> = emptyList(),
+    metas: List<Meta> = emptyList(),
+    abonosMetas: List<AbonoMeta> = emptyList(),
 ): String = csv {
+    val nombrePartida = partidas.associate { it.id to it.nombre }
     appendLine(fila("Mis datos en Centavot", generado.toString()))
     appendLine(fila("Este archivo tiene todo lo que Centavot guarda en tu celular."))
     appendLine()
@@ -138,25 +143,27 @@ fun exportarTodoCsv(
     )
     appendLine()
     appendLine(fila("VENTAS E INGRESOS (${ingresos.size})"))
-    appendLine(fila("Fecha", "Tipo", "Descripción", "Monto (S/)"))
+    appendLine(fila("Fecha", "Tipo", "Descripción", "Monto (S/)", "Fuente"))
     ingresos.sortedBy { it.fecha }.forEach {
         val tipo = when (it.tipo) {
             TipoEntrada.VENTA -> "Venta"
             TipoEntrada.INGRESO -> "Ingreso personal"
             TipoEntrada.RETIRO -> "Retiro del negocio para la casa"
         }
-        appendLine(fila(it.fecha.toString(), tipo, it.descripcion.orEmpty(), it.monto.enDecimal()))
+        appendLine(fila(it.fecha.toString(), tipo, it.descripcion.orEmpty(), it.monto.enDecimal(), nombrePartida[it.partidaId].orEmpty()))
     }
     appendLine()
     appendLine(fila("GASTOS (${gastos.size})"))
-    appendLine(fila("Fecha", "Tipo", "Categoría", "Descripción", "Monto (S/)"))
+    appendLine(fila("Fecha", "Tipo", "Categoría", "Descripción", "Monto (S/)", "Partida"))
     gastos.sortedBy { it.fecha }.forEach {
         val tipo = when (it.categoria) {
             Categoria.NEGOCIO -> "Negocio"
             Categoria.PERSONAL -> "Personal"
             null -> "Sin clasificar"
         }
-        appendLine(fila(it.fecha.toString(), tipo, it.subcategoria?.etiqueta.orEmpty(), it.descripcion.orEmpty(), it.monto.enDecimal()))
+        appendLine(
+            fila(it.fecha.toString(), tipo, it.subcategoria?.etiqueta.orEmpty(), it.descripcion.orEmpty(), it.monto.enDecimal(), nombrePartida[it.partidaId].orEmpty()),
+        )
     }
     appendLine()
     appendLine(fila("CONTACTOS (${contactos.size})"))
@@ -174,6 +181,26 @@ fun exportarTodoCsv(
                 if (it.estaPendiente) "Pendiente" else "Cobrado", it.fechaCobrado?.toString().orEmpty(),
             ),
         )
+    }
+    appendLine()
+    appendLine(fila("PRESUPUESTO (${partidas.size} partidas)"))
+    appendLine(fila("Partida", "De", "Tipo", "Desde el mes", "Monto (S/)"))
+    partidas.forEach { partida ->
+        val de = if (partida.categoria == Categoria.PERSONAL) "Personal" else "Negocio"
+        val tipo = if (partida.tipo == TipoPartida.GASTO) "Gasto" else "Ingreso"
+        val suyos = montosPresupuesto.filter { it.partidaId == partida.id }.sortedBy { it.mes }
+        if (suyos.isEmpty()) appendLine(fila(partida.nombre, de, tipo, "", ""))
+        suyos.forEach { appendLine(fila(partida.nombre, de, tipo, it.mes.toString(), it.monto.enDecimal())) }
+    }
+    appendLine()
+    appendLine(fila("METAS (${metas.size})"))
+    appendLine(fila("Meta", "De", "Objetivo (S/)", "Para cuándo", "Fecha", "Separaste (S/)"))
+    metas.forEach { meta ->
+        val de = if (meta.categoria == Categoria.PERSONAL) "Personal" else "Negocio"
+        appendLine(fila(meta.nombre, de, meta.objetivo.enDecimal(), meta.fechaLimite?.toString().orEmpty(), "", ""))
+        abonosMetas.filter { it.metaId == meta.id }.sortedBy { it.fecha }.forEach {
+            appendLine(fila(meta.nombre, de, "", "", it.fecha.toString(), it.monto.enDecimal()))
+        }
     }
     appendLine()
     appendLine(fila("HISTORIAL DE ACTIVIDAD (${actividades.size})"))

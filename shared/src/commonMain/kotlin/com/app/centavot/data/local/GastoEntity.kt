@@ -17,4 +17,6 @@ data class GastoEntity(
     val proveedor: String?,
     val descripcion: String?,
     val corregidoManualmente: Boolean,
+    /** v5: partida del presupuesto. */
+    val partidaId: String? = null,
 )
