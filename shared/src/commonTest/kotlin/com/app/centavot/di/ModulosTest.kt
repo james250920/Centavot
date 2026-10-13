@@ -2,6 +2,7 @@ package com.app.centavot.di
 
 import com.app.centavot.core.util.AbridorEnlaces
 import com.app.centavot.core.util.CompartidorArchivos
+import com.app.centavot.core.util.GeneradorPdf
 import com.app.centavot.domain.repository.ActividadRepository
 import com.app.centavot.domain.repository.CobroRepository
 import com.app.centavot.domain.repository.DatosRepository
@@ -70,6 +71,7 @@ class ModulosTest {
         single<UsoRepository> { FakeUsoRepository() }
         single<DatosRepository> { DatosRepository { } }
         single<CompartidorArchivos> { CompartidorArchivos { _, _, _ -> } }
+        single<GeneradorPdf> { GeneradorPdf { ByteArray(0) } }
         single<AbridorEnlaces> { AbridorEnlaces { } }
     }
 

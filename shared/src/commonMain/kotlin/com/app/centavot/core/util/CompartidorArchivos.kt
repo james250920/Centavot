@@ -4,6 +4,9 @@ package com.app.centavot.core.util
 fun interface CompartidorArchivos {
     fun compartir(nombreArchivo: String, contenido: String, tipoMime: String)
 
+    /** Igual, para un archivo binario como un PDF. */
+    fun compartir(nombreArchivo: String, contenido: ByteArray, tipoMime: String) {}
+
     /** Borra los archivos que se generaron para compartir (pueden tener datos del usuario). */
     fun borrarArchivos() {}
 }

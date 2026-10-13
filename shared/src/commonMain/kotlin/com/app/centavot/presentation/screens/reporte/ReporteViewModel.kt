@@ -3,6 +3,7 @@ package com.app.centavot.presentation.screens.reporte
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.CompartidorArchivos
+import com.app.centavot.core.util.GeneradorPdf
 import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Cobro
@@ -16,6 +17,7 @@ import com.app.centavot.domain.model.Historial
 import com.app.centavot.domain.model.ReporteSunat
 import com.app.centavot.domain.model.ResumenCobros
 import com.app.centavot.domain.model.aCsv
+import com.app.centavot.domain.model.aDocumento
 import com.app.centavot.domain.model.reporteGastosPersonalesCsv
 import com.app.centavot.domain.model.reporteMeDebenCsv
 import com.app.centavot.domain.usecase.ObservarCobrosUseCase
@@ -91,6 +93,7 @@ class ReporteViewModel(
     observarModo: ObservarModoUseCase,
     private val reloj: Reloj,
     private val compartidor: CompartidorArchivos,
+    private val generadorPdf: GeneradorPdf,
 ) : ViewModel() {
 
     private val periodo = MutableStateFlow(reloj.hoy().yearMonth)
@@ -156,6 +159,16 @@ class ReporteViewModel(
                 "text/csv",
             )
         }
+    }
+
+    /** El resumen del negocio en PDF, para que el contador lo lea sin abrir Excel (P5). */
+    fun exportarPdf() {
+        val reporte = estado.value.reporte ?: return
+        compartidor.compartir(
+            "centavot-resumen-${reporte.periodo}.pdf",
+            generadorPdf.generar(reporte.aDocumento(reloj.hoy())),
+            "application/pdf",
+        )
     }
 
     fun mesAnterior() = periodo.update { it.minusMonth() }
