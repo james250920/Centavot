@@ -73,7 +73,7 @@ internal fun TarjetaPresupuesto(presupuesto: PresupuestoMes, onAbrir: () -> Unit
                 fontWeight = FontWeight.SemiBold,
             )
         }
-        BarraAvance(porcentaje, estado.color(), "Gastaste el $porcentaje por ciento de tu presupuesto")
+        BarraAvance(porcentaje, estado.color(), if (total > Monto.CERO) "Gastaste el $porcentaje por ciento de tu presupuesto" else "Gastaste ${real.formatear()}")
         (presupuesto.lectura ?: "Ponle monto a tus partidas para saber si vas bien.").let {
             Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

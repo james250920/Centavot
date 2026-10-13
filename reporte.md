@@ -373,6 +373,10 @@ verificación, para saber en qué nos quedamos.
 | 24 | Cobros antiguos y gastos por categoría | P7 aviso de fiados de más de un mes · P11 total por subcategoría en el reporte | ✅ |
 | 25 | Tema claro siempre | Con el teléfono en modo oscuro, la app se veía oscura | ✅ |
 | 26 | Resumen del contador en PDF | P5: solo se podía mandar en CSV | ✅ |
+| 27 | Gráfico "Este mes" con su lectura | Reunión con usuarios: "como en la banca, pero que te diga qué significa" | ✅ |
+| 28 | Presupuesto con plantilla | Reunión con usuarios: plantilla con checks, editable por mes, categorías propias al registrar | ✅ |
+| 29 | Fuentes de ingreso | Reunión con usuarios: ingresos variables (clases, comisiones, inversiones) | ✅ |
+| 30 | Metas de ahorro | Reunión con usuarios: metas con avance, abonos parciales y avisos | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -968,3 +972,153 @@ se vuelve una lista larga.
   binarios.
 - `ReporteViewModel.kt`, `ReporteScreen.kt`, `Formato.kt` (usa los nombres de mes del dominio),
   `ModuloAndroid.kt` y `ModulosTest.kt`.
+
+---
+
+# Ronda 3 · Lo que pidieron los usuarios (reunión del 10 de octubre)
+
+**Fuente:** `recomendaciones de cliente/` en el repositorio de documentos. Es una reunión con tres
+usuarios (David, Jemina y Ronal) a los que se les mostró la app.
+
+**Ya estaba hecho antes de esta ronda:**
+
+- la separación entre lo personal y el negocio (paso 10);
+- la exportación a Excel (y ahora también a PDF, paso 26).
+
+**No se programa:** el registro automático, es decir, leer los correos de Yape o de la tarjeta, la foto
+de la boleta con OCR y el QR.
+
+- **Por qué:** cambia la promesa de la app de no usar internet y no leer nada fuera de ella, y la
+  reunión lo dejó como propuesta para la siguiente reunión.
+- **Dónde quedó:** en `CONTINUAR.md` como pendiente.
+
+Todo lo de esta ronda va en la **base de datos versión 5**, con migración automática desde la 4.
+
+## Paso 27 · Gráfico "Este mes" con su lectura
+
+**Pedido.** David: "cuando abro la banca me sale un cuadro de cuánto entró y cuánto gasté, pero no
+sé qué significa" y "lo mezcla todo".
+
+**Cambio.**
+
+- Arriba en la pestaña "Hoy" de Inicio, la tarjeta **"Este mes"** muestra dos barras:
+  - *Vendiste* (o *Te entró*), en verde;
+  - *Gastaste*, en gris.
+- Debajo va una frase: "Gastaste el 32 % de lo que vendiste: te quedan S/ 4,397.72." Si se gastó más,
+  dice "Gastaste S/ X más de lo que te entró."
+- Solo muestra lo del modo, así que no mezcla lo personal con el negocio.
+- La frase la arma `ResumenPeriodo.lecturaDelMes`.
+
+## Paso 28 · Presupuesto con plantilla
+
+**Pedido.**
+
+- James propuso una plantilla base, y David y Ronal pidieron marcarla "con checks".
+- Jemina y Ronal pidieron que el presupuesto cambie según el mes ("enero no es igual que octubre").
+- Jemina pidió que, al registrar un gasto, salgan **sus** partidas y no "las 50,000 categorías que existen".
+
+**Cambio.**
+
+- **"Arma tu presupuesto":** una lista con checks según el modo. Las partidas comunes vienen marcadas.
+  - **Personal:** alimentación, alquiler, luz, transporte, celular, pensiones, salud, deudas, ropa y
+    salidas; y de ingresos, sueldo, comisiones, clases, cachuelos y ganancia de inversiones.
+  - **Negocio:** mercadería, alquiler del local, luz, transporte y delivery, sueldos, bolsas,
+    mantenimiento, publicidad e impuestos.
+  - El monto es opcional y se pueden agregar partidas propias ("Agregar otra").
+- **"Tu presupuesto"** (pantalla nueva):
+  - **Arriba:** selector de mes y un resumen ("Gastaste S/ X de S/ Y") con barra y frase ("Te
+    pasaste S/ 200; sobre todo en Alimentación").
+  - **Partidas:** cada una con lo real frente a lo presupuestado, en verde, ámbar desde el 90 % o rojo
+    si se pasó, y "Te quedan…" o "Te pasaste…".
+  - **Editar:** al tocar una partida se cambia su monto **desde ese mes en adelante**, sin tocar los
+    meses anteriores. También se puede renombrar o quitar.
+  - **Lo que sobra:** también se muestran lo que no cae en ninguna partida ("Sin partida") y, en lo
+    personal, "De tu negocio".
+- **Registrar un gasto:** si hay presupuesto, "¿En qué?" muestra las partidas propias. Cada partida
+  guarda su subcategoría de siempre, así que la dona, el tope y los reportes no cambian.
+- **Gastos de antes:** los anotados antes de armar el presupuesto caen en la partida de su misma
+  subcategoría.
+- **Inicio:** en "Mi negocio" o "Mi mes", la tarjeta **"Tu presupuesto"** invita a armarlo o muestra
+  cuánto lleva.
+- **Datos:**
+  - tablas `partidas` y `montos_presupuesto` (un monto vale desde su mes hasta que se cambia);
+  - columna `partidaId` en gastos e ingresos.
+
+## Paso 29 · Fuentes de ingreso
+
+**Pedido.** Jemina: "no tengo sueldo, tengo ingresos variables: comisiones, clases de matemáticas,
+asesorías… quiero anotar cada uno con su actividad y su fecha". También preguntó por la ganancia de sus
+inversiones, como fuente de ingreso.
+
+**Cambio.**
+
+- **Al anotar un ingreso personal:** si se armó el presupuesto, aparece **"¿De dónde vino?"** con las
+  fuentes (Sueldo, Comisiones, Clases y asesorías, Ganancia de inversiones…). Sin descripción, el
+  ingreso toma el nombre de su fuente en las listas.
+- **Reportes › Mi plata:** tarjeta **"De dónde vino"**, con el total de cada fuente en el mes (y lo que
+  vino del negocio).
+- **No incluye** un módulo de inversiones (capital, retiros, rentabilidad); solo la ganancia como
+  ingreso.
+
+## Paso 30 · Metas de ahorro
+
+**Pedido.** David: metas como "un viaje en diciembre" o "un estudio", para lo personal y también para
+el negocio, con abonos cuando se pueda (quincenal o "si me salió algo"), con el porcentaje y con un aviso
+cada vez que se abona.
+
+**Cambio.**
+
+- **"Tus metas"** (pantalla nueva): cada meta tiene un nombre, un objetivo y un plazo opcional (sin
+  fecha, en 3 o 6 meses, en 1 año o fin de año).
+- **Cada tarjeta** muestra cuánto lleva, el % y **cuánto separar por semana** para llegar a tiempo
+  ("Separa S/ 85.00 por semana para llegar al 13 de abril de 2027").
+- **"Separar plata":** registra un abono con montos rápidos.
+  - El aviso dice "Separaste S/ 700.00. Llevas 26 %." y tiene **Deshacer**.
+  - Separar no es un gasto: no cambia la caja ni el tope.
+- **Notificaciones:** al cruzar el 25, 50, 75 y 100 % llega un aviso, una sola vez por hito; el último
+  dice "¡Cumpliste tu meta…!".
+- **Inicio:** en "Mi negocio" o "Mi mes", la tarjeta **"Tus metas"** muestra las dos primeras con su
+  barra.
+- **Datos:** tablas `metas` y `abonos_meta`.
+
+## Verificación de la ronda 3
+
+- **Tests:** 9 nuevos en `PresupuestoYMetasTest`.
+  - Presupuesto:
+    - el monto vale para los meses siguientes y cambia en enero;
+    - cada gasto va a su partida o a la de su subcategoría;
+    - lo que no cae en ninguna partida, las fuentes y lo que vino del negocio;
+    - la frase "te pasaste";
+    - armarlo desde la plantilla sin repetir partidas;
+    - agregar y quitar partidas;
+    - el presupuesto del mes solo mira el modo.
+  - Metas:
+    - cuánto separar por semana;
+    - los avisos por hito, una sola vez cada uno;
+    - lo que se valida al crear una meta.
+  - Además, la exportación de datos incluye el presupuesto y las metas, y todas las pantallas nuevas
+    se arman con sus dependencias. Pasan los 122 tests.
+- **Migración en el teléfono:**
+  1. Se instaló la versión anterior (base v4) como copia de prueba, con la bodega de demostración.
+  2. Después se actualizó a la nueva.
+  3. La base quedó en la versión 5 con las 4,800 ventas, los 91 gastos y los 5 cobros intactos, y las 4
+     tablas nuevas.
+- **Recorrido en el teléfono:**
+  - "Este mes" en Inicio;
+  - armar el presupuesto del negocio;
+  - cambiar un monto y agregar "Bolsas";
+  - un gasto en "Bolsas", que se sumó a su partida (S/ 12 de S/ 50);
+  - una meta de S/ 3,000 a 6 meses con dos abonos (llegó al 26 % y dio el monto semanal);
+  - cambiar a lo personal, armar el presupuesto con fuentes y anotar ingresos con fuente;
+  - "De dónde vino" en Reportes.
+- **Corregido durante la prueba:**
+  - el resumen decía "S/ 302.76 de S/ 0.00" cuando aún no había montos; ahora muestra solo lo gastado;
+  - un ingreso con fuente y sin descripción salía como "Ingreso"; ahora sale con el nombre de su
+    fuente.
+- **Archivos:**
+  - nuevos `Presupuesto.kt`, `Meta.kt`, `PresupuestoEntities.kt`, `PresupuestoRepository.kt`,
+    `PresupuestoRepositoryImpl.kt`, `PresupuestoUseCases.kt` y `MetaUseCases.kt`;
+  - nuevas pantallas `presupuesto/` (armar y ver) y `metas/`;
+  - nuevos componentes `TarjetaEsteMes.kt`, `BarraAvance.kt` y `TarjetasPlanes.kt`;
+  - cambios en Gasto, Venta, Inicio, Reportes, Ayuda, exportar y borrar datos, la navegación y la
+    inyección de dependencias.

@@ -115,7 +115,11 @@ fun PresupuestoScreen(
                         Row(Modifier.fillMaxWidth()) {
                             Text("Gastaste", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                             Text(
-                                "${presupuesto.realGastos.formatear()} de ${presupuesto.presupuestoGastos.formatear()}",
+                                if (presupuesto.presupuestoGastos > Monto.CERO) {
+                                    "${presupuesto.realGastos.formatear()} de ${presupuesto.presupuestoGastos.formatear()}"
+                                } else {
+                                    presupuesto.realGastos.formatear()
+                                },
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                             )
@@ -131,7 +135,7 @@ fun PresupuestoScreen(
                             porcentaje >= 90 -> EstadoLinea.CERCA
                             else -> EstadoLinea.BIEN
                         }
-                        BarraAvance(porcentaje, estadoTotal.color(), "Gastaste el $porcentaje por ciento de tu presupuesto")
+                        BarraAvance(porcentaje, estadoTotal.color(), if (presupuesto.presupuestoGastos > Monto.CERO) "Gastaste el $porcentaje por ciento de tu presupuesto" else "Gastaste ${presupuesto.realGastos.formatear()}")
                         presupuesto.lectura?.let {
                             Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }

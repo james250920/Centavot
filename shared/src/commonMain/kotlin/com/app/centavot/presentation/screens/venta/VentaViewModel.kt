@@ -168,7 +168,9 @@ class VentaViewModel(
             _estado.update { it.copy(errorMonto = "Ingresa un monto mayor a cero") }
             return
         }
-        guardarCon(monto, actual.descripcion)
+        // Sin descripción, el ingreso se llama como su fuente: en las listas dice "Clases y asesorías", no "Ingreso".
+        val fuente = actual.fuentes.firstOrNull { it.id == actual.partidaId }?.nombre
+        guardarCon(monto, actual.descripcion.ifBlank { fuente.orEmpty() })
     }
 
     private fun guardarCon(monto: Monto, descripcion: String) {
