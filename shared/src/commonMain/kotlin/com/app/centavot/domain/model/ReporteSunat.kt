@@ -24,5 +24,11 @@ data class ReporteSunat(
 
     val ganancia: Monto get() = totalVentas - total
 
+    /** Compras y gastos sumados por subcategoría, de la mayor a la menor (P11). Sin subcategoría: null. */
+    val porSubcategoria: List<Pair<SubcategoriaGasto?, Monto>>
+        get() = gastos.groupBy { it.subcategoria }
+            .map { (subcategoria, lista) -> subcategoria to lista.map { it.monto }.sumar() }
+            .sortedByDescending { it.second }
+
     val estaVacio: Boolean get() = gastos.isEmpty() && ventas.isEmpty()
 }

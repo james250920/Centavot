@@ -1,6 +1,7 @@
 package com.app.centavot.domain.model
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 
 enum class EstadoCobro { PENDIENTE, COBRADO }
 
@@ -34,7 +35,16 @@ data class Cobro(
 
     /** Lo que falta cobrar. */
     val saldo: Monto get() = monto - pagado
+
+    /** Días desde que se registró el cobro. */
+    fun diasDesde(hoy: LocalDate): Int = fecha.daysUntil(hoy)
+
+    /** Pendiente desde hace un mes o más: conviene recordárselo a quien debe. */
+    fun esAntiguo(hoy: LocalDate): Boolean = estaPendiente && diasDesde(hoy) >= DIAS_COBRO_ANTIGUO
 }
+
+/** Desde cuántos días un cobro pendiente se considera antiguo y se avisa (P7). */
+const val DIAS_COBRO_ANTIGUO = 30
 
 data class DeudaContacto(val contacto: Contacto, val total: Monto, val cantidad: Int)
 

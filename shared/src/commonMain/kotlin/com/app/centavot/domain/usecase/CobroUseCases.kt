@@ -6,11 +6,13 @@ import com.app.centavot.domain.model.Cobro
 import com.app.centavot.domain.model.Contacto
 import com.app.centavot.domain.model.EstadoCobro
 import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.Notificacion
 import com.app.centavot.domain.model.ResumenCobros
 import com.app.centavot.domain.model.TipoCobro
 import com.app.centavot.domain.model.enSoles
 import com.app.centavot.domain.repository.ActividadRepository
 import com.app.centavot.domain.repository.CobroRepository
+import com.app.centavot.domain.repository.NotificacionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -258,5 +260,31 @@ class EliminarCobroUseCase(
             "Eliminaste el cobro \"${cobro.motivo}\" a ${cobro.contacto.nombre} de ${cobro.monto.enSoles()}.",
             reloj.ahora(),
         )
+    }
+}
+
+/**
+ * Deja un aviso en Notificaciones por cada cobro pendiente desde hace un mes o más (P7). Cada cobro se
+ * avisa una sola vez: si sigue sin pagarse, el comerciante lo ve marcado en Cobros.
+ */
+class RevisarCobrosAntiguosUseCase(
+    private val cobros: CobroRepository,
+    private val notificaciones: NotificacionRepository,
+    private val reloj: Reloj,
+) {
+    suspend operator fun invoke() {
+        val hoy = reloj.hoy()
+        cobros.observarCobros().first().filter { it.esAntiguo(hoy) }.forEach { cobro ->
+            val nombre = cobro.contacto.nombre
+            notificaciones.agregarSiNoExiste(
+                Notificacion(
+                    id = "cobro-antiguo-${cobro.id}",
+                    asunto = "$nombre te debe hace más de un mes",
+                    mensaje = "Le falta pagarte ${cobro.saldo.enSoles()} por \"${cobro.motivo}\". " +
+                        "Puedes recordárselo por WhatsApp desde Cobros.",
+                    fechaHora = reloj.ahora(),
+                ),
+            )
+        }
     }
 }

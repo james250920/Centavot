@@ -95,6 +95,8 @@ db.executemany(
         ("k2", "c2", "Abarrotes de la semana", 8500, hace(9), "PENDIENTE", None, "FIADO", 0, 3000, "NEGOCIO"),
         ("k3", "c3", "Gaseosas para el cumpleaños", 4200, hace(12), "COBRADO", hace(6), "FIADO", 0, 0, "NEGOCIO"),
         ("k4", "c4", "Préstamo para el pasaje", 15000, hace(5), "PENDIENTE", None, "FIADO", 0, 0, "PERSONAL"),
+        # Más de un mes sin pagar: deja el aviso de cobro antiguo (P7).
+        ("k5", "c3", "Fiado de la quincena", 6000, hace(38), "PENDIENTE", None, "FIADO", 0, 0, "NEGOCIO"),
     ],
 )
 db.executemany("insert into actividades (descripcion, fechaHora) values (?,?)", [

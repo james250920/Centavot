@@ -50,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -289,13 +290,17 @@ private fun FilaCobro(
                 style = MaterialTheme.typography.bodySmall,
             )
         }
+        // Más de un mes sin pagar: en ámbar, el color de lo que pide atención (P7).
+        val antiguo = cobro.esAntiguo(hoy)
         Text(
-            text = if (cobro.estaPendiente) {
-                "Desde ${cobro.fecha.formatearRelativo(hoy).lowercase()}"
-            } else {
-                "Cobrado ${cobro.fechaCobrado?.formatearRelativo(hoy)?.lowercase().orEmpty()}"
+            text = when {
+                antiguo -> "Desde ${cobro.fecha.formatearRelativo(hoy).lowercase()} · hace ${cobro.diasDesde(hoy)} días"
+                cobro.estaPendiente -> "Desde ${cobro.fecha.formatearRelativo(hoy).lowercase()}"
+                else -> "Cobrado ${cobro.fechaCobrado?.formatearRelativo(hoy)?.lowercase().orEmpty()}"
             },
             style = MaterialTheme.typography.bodySmall,
+            color = if (antiguo) colores.tertiary else Color.Unspecified,
+            fontWeight = if (antiguo) FontWeight.Medium else null,
         )
         FlowRow(
             modifier = Modifier.fillMaxWidth(),

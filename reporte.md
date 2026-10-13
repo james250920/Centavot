@@ -370,6 +370,7 @@ verificación, para saber en qué nos quedamos.
 | 21 | Teléfono de gama baja | Q5: peso, arranque, memoria y pantalla angosta con letra grande | ✅ (medido en el A15, sin emulador) |
 | 22 | Versión de release comprimida (R8) | El APK de release pesaba 16.9 MB | ✅ |
 | 23 | Tres arreglos chicos | P8 caja después de medianoche · P9 aviso de tope repetido · P10 rubro de servicios | ✅ |
+| 24 | Cobros antiguos y gastos por categoría | P7 aviso de fiados de más de un mes · P11 total por subcategoría en el reporte | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -832,3 +833,56 @@ datos guarda el rubro por su clave (`SERVICIOS`).
   `NotificacionEntity.kt`, `OtrosRepositoriosImpl.kt` y `Perfil.kt`.
 - Nuevo `scripts/sembrar.sh`: carga los datos de demostración en la copia de prueba con un solo
   comando.
+
+---
+
+## Paso 24 · Cobros antiguos y gastos por categoría (P7 y P11)
+
+### P7 · Aviso de cobros antiguos
+
+**Problema.** Un fiado que nadie pagaba quedaba en la lista igual que uno de ayer. Nada le recordaba
+al comerciante que ya llevaba más de un mes.
+
+**Cambio.**
+
+- **Regla:** un cobro pendiente desde hace **30 días o más** es antiguo
+  (`Cobro.esAntiguo`, `DIAS_COBRO_ANTIGUO = 30`).
+- **Aviso:** al abrir la app, `RevisarCobrosAntiguosUseCase` deja uno en Notificaciones por cada
+  cobro antiguo: "Carmen te debe hace más de un mes · Le falta pagarte S/ 60.00 por "Fiado de la
+  quincena". Puedes recordárselo por WhatsApp desde Cobros."
+  - Cada cobro avisa **una sola vez**.
+  - Vale para los dos modos: los fiados del negocio y los préstamos personales.
+- **En Cobros:** la fecha de ese cobro sale en ámbar, el color de lo que pide atención, con los días:
+  "Desde 5 de septiembre · hace 38 días".
+
+### P11 · Total por subcategoría en el reporte del negocio
+
+**Problema.** El total por subcategoría solo se veía en la dona de Inicio › Mi negocio, y solo para el
+mes en curso. El reporte para el contador no lo traía.
+
+**Cambio.**
+
+- **En el reporte:** una tarjeta **"En qué gastaste"** con el total de cada subcategoría del mes
+  elegido, de la mayor a la menor. Va debajo del resumen y sale solo si hay gastos.
+- **En el Excel:** una tabla nueva, "COMPRAS Y GASTOS POR CATEGORÍA", entre el resumen y el detalle.
+- Los gastos sin subcategoría se suman como "Sin categoría", con la misma etiqueta que la dona.
+
+### Verificación
+
+- **Tests:**
+  - 3 nuevos: cuándo un cobro es antiguo, el aviso se deja una sola vez y la suma por subcategoría.
+  - El test del Excel se actualizó con la tabla nueva.
+  - Pasan los 108 tests.
+- **Teléfono** (tema claro, copia de prueba y bodega de demostración):
+  - aparece el aviso de Carmen en Notificaciones;
+  - en Cobros, el fiado de hace 38 días sale en ámbar;
+  - en el reporte, "En qué gastaste" muestra Mercadería S/ 1,414.95, Alquiler S/ 500.00, Luz S/ 114.43
+    y Transporte S/ 54.00.
+
+  Después el teléfono volvió a oscuro y se quitó la copia de prueba.
+
+**Archivos.**
+
+- `Cobro.kt`, `CobroUseCases.kt`, `InicioViewModel.kt`, `Modulos.kt` y `CobrosScreen.kt`.
+- `ReporteSunat.kt`, `ReporteCsv.kt`, `SubcategoriaGasto.kt`, `ReporteScreen.kt` e `InicioScreen.kt`.
+- En `scripts/demo.py`, un fiado de hace 38 días.

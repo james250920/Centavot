@@ -1,5 +1,6 @@
 package com.app.centavot.presentation.screens.inicio
 
+import com.app.centavot.domain.model.ETIQUETA_SIN_CATEGORIA
 import com.app.centavot.domain.model.NivelAlerta
 import com.app.centavot.domain.model.EstadoTope
 import androidx.compose.ui.semantics.semantics
@@ -233,7 +234,7 @@ fun InicioScreen(
                             Seccion("En qué se fue tu plata este mes") {
                                 GraficoDistribucion(
                                     partes = resumen.porSubcategoria.map { (subcategoria, monto) ->
-                                        ParteGrafico(subcategoria?.etiqueta ?: "Sin categoría", monto)
+                                        ParteGrafico(subcategoria?.etiqueta ?: ETIQUETA_SIN_CATEGORIA, monto)
                                     },
                                     modifier = Modifier.padding(16.dp),
                                 )

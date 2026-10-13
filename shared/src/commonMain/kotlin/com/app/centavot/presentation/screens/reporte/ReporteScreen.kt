@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.centavot.domain.model.ETIQUETA_SIN_CATEGORIA
 import com.app.centavot.domain.model.Historial
 import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.Monto
@@ -153,6 +154,18 @@ private fun LazyListScope.contenidoNegocio(
         }
     }
     item { AvisoPrivacidad() }
+    if (reporte.gastos.isNotEmpty()) {
+        item {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("En qué gastaste", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+                    reporte.porSubcategoria.forEach { (subcategoria, monto) ->
+                        FilaTotal(subcategoria?.etiqueta ?: ETIQUETA_SIN_CATEGORIA, monto)
+                    }
+                }
+            }
+        }
+    }
     estado.historial?.takeIf { it.hayDatos }?.let { historial ->
         item {
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {

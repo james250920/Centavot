@@ -68,6 +68,7 @@ import com.app.centavot.domain.usecase.ObtenerGastoUseCase
 import com.app.centavot.domain.usecase.ObtenerOpcionesRegimenUseCase
 import com.app.centavot.domain.usecase.RegistrarCobroUseCase
 import com.app.centavot.domain.usecase.RevisarAlertaTopeUseCase
+import com.app.centavot.domain.usecase.RevisarCobrosAntiguosUseCase
 import com.app.centavot.presentation.AppViewModel
 import com.app.centavot.presentation.screens.actividad.ActividadViewModel
 import com.app.centavot.presentation.screens.ajustes.AjustesViewModel
@@ -144,6 +145,7 @@ val moduloDomain = module {
     factoryOf(::ObservarResumenMesUseCase)
     factoryOf(::ObservarReporteUseCase)
     factoryOf(::RevisarAlertaTopeUseCase)
+    factoryOf(::RevisarCobrosAntiguosUseCase)
     factoryOf(::ObservarPerfilUseCase)
     factoryOf(::GuardarPerfilUseCase)
     factoryOf(::ObservarModoUseCase)
