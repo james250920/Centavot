@@ -909,7 +909,7 @@ veían oscuras. Se pidió que todas las vistas se vean siempre con el tema claro
 - Los íconos de la hora, la batería y la navegación se leen bien.
 - Pasan los 108 tests.
 
-**Pendiente.** Las capturas de `capturas-app/` y de la galería se tomaron en oscuro. Hay que volver a
-tomarlas.
+**Capturas.** Las 34 de `capturas-app/` y de la galería se tomaron de nuevo en claro, con la
+bodega de demostración, que ahora incluye el fiado de hace 38 días.
 
 **Archivos.** `Tema.kt` y `MainActivity.kt`.
