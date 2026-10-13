@@ -98,9 +98,10 @@ class IngresoUseCasesTest {
     @Test
     fun ventasFrecuentesOrdenadasPorRepeticion() = runTest {
         repeat(3) { guardar(null, Monto(350), Categoria.NEGOCIO, hoy, "Gaseosa") }
-        guardar(null, Monto(1_000), Categoria.NEGOCIO, hoy, "Menú")
+        repeat(2) { guardar(null, Monto(1_000), Categoria.NEGOCIO, hoy, "Menú") }
+        guardar(null, Monto(2_500), Categoria.NEGOCIO, hoy, "Pollo")
         guardar(null, Monto(800), Categoria.NEGOCIO, hoy, null)
-        guardar(null, Monto(9_000), Categoria.PERSONAL, hoy, "Sueldo")
+        repeat(2) { guardar(null, Monto(9_000), Categoria.PERSONAL, hoy, "Sueldo") }
 
         val frecuentes = ObservarVentasFrecuentesUseCase(ingresos)().first()
 

@@ -36,6 +36,8 @@ data class VentaFrecuente(val descripcion: String, val monto: Monto)
 /**
  * Las ventas (o, en lo personal, los ingresos) con descripción que más se repiten, de la más repetida a la menos. "Gaseosa" y
  * " gaseosa " cuentan como la misma venta; se muestra como la escribió la vez más reciente.
+ * Solo entra lo que se repitió con el mismo monto: el total del día que se anota cada noche ("Ventas del día") cambia de
+ * monto y no ocupa el lugar de los productos que de verdad se repiten. A igual número de veces, va primero la más reciente.
  * Espera la lista de la más reciente a la más antigua, como la entrega el repositorio.
  */
 fun List<Ingreso>.ventasFrecuentes(
@@ -48,8 +50,12 @@ fun List<Ingreso>.ventasFrecuentes(
     }
         .groupBy { it.descripcion.lowercase() to it.monto }
         .values
+        .filter { it.size >= MIN_REPETICIONES_FRECUENTE }
         .sortedByDescending { it.size }
         .take(maximo)
         .map { it.first() }
 
 const val MAX_VENTAS_FRECUENTES = 6
+
+/** Veces que debe repetirse una venta, con la misma descripción y monto, para volverse frecuente. */
+const val MIN_REPETICIONES_FRECUENTE = 2
