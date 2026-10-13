@@ -20,12 +20,22 @@ import kotlinx.coroutines.IO
         NotificacionEntity::class,
         IngresoEntity::class,
         EventoUsoEntity::class,
+        PartidaEntity::class,
+        MontoPresupuestoEntity::class,
+        MetaEntity::class,
+        AbonoMetaEntity::class,
     ],
-    version = 4,
+    version = 5,
     // v2: subcategoría del gasto, perfil, contactos, cobros, actividad y notificaciones.
     // v3: ingresos (ventas), eventos de uso, y tipo, adelanto y abonos de los cobros.
     // v4: modo de uso (negocio o personal), retiros para la casa y categoría de los cobros.
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)],
+    // v5: presupuesto (partidas y montos por mes), metas con sus abonos, y la partida de cada gasto e ingreso.
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 4, to = 5),
+    ],
 )
 @ConstructedBy(CentavotDatabaseConstructor::class)
 abstract class CentavotDatabase : RoomDatabase() {
@@ -38,6 +48,8 @@ abstract class CentavotDatabase : RoomDatabase() {
     abstract fun ingresoDao(): IngresoDao
     abstract fun eventoUsoDao(): EventoUsoDao
     abstract fun datosDao(): DatosDao
+    abstract fun presupuestoDao(): PresupuestoDao
+    abstract fun metaDao(): MetaDao
 }
 
 // Room genera la implementación de cada plataforma.

@@ -3,7 +3,8 @@
 Actualizado el **13 de octubre de 2026**.
 
 - **Dónde está la app:** `main` incluye todo hasta el paso 26 y está instalado en el teléfono
-  (`com.app.centavot`).
+  (`com.app.centavot`). Los **pasos 27–30** (presupuesto, fuentes de ingreso, metas y el gráfico
+  "Este mes", pedidos por los usuarios el 10 de octubre) están en la rama `feat/recomendaciones-cliente`.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
 - **Lista completa de pendientes:** está en `Centavot_Pendientes.md`, en el repositorio de documentos.
   Aquí solo va lo que toca a la app.
@@ -15,6 +16,18 @@ Actualizado el **13 de octubre de 2026**.
 | ID | Qué | Prioridad | Esfuerzo |
 |---|---|---|---|
 | Q2 | Pruebas de interfaz automatizadas (hoy se prueba a mano en el teléfono) | 🟠 | M |
+
+### 1b. Registro automático (reunión con usuarios del 10 de octubre)
+
+No se programó: cambia la promesa de que la app no usa internet ni lee nada fuera de ella. Hay que
+llevar una propuesta (cómo funcionaría, privacidad y costos) a la siguiente reunión con los usuarios.
+
+| Idea | Quién la pidió | Qué implica |
+|---|---|---|
+| Leer los correos de pago (Yape, Plin, tarjeta, Uber) y autocompletar el gasto | Ronal | Acceso al correo (Gmail): internet, iniciar sesión con Google y permisos; hoy la app no tiene permiso de internet |
+| Leer las notificaciones de pago de Yape o Plin en el teléfono | Alternativa sin internet | Permiso de acceso a notificaciones; actualizar el aviso de privacidad (Ley 29733) |
+| Foto de la boleta o factura con OCR | James, con reservas de Ronal | Es el B7 de los pendientes: primero la prueba H6 con 50 fotos (≥ 85 % correcto) |
+| QR para registrar | James | Útil sobre todo en el negocio; definir qué QR se leería (¿boleta electrónica?) |
 
 ### 2. Necesita a una persona o un teléfono
 

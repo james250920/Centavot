@@ -16,6 +16,8 @@ data class Ingreso(
     val categoria: Categoria = Categoria.NEGOCIO,
     val descripcion: String? = null,
     val retiroDelNegocio: Boolean = false,
+    /** v5: de dónde vino (una partida de ingreso del presupuesto: "Clases", "Comisiones"...). */
+    val partidaId: String? = null,
 ) {
     val esDeNegocio: Boolean get() = categoria == Categoria.NEGOCIO
 }

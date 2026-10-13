@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.centavot.domain.model.TipoEntrada
 import com.app.centavot.domain.model.Monto
+import com.app.centavot.presentation.components.SelectorChips
 import com.app.centavot.presentation.components.CampoFecha
 import com.app.centavot.presentation.components.DetallesPlegables
 import com.app.centavot.presentation.components.DialogoConfirmar
@@ -198,6 +199,18 @@ fun VentaScreen(
                             Text(Monto.soles(soles).formatear().removeSuffix(".00"))
                         }
                     }
+                }
+            }
+
+            // Ingresos variables (clases, comisiones, asesorías...): de dónde vino, con las fuentes de su presupuesto.
+            if (estado.fuentes.isNotEmpty()) {
+                Seccion("¿De dónde vino?") {
+                    SelectorChips(
+                        opciones = estado.fuentes,
+                        seleccionada = estado.fuentes.firstOrNull { it.id == estado.partidaId },
+                        etiqueta = { it.nombre },
+                        onSeleccionar = viewModel::onFuenteElegida,
+                    )
                 }
             }
 

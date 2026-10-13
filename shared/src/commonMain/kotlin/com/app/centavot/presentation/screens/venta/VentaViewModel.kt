@@ -9,11 +9,14 @@ import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Ingreso
 import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.Partida
+import com.app.centavot.domain.model.TipoPartida
 import com.app.centavot.domain.model.VentaFrecuente
 import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.TipoEntrada
 import com.app.centavot.domain.model.tipo
 import com.app.centavot.domain.usecase.ObservarModoUseCase
+import com.app.centavot.domain.usecase.ObservarPartidasUseCase
 import com.app.centavot.presentation.components.formatear
 import kotlinx.coroutines.flow.first
 import com.app.centavot.domain.usecase.EliminarIngresoUseCase
@@ -66,6 +69,9 @@ data class VentaUiState(
     val montoTexto: String = "",
     val descripcion: String = "",
     val frecuentes: List<VentaFrecuente> = emptyList(),
+    /** En un ingreso personal: las fuentes del presupuesto ("Clases", "Comisiones"...) para elegir de dónde vino. */
+    val fuentes: List<Partida> = emptyList(),
+    val partidaId: String? = null,
     val errorMonto: String? = null,
     val errorFecha: String? = null,
     val guardando: Boolean = false,
@@ -92,6 +98,7 @@ class VentaViewModel(
     private val avisos: Avisos,
     private val observarFrecuentes: ObservarVentasFrecuentesUseCase,
     private val observarModo: ObservarModoUseCase,
+    private val observarPartidas: ObservarPartidasUseCase,
     reloj: Reloj,
 ) : ViewModel() {
 
@@ -111,7 +118,7 @@ class VentaViewModel(
             observarModo().first() == Modo.PERSONAL -> TipoEntrada.INGRESO
             else -> TipoEntrada.VENTA
         }
-        _estado.update { it.copy(cargando = false, tipo = tipo) }
+        _estado.update { it.copy(cargando = false, tipo = tipo, fuentes = fuentesDe(tipo)) }
         if (tipo != TipoEntrada.RETIRO) {
             observarFrecuentes(categoriaDe(tipo)).collect { frecuentes -> _estado.update { it.copy(frecuentes = frecuentes) } }
         }
@@ -130,9 +137,16 @@ class VentaViewModel(
                 tipo = ingreso.tipo,
                 descripcion = ingreso.descripcion.orEmpty(),
                 fecha = ingreso.fecha,
+                fuentes = fuentesDe(ingreso.tipo),
+                partidaId = ingreso.partidaId,
             )
         }
     }
+
+    private suspend fun fuentesDe(tipo: TipoEntrada): List<Partida> =
+        if (tipo == TipoEntrada.INGRESO) observarPartidas(Modo.PERSONAL).first().filter { it.tipo == TipoPartida.INGRESO } else emptyList()
+
+    fun onFuenteElegida(fuente: Partida?) = _estado.update { it.copy(partidaId = fuente?.id) }
 
     fun onMontoCambiado(texto: String) {
         if (esEntradaDeMontoValida(texto)) _estado.update { it.copy(montoTexto = texto, errorMonto = null) }
@@ -154,7 +168,9 @@ class VentaViewModel(
             _estado.update { it.copy(errorMonto = "Ingresa un monto mayor a cero") }
             return
         }
-        guardarCon(monto, actual.descripcion)
+        // Sin descripción, el ingreso se llama como su fuente: en las listas dice "Clases y asesorías", no "Ingreso".
+        val fuente = actual.fuentes.firstOrNull { it.id == actual.partidaId }?.nombre
+        guardarCon(monto, actual.descripcion.ifBlank { fuente.orEmpty() })
     }
 
     private fun guardarCon(monto: Monto, descripcion: String) {
@@ -165,6 +181,7 @@ class VentaViewModel(
             _estado.update { it.copy(guardando = true) }
             val resultado = guardarIngreso(
                 id, monto, categoriaDe(tipo), actual.fecha, descripcion, retiroDelNegocio = tipo == TipoEntrada.RETIRO,
+                partidaId = actual.partidaId,
             )
             _estado.update {
                 when (resultado) {
@@ -183,6 +200,7 @@ class VentaViewModel(
                                 guardando = false,
                                 montoTexto = "",
                                 descripcion = "",
+                                partidaId = null,
                                 ultimaGuardada = resultado.ingreso,
                                 ventaQuitada = null,
                                 ventasEnEstaSesion = it.ventasEnEstaSesion + 1,

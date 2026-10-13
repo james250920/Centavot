@@ -11,7 +11,9 @@ import com.app.centavot.domain.repository.CobroRepository
 import com.app.centavot.domain.repository.DatosRepository
 import com.app.centavot.domain.repository.GastoRepository
 import com.app.centavot.domain.repository.IngresoRepository
+import com.app.centavot.domain.repository.MetaRepository
 import com.app.centavot.domain.repository.PerfilRepository
+import com.app.centavot.domain.repository.PresupuestoRepository
 import com.app.centavot.domain.repository.RegimenRepository
 import com.app.centavot.domain.repository.UsoRepository
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +44,8 @@ class ExportarTodosLosDatosUseCase(
     private val gastos: GastoRepository,
     private val cobros: CobroRepository,
     private val actividades: ActividadRepository,
+    private val presupuesto: PresupuestoRepository,
+    private val metas: MetaRepository,
     private val reloj: Reloj,
 ) {
     data class Archivo(val nombre: String, val contenido: String)
@@ -57,6 +61,10 @@ class ExportarTodosLosDatosUseCase(
             cobros = cobros.observarCobros().first(),
             actividades = actividades.observar(limite = null).first(),
             generado = reloj.ahora(),
+            partidas = presupuesto.observarPartidas().first(),
+            montosPresupuesto = presupuesto.observarMontos().first(),
+            metas = metas.observarMetas().first(),
+            abonosMetas = metas.observarAbonos().first(),
         ),
     )
 }

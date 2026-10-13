@@ -39,6 +39,7 @@ class GuardarGastoUseCase(
         fecha: LocalDate,
         descripcion: String?,
         subcategoria: SubcategoriaGasto? = null,
+        partidaId: String? = null,
     ): Resultado {
         if (monto <= Monto.CERO) return Resultado.MontoInvalido
         if (fecha > reloj.hoy()) return Resultado.FechaFutura
@@ -63,6 +64,7 @@ class GuardarGastoUseCase(
             // Una subcategoría de casa no va en un gasto de negocio (ni al revés).
             subcategoria = subcategoria?.takeIf { it.aplicaA(categoria) },
             descripcion = descripcionLimpia,
+            partidaId = partidaId,
             estado = EstadoGasto.CONFIRMADO,
             // La categoría la eligió el usuario: el backend no debe cambiarla.
             corregidoManualmente = true,

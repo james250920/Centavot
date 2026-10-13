@@ -3,23 +3,27 @@ package com.app.centavot.di
 import com.app.centavot.core.util.AbridorEnlaces
 import com.app.centavot.core.util.CompartidorArchivos
 import com.app.centavot.core.util.GeneradorPdf
+import com.app.centavot.domain.model.Perfil
 import com.app.centavot.domain.repository.ActividadRepository
 import com.app.centavot.domain.repository.CobroRepository
 import com.app.centavot.domain.repository.DatosRepository
 import com.app.centavot.domain.repository.GastoRepository
 import com.app.centavot.domain.repository.IngresoRepository
+import com.app.centavot.domain.repository.MetaRepository
 import com.app.centavot.domain.repository.NotificacionRepository
 import com.app.centavot.domain.repository.PerfilRepository
+import com.app.centavot.domain.repository.PresupuestoRepository
 import com.app.centavot.domain.repository.RegimenRepository
 import com.app.centavot.domain.repository.UsoRepository
 import com.app.centavot.fakes.FakeActividadRepository
 import com.app.centavot.fakes.FakeCobroRepository
 import com.app.centavot.fakes.FakeGastoRepository
 import com.app.centavot.fakes.FakeIngresoRepository
+import com.app.centavot.fakes.FakeMetaRepository
 import com.app.centavot.fakes.FakeNotificacionRepository
+import com.app.centavot.fakes.FakePresupuestoRepository
 import com.app.centavot.fakes.FakeRegimenRepository
 import com.app.centavot.fakes.FakeUsoRepository
-import com.app.centavot.domain.model.Perfil
 import com.app.centavot.presentation.AppViewModel
 import com.app.centavot.presentation.screens.actividad.ActividadViewModel
 import com.app.centavot.presentation.screens.ajustes.AjustesViewModel
@@ -28,11 +32,17 @@ import com.app.centavot.presentation.screens.cobros.CobrosViewModel
 import com.app.centavot.presentation.screens.cobros.ContactosViewModel
 import com.app.centavot.presentation.screens.gasto.GastoViewModel
 import com.app.centavot.presentation.screens.inicio.InicioViewModel
+import com.app.centavot.presentation.screens.metas.MetasViewModel
 import com.app.centavot.presentation.screens.movimientos.MovimientosViewModel
 import com.app.centavot.presentation.screens.notificaciones.NotificacionesViewModel
+import com.app.centavot.presentation.screens.presupuesto.ArmarPresupuestoViewModel
+import com.app.centavot.presentation.screens.presupuesto.PresupuestoViewModel
 import com.app.centavot.presentation.screens.regimen.RegimenViewModel
 import com.app.centavot.presentation.screens.reporte.ReporteViewModel
 import com.app.centavot.presentation.screens.venta.VentaViewModel
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -44,9 +54,6 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
 
 /**
  * Un error de Koin solo aparece al abrir la pantalla. Este test arma cada ViewModel con los
@@ -70,6 +77,8 @@ class ModulosTest {
         single<NotificacionRepository> { FakeNotificacionRepository() }
         single<UsoRepository> { FakeUsoRepository() }
         single<DatosRepository> { DatosRepository { } }
+        single<PresupuestoRepository> { FakePresupuestoRepository() }
+        single<MetaRepository> { FakeMetaRepository() }
         single<CompartidorArchivos> { CompartidorArchivos { _, _, _ -> } }
         single<GeneradorPdf> { GeneradorPdf { ByteArray(0) } }
         single<AbridorEnlaces> { AbridorEnlaces { } }
@@ -106,5 +115,8 @@ class ModulosTest {
         koin.get<VentaViewModel> { parametersOf(null, false) }
         koin.get<VentaViewModel> { parametersOf(null, true) }
         koin.get<VentaViewModel> { parametersOf("venta-1", false) }
+        koin.get<PresupuestoViewModel>()
+        koin.get<ArmarPresupuestoViewModel>()
+        koin.get<MetasViewModel>()
     }
 }

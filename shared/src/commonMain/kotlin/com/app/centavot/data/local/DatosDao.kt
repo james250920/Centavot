@@ -27,6 +27,18 @@ interface DatosDao {
     @Query("DELETE FROM eventos_uso")
     suspend fun borrarEventosUso()
 
+    @Query("DELETE FROM montos_presupuesto")
+    suspend fun borrarMontosPresupuesto()
+
+    @Query("DELETE FROM partidas")
+    suspend fun borrarPresupuesto()
+
+    @Query("DELETE FROM abonos_meta")
+    suspend fun borrarAbonosMetas()
+
+    @Query("DELETE FROM metas")
+    suspend fun borrarMetas()
+
     @Query("DELETE FROM regimen")
     suspend fun borrarRegimen()
 

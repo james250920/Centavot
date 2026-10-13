@@ -58,6 +58,7 @@ class GuardarIngresoUseCase(
         fecha: LocalDate,
         descripcion: String?,
         retiroDelNegocio: Boolean = false,
+        partidaId: String? = null,
     ): Resultado {
         if (monto <= Monto.CERO) return Resultado.MontoInvalido
         if (fecha > reloj.hoy()) return Resultado.FechaFutura
@@ -75,6 +76,7 @@ class GuardarIngresoUseCase(
             categoria = if (retiroDelNegocio) Categoria.PERSONAL else categoria,
             descripcion = descripcionLimpia,
             retiroDelNegocio = retiroDelNegocio,
+            partidaId = partidaId.takeIf { !retiroDelNegocio },
         )
         repositorio.guardar(ingreso)
 

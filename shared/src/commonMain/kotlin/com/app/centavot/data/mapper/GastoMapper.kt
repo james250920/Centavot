@@ -20,6 +20,7 @@ fun GastoEntity.toDomain() = Gasto(
     proveedor = proveedor,
     descripcion = descripcion,
     corregidoManualmente = corregidoManualmente,
+    partidaId = partidaId,
 )
 
 fun Gasto.toEntity() = GastoEntity(
@@ -33,4 +34,5 @@ fun Gasto.toEntity() = GastoEntity(
     proveedor = proveedor,
     descripcion = descripcion,
     corregidoManualmente = corregidoManualmente,
+    partidaId = partidaId,
 )

@@ -118,12 +118,22 @@ fun GastoScreen(
             )
 
             Seccion(titulo = "¿En qué? (opcional)") {
-                SelectorChips(
-                    opciones = SubcategoriaGasto.para(estado.categoria),
-                    seleccionada = estado.subcategoria,
-                    etiqueta = { it.etiqueta },
-                    onSeleccionar = viewModel::onSubcategoriaElegida,
-                )
+                if (estado.partidas.isNotEmpty()) {
+                    // Las partidas de su presupuesto, no una lista de todas las categorías posibles.
+                    SelectorChips(
+                        opciones = estado.partidas,
+                        seleccionada = estado.partidas.firstOrNull { it.id == estado.partidaId },
+                        etiqueta = { it.nombre },
+                        onSeleccionar = viewModel::onPartidaElegida,
+                    )
+                } else {
+                    SelectorChips(
+                        opciones = SubcategoriaGasto.para(estado.categoria),
+                        seleccionada = estado.subcategoria,
+                        etiqueta = { it.etiqueta },
+                        onSeleccionar = viewModel::onSubcategoriaElegida,
+                    )
+                }
             }
 
             OutlinedTextField(

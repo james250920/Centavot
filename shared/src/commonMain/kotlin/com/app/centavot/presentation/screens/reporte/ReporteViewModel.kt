@@ -8,21 +8,24 @@ import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Cobro
 import com.app.centavot.domain.model.Gasto
+import com.app.centavot.domain.model.Historial
 import com.app.centavot.domain.model.Ingreso
 import com.app.centavot.domain.model.Modo
-import com.app.centavot.domain.model.delModo
-import com.app.centavot.domain.usecase.ObservarIngresosUseCase
-import com.app.centavot.domain.usecase.ObservarModoUseCase
-import com.app.centavot.domain.model.Historial
+import com.app.centavot.domain.model.Partida
 import com.app.centavot.domain.model.ReporteSunat
 import com.app.centavot.domain.model.ResumenCobros
+import com.app.centavot.domain.model.TipoPartida
 import com.app.centavot.domain.model.aCsv
 import com.app.centavot.domain.model.aDocumento
+import com.app.centavot.domain.model.delModo
 import com.app.centavot.domain.model.reporteGastosPersonalesCsv
 import com.app.centavot.domain.model.reporteMeDebenCsv
 import com.app.centavot.domain.usecase.ObservarCobrosUseCase
 import com.app.centavot.domain.usecase.ObservarGastosDelMesUseCase
 import com.app.centavot.domain.usecase.ObservarHistorialUseCase
+import com.app.centavot.domain.usecase.ObservarIngresosUseCase
+import com.app.centavot.domain.usecase.ObservarModoUseCase
+import com.app.centavot.domain.usecase.ObservarPartidasUseCase
 import com.app.centavot.domain.usecase.ObservarReporteUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,6 +65,8 @@ data class ReporteUiState(
     /** Lo que entró a la plata personal en el mes, incluido lo que se sacó del negocio. */
     val ingresosPersonales: List<Ingreso> = emptyList(),
     val cobrosPendientes: List<Cobro> = emptyList(),
+    /** Fuentes de ingreso del presupuesto personal, para "De dónde vino". */
+    val fuentes: List<Partida> = emptyList(),
     val cargando: Boolean = true,
 ) {
     /** No se puede avanzar a meses futuros. */
@@ -94,6 +99,7 @@ class ReporteViewModel(
     private val reloj: Reloj,
     private val compartidor: CompartidorArchivos,
     private val generadorPdf: GeneradorPdf,
+    observarPartidas: ObservarPartidasUseCase,
 ) : ViewModel() {
 
     private val periodo = MutableStateFlow(reloj.hoy().yearMonth)
@@ -117,7 +123,8 @@ class ReporteViewModel(
         pestana,
         observarModo(),
         observarCobros(),
-    ) { (mes, datos), elegida, modo, cobros ->
+        observarPartidas(Modo.PERSONAL),
+    ) { (mes, datos), elegida, modo, cobros, partidas ->
         val pestanas = PestanaReporte.para(modo)
         ReporteUiState(
             hoy = reloj.hoy(),
@@ -129,6 +136,7 @@ class ReporteViewModel(
             gastosPersonales = datos.personales,
             ingresosPersonales = datos.ingresosPersonales,
             cobrosPendientes = cobros.delModo(modo).filter { it.estaPendiente },
+            fuentes = partidas.filter { it.tipo == TipoPartida.INGRESO },
             cargando = false,
         )
     }.stateIn(

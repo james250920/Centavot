@@ -1,20 +1,26 @@
 package com.app.centavot.fakes
 
 import com.app.centavot.core.util.Reloj
+import com.app.centavot.domain.model.AbonoMeta
 import com.app.centavot.domain.model.Actividad
 import com.app.centavot.domain.model.Cobro
 import com.app.centavot.domain.model.Contacto
+import com.app.centavot.domain.model.EventoUso
 import com.app.centavot.domain.model.Gasto
+import com.app.centavot.domain.model.Ingreso
+import com.app.centavot.domain.model.Meta
+import com.app.centavot.domain.model.MontoPresupuesto
 import com.app.centavot.domain.model.Notificacion
+import com.app.centavot.domain.model.Partida
 import com.app.centavot.domain.model.RegimenTributario
 import com.app.centavot.domain.repository.ActividadRepository
 import com.app.centavot.domain.repository.CobroRepository
 import com.app.centavot.domain.repository.GastoRepository
-import com.app.centavot.domain.repository.NotificacionRepository
-import com.app.centavot.domain.repository.RegimenRepository
-import com.app.centavot.domain.model.EventoUso
-import com.app.centavot.domain.model.Ingreso
 import com.app.centavot.domain.repository.IngresoRepository
+import com.app.centavot.domain.repository.MetaRepository
+import com.app.centavot.domain.repository.NotificacionRepository
+import com.app.centavot.domain.repository.PresupuestoRepository
+import com.app.centavot.domain.repository.RegimenRepository
 import com.app.centavot.domain.repository.UsoRepository
 import com.app.centavot.domain.usecase.ObservarEstadoTopeUseCase
 import com.app.centavot.domain.usecase.RevisarAlertaTopeUseCase
@@ -128,3 +134,44 @@ fun revisarAlertaTope(
     reloj: Reloj,
     ingresos: IngresoRepository = FakeIngresoRepository(),
 ) = RevisarAlertaTopeUseCase(ObservarEstadoTopeUseCase(ingresos, gastos, regimenes, reloj), notificaciones, reloj)
+
+class FakePresupuestoRepository : PresupuestoRepository {
+    val partidas = MutableStateFlow<List<Partida>>(emptyList())
+    val montos = MutableStateFlow<List<MontoPresupuesto>>(emptyList())
+
+    override fun observarPartidas(): Flow<List<Partida>> = partidas.map { it.sortedBy(Partida::orden) }
+
+    override fun observarMontos(): Flow<List<MontoPresupuesto>> = montos
+
+    override suspend fun guardarPartida(partida: Partida) =
+        partidas.update { lista -> lista.filterNot { it.id == partida.id } + partida }
+
+    override suspend fun fijarMonto(monto: MontoPresupuesto) =
+        montos.update { lista -> lista.filterNot { it.partidaId == monto.partidaId && it.mes == monto.mes } + monto }
+
+    override suspend fun eliminarPartida(id: String) {
+        partidas.update { lista -> lista.filterNot { it.id == id } }
+        montos.update { lista -> lista.filterNot { it.partidaId == id } }
+    }
+}
+
+class FakeMetaRepository : MetaRepository {
+    val metas = MutableStateFlow<List<Meta>>(emptyList())
+    val abonos = MutableStateFlow<List<AbonoMeta>>(emptyList())
+
+    override fun observarMetas(): Flow<List<Meta>> = metas
+
+    override fun observarAbonos(): Flow<List<AbonoMeta>> = abonos
+
+    override suspend fun guardarMeta(meta: Meta) = metas.update { lista -> lista.filterNot { it.id == meta.id } + meta }
+
+    override suspend fun agregarAbono(abono: AbonoMeta) = abonos.update { it + abono }
+
+    override suspend fun eliminarAbono(id: String) = abonos.update { lista -> lista.filterNot { it.id == id } }
+
+    override suspend fun eliminarMeta(id: String) {
+        metas.update { lista -> lista.filterNot { it.id == id } }
+        abonos.update { lista -> lista.filterNot { it.metaId == id } }
+    }
+}
+
