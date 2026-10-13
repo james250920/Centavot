@@ -1,17 +1,18 @@
 # Dónde nos quedamos
 
-Última sesión: **10 de octubre de 2026**. El detalle de cada cambio está en [`reporte.md`](reporte.md).
+Última sesión: **13 de octubre de 2026**. El detalle de cada cambio está en [`reporte.md`](reporte.md).
 
 ## Estado
 
 - `main` tiene todo lo hecho hasta el **paso 18** (PR #10), instalado en el teléfono (`com.app.centavot`).
+- **Paso 19 (P13)** en la rama `feat/ventas-frecuentes`: solo son frecuentes las ventas que se repiten.
 - Ronda 1 (pasos 1–9): mejoras de la revisión UX/UI.
 - Ronda 2 (pasos 10–18):
   - modo personal o negocio;
   - 35 % menos texto en las pantallas;
   - botones de tamaño estándar.
 - Base de datos en versión **4** (migración automática 3 → 4).
-- 99 tests y 0 fallas.
+- 101 tests y 0 fallas.
 
 ## Lo último que se hizo
 
@@ -27,7 +28,6 @@
    (https://claude.ai/artifact/2pS1n5pH9wHK1K9F1ddLPW) muestran la interfaz de **antes** de los
    pasos 11–18. Hay que volver a tomarlas.
 2. Siguientes pendientes de la app, según `Centavot_Pendientes.md` §8:
-   - **P13**: las ventas frecuentes se llenan con los totales del día.
    - **Q3**: probar con TalkBack.
    - **Q5**: probar en un teléfono de gama baja.
    - **P4**: opciones RMT y "aún no tengo RUC". Espera lo que diga el contador.
@@ -36,11 +36,12 @@
 
 ## Cómo probar
 
-- Copia de prueba aparte, que no toca la app real del teléfono:
-  - el paquete es `com.app.centavot.prueba`;
-  - se compila con `applicationId` + `.prueba` y se instala con `adb install`.
-  - El script de la sesión que lo hacía (`prueba.sh`) estaba en una carpeta temporal y se pierde,
-    así que hay que rehacerlo.
+- Copia de prueba aparte, que no toca la app real del teléfono (`com.app.centavot.prueba`):
+  - `scripts/prueba.sh` la compila e instala; con `limpia` empieza desde la bienvenida.
+  - `scripts/ui.py` la maneja (`tap`, `texto`, `dump`, `shot`...). Se detiene si la copia de
+    prueba no está al frente.
+  - Para cargar datos se baja la base con `run-as`, se edita con `sqlite3` y se vuelve a subir.
+  - Al terminar: `adb uninstall com.app.centavot.prueba`.
 - Tests: `./gradlew :shared:testAndroidHostTest --offline`.
 - APK: `./gradlew :androidApp:assembleDebug`.
 - Teléfono: Samsung Galaxy A15 con Android 16, densidad 450 (384 dp de ancho).

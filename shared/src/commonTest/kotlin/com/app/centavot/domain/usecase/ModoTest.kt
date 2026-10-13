@@ -101,7 +101,7 @@ class ModoTest {
 
     @Test
     fun losFrecuentesSonDelModoYNoIncluyenRetiros() {
-        val ingresos = listOf(venta, sueldo, retiro)
+        val ingresos = listOf(venta, venta, sueldo, sueldo, retiro, retiro)
 
         assertEquals(listOf(VentaFrecuente("Gaseosa", Monto.soles(40))), ingresos.ventasFrecuentes(Categoria.NEGOCIO))
         assertEquals(listOf(VentaFrecuente("Sueldo", Monto.soles(1_000))), ingresos.ventasFrecuentes(Categoria.PERSONAL))

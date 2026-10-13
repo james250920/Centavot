@@ -143,11 +143,45 @@ class ResumenYUsoTest {
             Ingreso("3", Monto(350), hoy, descripcion = "Gaseosa"),
             Ingreso("2", Monto(350), hoy, descripcion = " gaseosa "),
             Ingreso("1", Monto(350), hoy, descripcion = "GASEOSA"),
+            Ingreso("1b", Monto(1_000), hoy, descripcion = "Menú"),
             Ingreso("0", Monto(1_000), hoy, descripcion = "Menú"),
         )
 
         assertEquals(
             listOf(VentaFrecuente("Gaseosa", Monto(350)), VentaFrecuente("Menú", Monto(1_000))),
+            ingresos.ventasFrecuentes(),
+        )
+    }
+
+    @Test
+    fun elTotalDelDiaNoDesplazaLosProductosQueSeRepiten() {
+        // De la más reciente a la más antigua: cada noche el total del día con otro monto.
+        val totalesDelDia = (1..10).map { Ingreso("t$it", Monto(30_000L + it * 1_000), hoy, descripcion = "Ventas del día") }
+        val ingresos = totalesDelDia + listOf(
+            Ingreso("g1", Monto(350), hoy, descripcion = "Gaseosa"),
+            Ingreso("g2", Monto(350), hoy, descripcion = "Gaseosa"),
+            Ingreso("p1", Monto(50), hoy, descripcion = "Pan"),
+            Ingreso("p2", Monto(50), hoy, descripcion = "Pan"),
+            Ingreso("p3", Monto(50), hoy, descripcion = "Pan"),
+        )
+
+        assertEquals(
+            listOf(VentaFrecuente("Pan", Monto(50)), VentaFrecuente("Gaseosa", Monto(350))),
+            ingresos.ventasFrecuentes(),
+        )
+    }
+
+    @Test
+    fun aIgualRepeticionVaPrimeroLaMasReciente() {
+        val ingresos = listOf(
+            Ingreso("4", Monto(100), hoy, descripcion = "Agua"),
+            Ingreso("3", Monto(350), hoy, descripcion = "Gaseosa"),
+            Ingreso("2", Monto(100), hoy, descripcion = "Agua"),
+            Ingreso("1", Monto(350), hoy, descripcion = "Gaseosa"),
+        )
+
+        assertEquals(
+            listOf(VentaFrecuente("Agua", Monto(100)), VentaFrecuente("Gaseosa", Monto(350))),
             ingresos.ventasFrecuentes(),
         )
     }

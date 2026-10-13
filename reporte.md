@@ -365,6 +365,7 @@ verificación, para saber en qué nos quedamos.
 | 16 | Reportes con menos texto | Notas largas encima de los números | ✅ |
 | 17 | Ayuda más corta | 402 palabras: la pantalla con más texto | ✅ |
 | 18 | Botones y elementos de tamaño normal | "Que no estén muy grandes" | ✅ |
+| 19 | Ventas frecuentes sin el total del día | P13: el total de cada noche llenaba las 6 ventas frecuentes | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -608,3 +609,42 @@ Ajustes. 99 tests, 0 fallas.
 **Archivos.** `InicioScreen.kt`, `VentaScreen.kt`, `GastoScreen.kt`, `CobroScreen.kt`,
 `CobrosScreen.kt`, `ReporteScreen.kt`, `AjustesScreen.kt`, `RegimenScreen.kt`,
 `AvisoPrivacidadScreen.kt`, `TarjetaTope.kt`, `SelectorModo.kt`, `NavegacionPrincipal.kt`.
+
+---
+
+## Paso 19 · Ventas frecuentes sin el total del día
+
+**Problema (P13).** Hay comerciantes que no anotan cada venta: en la noche pasan el total del día con
+el mismo nombre ("Ventas del día"). Cada total tiene otro monto, así que cada uno contaba como una
+venta distinta que se hizo una vez. Esas ventas de una sola vez llenaban los lugares libres de
+"Tus ventas frecuentes" y ofrecían montos como S/ 312.30 en un toque, que no se van a repetir.
+
+**Cambio.** Una venta (o un ingreso, en lo personal) solo es frecuente si se repitió **al menos dos
+veces con la misma descripción y el mismo monto**. Lo demás queda igual:
+
+- primero lo que más se repite;
+- a igual número de veces, primero lo más reciente;
+- máximo 6.
+
+| Datos de prueba | Antes | Ahora |
+|---|---|---|
+| Pan ×4, Gaseosa ×3, Menú ×2, Pollo ×1, "Ventas del día" 10 noches con montos distintos | Pan, Gaseosa, Menú y 3 totales del día | Pan, Gaseosa, Menú |
+
+- Quien recién empieza no ve ventas frecuentes hasta que repite una. Antes aparecía cualquier venta
+  desde la primera vez.
+- Si un total del día sale igual dos noches, ese monto sí aparece. Es raro y no llena la lista.
+
+**Verificación.**
+
+- Tests: 2 nuevos (el total del día no desplaza a los productos; a igual repetición va lo más
+  reciente). Se ajustaron 3 tests que contaban ventas de una sola vez. Pasan los 101 tests, sin
+  fallas.
+- En el teléfono, con la copia de prueba y los datos de la tabla, "Registrar venta" muestra Pan,
+  Gaseosa y Menú.
+
+**Archivos.**
+
+- `Ingreso.kt` (`MIN_REPETICIONES_FRECUENTE = 2`).
+- `ResumenYUsoTest.kt`, `IngresoUseCasesTest.kt` y `ModoTest.kt`.
+- Nuevos `scripts/prueba.sh` y `scripts/ui.py`: instalan y manejan la copia de prueba. Ahora quedan
+  en el repo.
