@@ -2,9 +2,11 @@
 
 Actualizado el **13 de octubre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el paso 26 y está instalado en el teléfono
-  (`com.app.centavot`). Los **pasos 27–30** (presupuesto, fuentes de ingreso, metas y el gráfico
-  "Este mes", pedidos por los usuarios el 10 de octubre) están en la rama `feat/recomendaciones-cliente`.
+- **Dónde está la app:** `main` incluye todo hasta el **paso 30** (presupuesto, fuentes de ingreso,
+  metas y el gráfico "Este mes", pedidos por los usuarios el 10 de octubre). Base de datos versión 5.
+  Instalada en el teléfono (`com.app.centavot`) **desde cero, sin datos**, el 13 de octubre.
+- **GitHub:** desde el 13 de octubre no se sube nada (sin conexión primero y luego por pedido). `main`
+  va por delante de GitHub en la app y en documentos: subir cuando se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
 - **Lista completa de pendientes:** está en `Centavot_Pendientes.md`, en el repositorio de documentos.
   Aquí solo va lo que toca a la app.
@@ -16,6 +18,11 @@ Actualizado el **13 de octubre de 2026**.
 | ID | Qué | Prioridad | Esfuerzo |
 |---|---|---|---|
 | Q2 | Pruebas de interfaz automatizadas (hoy se prueba a mano en el teléfono) | 🟠 | M |
+
+### 1a. Capturas
+
+Las 34 capturas de `capturas-app/` y la galería no muestran lo de los pasos 27–30 (gráfico "Este mes",
+presupuesto, metas, fuentes). Hay que volver a tomarlas, en tema claro, y sumar las pantallas nuevas.
 
 ### 1b. Registro automático (reunión con usuarios del 10 de octubre)
 
@@ -64,6 +71,10 @@ llevar una propuesta (cómo funcionaría, privacidad y costos) a la siguiente re
   - `scripts/sembrar.sh` carga los datos de demostración (la bodega de Rosa, de mayo a hoy, con
     `scripts/demo.py`). Antes hay que pasar la bienvenida en la app.
   - Al terminar: `adb uninstall com.app.centavot.prueba`.
+  - `sembrar.sh` solo funciona con la versión de debug: la de release no permite `run-as`.
+  - Antes de tocar la pantalla, revisar que el teléfono no esté en uso (una llamada flotante o
+    WhatsApp abierto): `ui.py` se detiene si la copia de prueba no está al frente, pero no ve las
+    ventanas flotantes.
 - **Comandos:**
 
   | Para | Comando |
