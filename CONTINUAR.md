@@ -4,8 +4,7 @@
 
 ## Estado
 
-- `main` tiene todo lo hecho hasta el **paso 19** (PR #11), instalado en el teléfono (`com.app.centavot`).
-- **Pasos 20 y 21** (TalkBack y gama baja) en la rama `a11y/talkback-gama-baja`.
+- `main` tiene todo lo hecho hasta el **paso 21** (PR #13), instalado en el teléfono (`com.app.centavot`).
 - Ronda 1 (pasos 1–9): mejoras de la revisión UX/UI.
 - Ronda 2 (pasos 10–18):
   - modo personal o negocio;
@@ -22,6 +21,7 @@
 | 11–17 | Menos texto: ayudas plegables (`AyudaPlegable`), una línea por mensaje y Ayuda en lista | #9 |
 | 18 | Tamaños: Venta/Gasto 56 dp, botones de formulario 48 dp, números menos grandes | #10 |
 | 19 | P13: solo son frecuentes las ventas que se repiten (el total del día ya no llena la lista) | #11 |
+| 20–21 | TalkBack (plegables, títulos, botones de cobros) y gama baja (barra de abajo, peso y rendimiento medidos) | #13 |
 
 ## Para retomar
 
