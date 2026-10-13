@@ -39,7 +39,7 @@ private val PASOS_NEGOCIO = listOf(
     Paso(Iconos.Inicio, "Mira tu caja", "Lo que vendiste, gastaste y te quedó. Si sacas para la casa, anótalo."),
     Paso(Iconos.Cobros, "Lo que te deben", "Fiados y pedidos, con recordatorio por WhatsApp."),
     Paso(Iconos.Aviso, "Tu tope", "Te avisamos antes de que llegues."),
-    Paso(Iconos.Reporte, "Para tu contador", "Mándale el resumen del mes en Excel."),
+    Paso(Iconos.Reporte, "Para tu contador", "Mándale el resumen del mes en PDF o Excel."),
 )
 
 private val PASOS_PERSONAL = listOf(
