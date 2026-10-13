@@ -15,7 +15,6 @@ Actualizado el **13 de octubre de 2026**.
 | ID | Qué | Prioridad | Esfuerzo |
 |---|---|---|---|
 | Q2 | Pruebas de interfaz automatizadas (hoy se prueba a mano en el teléfono) | 🟠 | M |
-| Q7 | Actualizar `Centavot_Prototipo_App.md` con las pantallas actuales | 🟠 | S |
 
 ### 2. Necesita a una persona o un teléfono
 

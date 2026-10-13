@@ -959,6 +959,8 @@ se vuelve una lista larga.
   - 13 días de ventas (766 ventas, S/ 6,481.10);
   - detalle de 7 gastos.
 
+**Después (Q7):** la Ayuda decía "Mándale el resumen del mes en Excel"; ahora dice "en PDF o Excel".
+
 **Archivos.**
 
 - Nuevos: `ReportePdf.kt`, `GeneradorPdf.kt` y `GeneradorPdfAndroid.kt`.
