@@ -1,5 +1,6 @@
 package com.app.centavot.presentation.screens.venta
 
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -240,7 +241,7 @@ fun VentaScreen(
 @Composable
 private fun Seccion(titulo: String, contenido: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(titulo, style = MaterialTheme.typography.titleSmall)
+        Text(titulo, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
         contenido()
     }
 }

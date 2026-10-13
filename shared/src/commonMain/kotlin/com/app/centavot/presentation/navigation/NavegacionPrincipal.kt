@@ -1,26 +1,26 @@
 package com.app.centavot.presentation.navigation
 
-import androidx.compose.ui.unit.dp
-import org.koin.compose.koinInject
-import com.app.centavot.presentation.Avisos
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -28,13 +28,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.app.centavot.presentation.Avisos
 import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.Movimiento
-import com.app.centavot.presentation.screens.ayuda.AyudaScreen
-import com.app.centavot.presentation.screens.privacidad.AvisoPrivacidadScreen
-import com.app.centavot.presentation.screens.venta.VentaScreen
 import com.app.centavot.presentation.screens.actividad.ActividadScreen
 import com.app.centavot.presentation.screens.ajustes.AjustesScreen
+import com.app.centavot.presentation.screens.ayuda.AyudaScreen
 import com.app.centavot.presentation.screens.cobros.CobroScreen
 import com.app.centavot.presentation.screens.cobros.CobrosScreen
 import com.app.centavot.presentation.screens.cobros.ContactosScreen
@@ -42,8 +41,11 @@ import com.app.centavot.presentation.screens.gasto.GastoScreen
 import com.app.centavot.presentation.screens.inicio.InicioScreen
 import com.app.centavot.presentation.screens.movimientos.MovimientosScreen
 import com.app.centavot.presentation.screens.notificaciones.NotificacionesScreen
+import com.app.centavot.presentation.screens.privacidad.AvisoPrivacidadScreen
 import com.app.centavot.presentation.screens.regimen.RegimenScreen
 import com.app.centavot.presentation.screens.reporte.ReporteScreen
+import com.app.centavot.presentation.screens.venta.VentaScreen
+import org.koin.compose.koinInject
 
 private enum class Pestana(val ruta: Any, val etiqueta: String, val icono: () -> ImageVector) {
     INICIO(RutaInicio, "Inicio", { Iconos.Inicio }),
@@ -93,8 +95,16 @@ fun NavegacionPrincipal() {
                             onClick = { nav.irAPestana(pestana.ruta) },
                             icon = { Icon(pestana.icono(), contentDescription = null) },
                             label = {
-                                // Una sola línea y estilo más pequeño: "Movimientos" no se parte con texto grande.
-                                Text(pestana.etiqueta, style = MaterialTheme.typography.labelSmall, maxLines = 1, softWrap = false)
+                                // Una sola línea: en un teléfono angosto con letra grande "Movimientos" no entraba
+                                // y se cortaba; ahora la letra se achica lo justo para que quepa entera.
+                                val estilo = MaterialTheme.typography.labelSmall
+                                Text(
+                                    pestana.etiqueta,
+                                    style = estilo,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = estilo.fontSize),
+                                )
                             },
                         )
                     }

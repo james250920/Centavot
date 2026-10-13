@@ -378,7 +378,7 @@ private fun TarjetaCaja(
     val colores = MaterialTheme.colorScheme
     Card(colors = CardDefaults.cardColors(containerColor = colores.surfaceContainerLow)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(if (modo == Modo.NEGOCIO) "Tu caja" else "Tu plata", style = MaterialTheme.typography.titleMedium)
+            Text(if (modo == Modo.NEGOCIO) "Tu caja" else "Tu plata", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 Periodo.entries.forEachIndexed { i, opcion ->
                     SegmentedButton(
@@ -540,7 +540,7 @@ private fun Seccion(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(titulo, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Text(titulo, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f).semantics { heading() })
             if (accion != null) TextButton(onClick = onAccion) { Text(accion) }
         }
         Card(

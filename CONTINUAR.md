@@ -5,6 +5,7 @@
 ## Estado
 
 - `main` tiene todo lo hecho hasta el **paso 19** (PR #11), instalado en el teléfono (`com.app.centavot`).
+- **Pasos 20 y 21** (TalkBack y gama baja) en la rama `a11y/talkback-gama-baja`.
 - Ronda 1 (pasos 1–9): mejoras de la revisión UX/UI.
 - Ronda 2 (pasos 10–18):
   - modo personal o negocio;
@@ -24,13 +25,11 @@
 
 ## Para retomar
 
-1. **Capturas desactualizadas.** `capturas-app/` (repo de documentos) y la galería
-   (https://claude.ai/artifact/2pS1n5pH9wHK1K9F1ddLPW) muestran la interfaz de **antes** de los
-   pasos 11–18. Hay que volver a tomarlas.
-2. Siguientes pendientes de la app, según `Centavot_Pendientes.md` §8:
-   - **Q3**: probar con TalkBack.
-   - **Q5**: probar en un teléfono de gama baja.
-   - **P4**: opciones RMT y "aún no tengo RUC". Espera lo que diga el contador.
+1. Decidir si se activa R8 en release: el APK baja de 16.9 a 7.6 MB y ya se probó (paso 21).
+2. Pendientes que necesitan a una persona o un teléfono:
+   - **Q3**: escuchar Inicio, Venta y Cobros con TalkBack, sobre todo cómo se leen los montos.
+   - **Q5**: probar en un teléfono de 2 GB con Android 8–10.
+3. **P4**: opciones RMT y "aún no tengo RUC". Espera lo que diga el contador.
 3. Regla hasta diciembre: no se agregan funciones nuevas. Solo entra lo que sirva para validar con
    usuarios.
 
@@ -40,11 +39,13 @@
   - `scripts/prueba.sh` la compila e instala; con `limpia` empieza desde la bienvenida.
   - `scripts/ui.py` la maneja (`tap`, `texto`, `dump`, `shot`...). Se detiene si la copia de
     prueba no está al frente.
-  - Para cargar datos se baja la base con `run-as`, se edita con `sqlite3` y se vuelve a subir.
+  - Datos de demostración: se baja la base con `run-as`, se llena con `scripts/demo.py`
+    (la bodega de Rosa, de mayo a hoy) y se vuelve a subir.
   - Al terminar: `adb uninstall com.app.centavot.prueba`.
 - Tests: `./gradlew :shared:testAndroidHostTest --offline`.
 - APK: `./gradlew :androidApp:assembleDebug`.
 - Teléfono: Samsung Galaxy A15 con Android 16, densidad 450 (384 dp de ancho).
+- El emulador no arranca en esta computadora (se cierra al iniciar).
 - Cada cambio va así:
   1. una rama nueva;
   2. un paso nuevo en `reporte.md`;

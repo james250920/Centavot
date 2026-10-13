@@ -1,5 +1,7 @@
 package com.app.centavot.presentation.screens.reporte
 
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.material3.TextButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -155,7 +157,7 @@ private fun LazyListScope.contenidoNegocio(
         item {
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Cómo te fue mes a mes", style = MaterialTheme.typography.titleMedium)
+                    Text("Cómo te fue mes a mes", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
                     GraficoLineas(historial)
                     lecturasDe(historial).forEach { lectura ->
                         Text("• $lectura", style = MaterialTheme.typography.bodyMedium)
@@ -174,7 +176,7 @@ private fun LazyListScope.contenidoNegocio(
         return
     }
     if (reporte.ventas.isNotEmpty()) {
-        item { Text("Ventas (${reporte.ventas.size})", style = MaterialTheme.typography.titleMedium) }
+        item { Text("Ventas (${reporte.ventas.size})", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() }) }
         item {
             Lista {
                 reporte.ventas.forEach { venta -> FilaIngreso(venta, estado.hoy, onClick = { onAbrirVenta(venta.id) }) }
@@ -182,7 +184,7 @@ private fun LazyListScope.contenidoNegocio(
         }
     }
     if (reporte.gastos.isNotEmpty()) {
-        item { Text("Compras y gastos (${reporte.gastos.size})", style = MaterialTheme.typography.titleMedium) }
+        item { Text("Compras y gastos (${reporte.gastos.size})", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() }) }
         item {
             Lista {
                 reporte.gastos.forEach { gasto -> FilaGasto(gasto, estado.hoy, onClick = { onAbrirGasto(gasto.id) }) }
@@ -232,7 +234,7 @@ private fun LazyListScope.contenidoPersonal(
         return
     }
     if (ingresos.isNotEmpty()) {
-        item { Text("Lo que te entró (${ingresos.size})", style = MaterialTheme.typography.titleMedium) }
+        item { Text("Lo que te entró (${ingresos.size})", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() }) }
         item {
             Lista {
                 ingresos.forEach { ingreso ->
@@ -242,7 +244,7 @@ private fun LazyListScope.contenidoPersonal(
         }
     }
     if (gastos.isNotEmpty()) {
-        item { Text("Gastos (${gastos.size})", style = MaterialTheme.typography.titleMedium) }
+        item { Text("Gastos (${gastos.size})", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() }) }
         item { Lista { gastos.forEach { g -> FilaGasto(g, estado.hoy, onClick = { onAbrirGasto(g.id) }) } } }
     }
 }
