@@ -1,6 +1,7 @@
 package com.app.centavot.domain.usecase
 
 import com.app.centavot.core.util.Reloj
+import com.app.centavot.domain.model.MedidaTope
 import com.app.centavot.domain.model.NivelAlerta
 import com.app.centavot.domain.model.Notificacion
 import com.app.centavot.domain.model.PeriodoTope
@@ -52,6 +53,10 @@ class RevisarAlertaTopeUseCase(
                 else -> "Llegaste al tope de tu régimen" to
                     "Habla con tu contador: puede que te toque cambiar de categoría o de régimen."
             }
+            // La primera versión solo avisaba por los gastos del negocio, con un id sin la medida. Si quien
+            // actualiza ya recibió ese aviso este periodo, el de compras (lo mismo, con otro id) no se repite.
+            val idAnterior = "tope-${regimen.tipo}-${regimen.tope.centimos}-$periodo-${nivel.umbralPorcentaje}"
+            if (medida == MedidaTope.COMPRAS && notificaciones.existe(idAnterior)) return@forEach
             notificaciones.agregarSiNoExiste(
                 Notificacion(
                     id = "tope-${regimen.tipo}-${regimen.tope.centimos}-${medida.name}-$periodo-${nivel.umbralPorcentaje}",

@@ -58,6 +58,8 @@ class NotificacionRepositoryImpl(private val dao: NotificacionDao) : Notificacio
 
     override fun observarNoLeidas(): Flow<Int> = dao.observarNoLeidas()
 
+    override suspend fun existe(id: String): Boolean = dao.existe(id)
+
     override suspend fun agregarSiNoExiste(notificacion: Notificacion) =
         dao.insertarSiNoExiste(notificacion.toEntity())
 

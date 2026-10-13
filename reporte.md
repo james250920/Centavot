@@ -369,6 +369,7 @@ verificación, para saber en qué nos quedamos.
 | 20 | Lector de pantalla (TalkBack) | Q3: ayudas plegables, títulos y botones de cobros | ✅ (falta escucharlo una persona) |
 | 21 | Teléfono de gama baja | Q5: peso, arranque, memoria y pantalla angosta con letra grande | ✅ (medido en el A15, sin emulador) |
 | 22 | Versión de release comprimida (R8) | El APK de release pesaba 16.9 MB | ✅ |
+| 23 | Tres arreglos chicos | P8 caja después de medianoche · P9 aviso de tope repetido · P10 rubro de servicios | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -772,3 +773,62 @@ reglas propias. La versión de debug no cambia.
 3. No hubo ningún cierre en el registro del teléfono. Pasan los 101 tests.
 
 **Archivos.** `androidApp/build.gradle.kts`.
+
+---
+
+## Paso 23 · Tres arreglos chicos (P8, P9 y P10)
+
+### P8 · "Tu caja" después de medianoche
+
+**Problema.** El día se calculaba una sola vez, al abrir la pantalla. Si la app quedaba abierta pasada
+la medianoche, "Tu caja" seguía mostrando lo del día anterior.
+
+**Cambio.**
+
+- `Reloj` tiene ahora `dias()`, que da el día de hoy y vuelve a darlo cada vez que cambia. En el
+  teléfono lo revisa una vez por minuto, así también sigue un cambio de hora o de zona.
+- Lo siguen todos los cálculos que dependen del día:
+  - la caja (hoy, semana y mes);
+  - el resumen de gastos del mes;
+  - el tope;
+  - la constancia ("Anotaste 7 de los últimos 7 días");
+  - la fecha de Inicio.
+
+### P9 · Aviso de tope repetido
+
+**Problema.** La primera versión avisaba solo por los gastos del negocio y guardaba el aviso con un
+identificador sin la medida (`tope-RUS-800000-2026-10-80`). La versión actual lo guarda con la medida
+(`…-COMPRAS-…`). Quien actualizara a mitad de mes podía recibir otra vez el mismo aviso de compras.
+
+**Cambio.** Antes de dejar el aviso de compras, se revisa si ya existe el de la versión anterior; si
+existe, no se repite. El de ventas sí llega, porque la primera versión no lo daba.
+
+### P10 · Rubro "Servicios profesionales"
+
+**Problema.** El nombre invitaba a quien da recibos por honorarios (4.ª categoría), que está fuera
+del alcance.
+
+**Cambio.** Ahora se llama **"Servicios (peluquería, lavandería)"**. Lo guardado no cambia: la base de
+datos guarda el rubro por su clave (`SERVICIOS`).
+
+### Verificación
+
+- **Tests:** 4 nuevos en `PendientesChicosTest`:
+  - la caja pasa al día nuevo sin cerrar la app;
+  - el aviso de compras no se repite si ya llegó con el identificador anterior;
+  - sin ese identificador, el aviso de compras sí llega;
+  - el rubro no dice "profesional".
+
+  Pasan los 105 tests.
+- **Teléfono:** se probó con el **tema claro** (después se volvió a oscuro), con una copia de prueba
+  y la bodega de demostración. Se revisaron Inicio (Hoy y Mi negocio), Ajustes con el rubro nuevo y
+  Cobros. La medianoche no se puede simular en el teléfono sin cambiar la hora del sistema; la cubre
+  el test.
+
+**Archivos.**
+
+- `Reloj.kt` y los casos de uso de resumen, tope y uso.
+- `InicioViewModel.kt`, `NotificacionUseCases.kt`, `NotificacionRepository.kt`,
+  `NotificacionEntity.kt`, `OtrosRepositoriosImpl.kt` y `Perfil.kt`.
+- Nuevo `scripts/sembrar.sh`: carga los datos de demostración en la copia de prueba con un solo
+  comando.

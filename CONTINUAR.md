@@ -2,7 +2,7 @@
 
 Actualizado el **13 de octubre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el paso 22 y está instalado en el teléfono
+- **Dónde está la app:** `main` incluye todo hasta el paso 23 y está instalado en el teléfono
   (`com.app.centavot`).
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
 - **Lista completa de pendientes:** está en `Centavot_Pendientes.md`, en el repositorio de documentos.
@@ -14,9 +14,6 @@ Actualizado el **13 de octubre de 2026**.
 
 | ID | Qué | Prioridad | Esfuerzo |
 |---|---|---|---|
-| P8 | "Tu caja" sigue mostrando el día anterior si la app queda abierta pasada la medianoche | 🟢 | S |
-| P9 | Quien venga de una versión anterior podría ver repetido el aviso de tope del mes: cambió el identificador de los avisos | 🟢 | S |
-| P10 | El rubro "Servicios profesionales" atrae a trabajadores de 4.ª categoría, que están fuera del alcance | 🟢 | S |
 | P7 | Aviso dentro de la app para cobros antiguos (fiados con más de 30 días) | 🟢 | S |
 | P11 | Total por subcategoría en el reporte del negocio (hoy solo sale en la dona de Inicio › Mi negocio) | 🟢 | S |
 | P5 | Exportar el resumen del contador en PDF (hoy solo CSV) | 🟠 | M |
@@ -55,8 +52,8 @@ Actualizado el **13 de octubre de 2026**.
   - `scripts/prueba.sh` la compila e instala; con `limpia` empieza desde la bienvenida.
   - `scripts/ui.py` la maneja (`tap`, `texto`, `dump`, `shot`...). Se detiene si la copia de
     prueba no está al frente.
-  - Datos de demostración: se baja la base con `run-as`, se llena con `scripts/demo.py`
-    (la bodega de Rosa, de mayo a hoy) y se vuelve a subir.
+  - `scripts/sembrar.sh` carga los datos de demostración (la bodega de Rosa, de mayo a hoy, con
+    `scripts/demo.py`). Antes hay que pasar la bienvenida en la app.
   - Al terminar: `adb uninstall com.app.centavot.prueba`.
 - **Comandos:**
 

@@ -27,9 +27,9 @@ class ObservarEstadoTopeUseCase(
 ) {
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(): Flow<EstadoTope?> =
-        regimenes.observarRegimen().flatMapLatest { regimen ->
+        combine(regimenes.observarRegimen(), reloj.dias(), ::Pair).flatMapLatest { (regimen, hoy) ->
             if (regimen == null) return@flatMapLatest flowOf(null)
-            val rango = regimen.periodo.rangoQueContiene(reloj.hoy())
+            val rango = regimen.periodo.rangoQueContiene(hoy)
             combine(
                 ingresos.observarIngresosEntre(rango.start, rango.endInclusive),
                 gastos.observarGastosEntre(rango.start, rango.endInclusive),

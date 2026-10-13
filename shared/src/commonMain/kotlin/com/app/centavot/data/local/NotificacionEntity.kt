@@ -29,6 +29,9 @@ interface NotificacionDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertarSiNoExiste(notificacion: NotificacionEntity)
 
+    @Query("SELECT EXISTS(SELECT 1 FROM notificaciones WHERE id = :id)")
+    suspend fun existe(id: String): Boolean
+
     @Query("UPDATE notificaciones SET leida = 1 WHERE leida = 0")
     suspend fun marcarTodasLeidas()
 }
