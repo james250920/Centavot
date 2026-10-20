@@ -2,9 +2,9 @@
 
 Actualizado el **20 de octubre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el **paso 33** (presupuesto en bloques y menos texto). Base de datos
-  versión 6. Instalada en el teléfono (`com.app.centavot`) desde el 20 de octubre.
-- **GitHub:** subido hasta el paso 32. El paso 33 está solo en este equipo: no subir hasta que se pida.
+- **Dónde está la app:** `main` incluye todo hasta el **paso 34** (marca Andina: colores, letra Sora, logotipo e ícono). Base de datos
+  versión 6. En el teléfono (`com.app.centavot`) está el paso 33; el 34 falta instalarlo.
+- **GitHub:** subido hasta el paso 32. Los pasos 33 y 34 están solo en este equipo: no subir hasta que se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
 - **Requerimientos y pendientes:** en `Centavot_03_Requerimientos.md` (repositorio de documentos).
   Aquí solo va lo que toca a la app.

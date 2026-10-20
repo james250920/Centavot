@@ -35,7 +35,7 @@ fun BarraAvance(porcentaje: Int, color: Color, descripcion: String, modifier: Mo
     }
 }
 
-/** Colores con un solo significado: verde bien, ámbar atención (desde el 90 %), rojo pasado. */
+/** Colores con un solo significado: tinta bien, ámbar atención (desde el 90 %), carmín pasado. */
 @Composable
 fun EstadoLinea.color(): Color = when (this) {
     EstadoLinea.SIN_MONTO -> MaterialTheme.colorScheme.outline

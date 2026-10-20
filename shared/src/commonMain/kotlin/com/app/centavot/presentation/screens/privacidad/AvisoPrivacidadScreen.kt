@@ -104,8 +104,8 @@ fun AvisoPrivacidadScreen(
         ) {
             if (pideConsentimiento) {
                 LogoCentavot(
-                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 8.dp),
-                    tamano = 140.dp,
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 16.dp),
+                    ancho = 200.dp,
                     animado = true,
                 )
             }

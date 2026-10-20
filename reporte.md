@@ -380,6 +380,7 @@ verificación, para saber en qué nos quedamos.
 | 31 | Menos texto (ronda 3) | "Hay mucho texto", otra vez, tras sumar presupuesto y metas | ✅ |
 | 32 | Presupuesto según la guía (RP-01 a RP-10) | Documentos 03 y 04 del 19 de octubre | ✅ |
 | 33 | Presupuesto en bloques y menos texto (ronda 4) | "Se ve mucho texto"; "Arma tu presupuesto" sin división entre grupos | ✅ |
+| 34 | Marca Andina en la app | Pack de marca del 20 de octubre | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -1300,3 +1301,25 @@ La ayuda ya estaba corta desde el paso 31 y no se tocó.
 - **Ajuste durante la prueba:** la línea del campo de monto quedaba encima del separador de la fila.
   Se cambió por un campo con fondo suave y sin línea.
 - **Capturas:** se rehicieron 16 en el repositorio de documentos: 12, 23, 24, 35 a 37 y 39 a 48.
+
+## Paso 34 · Marca Andina en la app
+
+**Pedido:** pasar la app al pack de marca (`pach de marca/` en el repositorio de documentos: manual,
+logotipos, símbolo e ícono) y rehacer las capturas.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Colores (`Tema.kt`) | Verde y menta | Paleta Andina. **Tinta** #1B1410: texto, botones principales y barras en orden. **Lana** #FAF6EF: fondos. **Maíz** #F4B400: lo elegido y los botones tonales. **Ámbar oscuro**: avisos de tope y cobros antiguos. **Carmín** #C1121F: pasarse o borrar |
+| Letra | La del sistema (Roboto) | **Sora**, incluida en la app (`composeResources/font`, cinco pesos; licencia SIL OFL en `licencias/`). Semibold en títulos y regular en textos, como pide el manual |
+| Logo (`LogoCentavot.kt`) | La mano con la moneda, teñida, girando, y como marca de agua en la bienvenida | El **logotipo** oficial en su versión Tinta, sin teñir ni girar: el manual prohíbe girarlo y cambiarle los colores. Entra con un fundido corto. En la bienvenida va arriba del saludo |
+| Ícono | La mano sobre fondo blanco | La **moneda quipu** sobre fondo Tinta, como el ícono "Principal" del manual. Tiene capa monocromática (la moneda con las cuerdas caladas) para el ícono temático de Android 13+, y versiones cuadrada y redonda para Android 7 o menos |
+| Gráfico "En qué se fue tu plata" | Nueve colores genéricos | Primero Tinta, Maíz y Carmín; después tonos que se distinguen sobre Lana |
+| PDF para el contador | Títulos verdes | Títulos en Tinta y la raya del encabezado en Maíz |
+
+**Verificación.**
+
+- **Tests y tamaño:** compila y pasan los 134 tests. La APK de depuración pesa 21.8 MB.
+- **Teléfono:** se recorrió toda la app en la copia de prueba, con la bodega de demostración y los dos
+  presupuestos. No se cortó ningún texto por el ancho de Sora.
+- **Capturas:** se rehicieron las 48 de `capturas-app/`, y la presentación usa ahora las de la marca
+  nueva.

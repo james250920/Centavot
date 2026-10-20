@@ -32,7 +32,7 @@ fun App() {
             EstadoApp.CARGANDO -> Box(
                 Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center,
-            ) { LogoCentavot(tamano = 160.dp, animado = true) }
+            ) { LogoCentavot(ancho = 240.dp, animado = true) }
             // Al guardar el perfil (y en modo negocio el régimen), el estado avanza solo hasta LISTA.
             EstadoApp.SIN_CONSENTIMIENTO -> AvisoPrivacidadScreen(onAceptar = viewModel::aceptarAvisoPrivacidad)
             EstadoApp.SIN_PERFIL -> AjustesScreen(esPrimeraVez = true, onCerrar = {}, onCambiarRegimen = {})

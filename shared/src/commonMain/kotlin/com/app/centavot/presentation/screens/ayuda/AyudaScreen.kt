@@ -83,7 +83,7 @@ fun AyudaScreen(onCerrar: () -> Unit) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            LogoCentavot(modifier = Modifier.align(Alignment.CenterHorizontally), tamano = 112.dp)
+            LogoCentavot(modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 8.dp), ancho = 180.dp)
             Text(
                 "Tu cuaderno, pero que suma solo.",
                 style = MaterialTheme.typography.bodyLarge,
