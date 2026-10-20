@@ -5,12 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.Meta
 import com.app.centavot.domain.model.Modo
+import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.PresupuestoMes
 import com.app.centavot.domain.model.ProgresoMeta
+import com.app.centavot.domain.model.fondoSugerido
 import com.app.centavot.domain.usecase.AbonarMetaUseCase
 import com.app.centavot.domain.usecase.EliminarMetaUseCase
 import com.app.centavot.domain.usecase.GuardarMetaUseCase
 import com.app.centavot.domain.usecase.ObservarMetasUseCase
 import com.app.centavot.domain.usecase.ObservarModoUseCase
+import com.app.centavot.domain.usecase.ObservarPresupuestoMesUseCase
 import com.app.centavot.domain.usecase.QuitarAbonoMetaUseCase
 import com.app.centavot.presentation.Aviso
 import com.app.centavot.presentation.Avisos
@@ -20,6 +24,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -29,13 +34,31 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.plus
+import kotlinx.datetime.yearMonth
 
 data class MetasUiState(
     val cargando: Boolean = true,
     val modo: Modo = Modo.PERSONAL,
     val hoy: LocalDate,
     val metas: List<ProgresoMeta> = emptyList(),
+    /** RP-09: metas sugeridas con el presupuesto (fondo de emergencia o colchón del negocio). */
+    val sugerencias: List<SugerenciaMeta> = emptyList(),
 )
+
+data class SugerenciaMeta(val nombre: String, val etiqueta: String, val monto: Monto)
+
+/** Fondo de emergencia de 3 y 6 meses de gastos fijos, o colchón del negocio de 2 semanas. */
+fun sugerenciasDe(modo: Modo, presupuesto: PresupuestoMes?): List<SugerenciaMeta> {
+    if (presupuesto == null) return emptyList()
+    return when (modo) {
+        Modo.PERSONAL -> listOf(3, 6).mapNotNull { meses ->
+            presupuesto.fondoSugerido(modo, meses)?.let { SugerenciaMeta("Fondo de emergencia", "Fondo de emergencia · $meses meses", it) }
+        }
+        Modo.NEGOCIO -> listOfNotNull(
+            presupuesto.fondoSugerido(modo)?.let { SugerenciaMeta("Colchón del negocio", "Colchón del negocio · 2 semanas", it) },
+        )
+    }
+}
 
 /** Para cuándo: opciones rápidas en vez de un calendario. */
 enum class Plazo(val etiqueta: String) {
@@ -63,6 +86,7 @@ sealed interface DialogoMeta {
 class MetasViewModel(
     observarModo: ObservarModoUseCase,
     observarMetas: ObservarMetasUseCase,
+    observarPresupuestoMes: ObservarPresupuestoMesUseCase,
     private val guardarMeta: GuardarMetaUseCase,
     private val abonarMeta: AbonarMetaUseCase,
     private val quitarAbono: QuitarAbonoMetaUseCase,
@@ -76,7 +100,11 @@ class MetasViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val estado: StateFlow<MetasUiState> = observarModo()
-        .flatMapLatest { modo -> observarMetas(modo).map { MetasUiState(false, modo, reloj.hoy(), it) } }
+        .flatMapLatest { modo ->
+            combine(observarMetas(modo), observarPresupuestoMes(reloj.hoy().yearMonth, modo)) { metas, presupuesto ->
+                MetasUiState(false, modo, reloj.hoy(), metas, sugerenciasDe(modo, presupuesto))
+            }
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MetasUiState(hoy = reloj.hoy()))
 
     fun nueva() = abrir(DialogoMeta.Editar(null))

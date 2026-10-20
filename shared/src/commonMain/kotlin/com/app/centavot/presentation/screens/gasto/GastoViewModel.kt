@@ -10,6 +10,7 @@ import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Partida
+import com.app.centavot.domain.model.TipoGasto
 import com.app.centavot.domain.model.TipoPartida
 import com.app.centavot.domain.model.SubcategoriaGasto
 import com.app.centavot.domain.model.aplicaA
@@ -71,7 +72,7 @@ class GastoViewModel(
         viewModelScope.launch {
             val modo = observarModo().first()
             val categoriaDelModo = modo.categoria
-            val partidas = observarPartidas(modo).first().filter { it.tipo == TipoPartida.GASTO }
+            val partidas = observarPartidas(modo).first().filter { it.tipo == TipoPartida.GASTO && it.clase != TipoGasto.AHORRO }
             _estado.update { it.copy(partidas = partidas) }
             if (id != null) cargar(id, categoriaDelModo) else _estado.update { it.copy(cargando = false, categoria = categoriaDelModo) }
         }

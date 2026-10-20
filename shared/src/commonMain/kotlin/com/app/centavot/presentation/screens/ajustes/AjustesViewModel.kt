@@ -1,22 +1,24 @@
 package com.app.centavot.presentation.screens.ajustes
 
-import com.app.centavot.presentation.Avisos
-import com.app.centavot.presentation.Aviso
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.centavot.core.util.CompartidorArchivos
 import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Perfil
 import com.app.centavot.domain.model.RegimenTributario
 import com.app.centavot.domain.model.ResumenUso
 import com.app.centavot.domain.model.Rubro
-import com.app.centavot.core.util.CompartidorArchivos
 import com.app.centavot.domain.usecase.BorrarTodosLosDatosUseCase
 import com.app.centavot.domain.usecase.ExportarTodosLosDatosUseCase
 import com.app.centavot.domain.usecase.GuardarPerfilUseCase
+import com.app.centavot.domain.usecase.IndicadoresPlanes
+import com.app.centavot.domain.usecase.ObservarIndicadoresPlanesUseCase
 import com.app.centavot.domain.usecase.ObservarPerfilUseCase
 import com.app.centavot.domain.usecase.ObservarRegimenUseCase
 import com.app.centavot.domain.usecase.ObservarResumenUsoUseCase
+import com.app.centavot.presentation.Aviso
+import com.app.centavot.presentation.Avisos
 import com.app.centavot.presentation.components.comoTextoEditable
 import com.app.centavot.presentation.components.esEntradaDeMontoValida
 import com.app.centavot.presentation.components.esEntradaDeTasaValida
@@ -40,6 +42,7 @@ data class AjustesUiState(
     val tasaTexto: String = "",
     val regimen: RegimenTributario? = null,
     val uso: ResumenUso? = null,
+    val planes: IndicadoresPlanes? = null,
     val errorNombre: String? = null,
     val errorModo: String? = null,
     val errorIngreso: String? = null,
@@ -56,6 +59,7 @@ class AjustesViewModel(
     private val observarRegimen: ObservarRegimenUseCase,
     private val guardarPerfil: GuardarPerfilUseCase,
     private val observarResumenUso: ObservarResumenUsoUseCase,
+    private val observarIndicadoresPlanes: ObservarIndicadoresPlanesUseCase,
     private val exportarTodos: ExportarTodosLosDatosUseCase,
     private val borrarTodos: BorrarTodosLosDatosUseCase,
     private val compartidor: CompartidorArchivos,
@@ -85,6 +89,9 @@ class AjustesViewModel(
         }
         viewModelScope.launch {
             observarResumenUso().collect { uso -> _estado.update { it.copy(uso = uso) } }
+        }
+        viewModelScope.launch {
+            observarIndicadoresPlanes().collect { planes -> _estado.update { it.copy(planes = planes) } }
         }
     }
 

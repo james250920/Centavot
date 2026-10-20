@@ -1,10 +1,5 @@
 package com.app.centavot.presentation.screens.ajustes
 
-import androidx.compose.foundation.layout.offset
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.heading
-import androidx.compose.foundation.layout.heightIn
-import com.app.centavot.presentation.components.LogoCentavot
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,15 +7,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,6 +35,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -45,18 +44,20 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.centavot.domain.model.Modo
+import com.app.centavot.domain.model.Perfil
 import com.app.centavot.domain.model.PeriodoTope
 import com.app.centavot.domain.model.ResumenUso
 import com.app.centavot.domain.model.Rubro
+import com.app.centavot.domain.usecase.IndicadoresPlanes
+import com.app.centavot.presentation.components.AyudaPlegable
 import com.app.centavot.presentation.components.DialogoConfirmar
 import com.app.centavot.presentation.components.Iconos
+import com.app.centavot.presentation.components.LogoCentavot
 import com.app.centavot.presentation.components.SelectorChips
 import com.app.centavot.presentation.components.SelectorModo
-import com.app.centavot.presentation.components.AyudaPlegable
 import com.app.centavot.presentation.components.formatear
 import com.app.centavot.presentation.components.parsearMonto
 import com.app.centavot.presentation.components.parsearTasa
-import com.app.centavot.domain.model.Perfil
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -249,7 +250,7 @@ fun AjustesScreen(
             if (!esPrimeraVez) {
                 SeccionAjustes("Cómo vienes usando Centavot") {
                     FilaActividad(onAbrirActividad)
-                    estado.uso?.takeIf { it.primerUso != null }?.let { uso -> TarjetaUso(uso) }
+                    estado.uso?.takeIf { it.primerUso != null }?.let { uso -> TarjetaUso(uso, estado.planes) }
                 }
 
                 SeccionAjustes("Tus datos") {
@@ -362,7 +363,7 @@ private fun TarjetaPrivacidad() {
  * no al comerciante: quedan plegados.
  */
 @Composable
-private fun TarjetaUso(uso: ResumenUso) {
+private fun TarjetaUso(uso: ResumenUso, planes: IndicadoresPlanes?) {
     val respuesta = uso.respuestasCuaderno.lastOrNull()?.let { if (it) "más fácil" else "todavía no" } ?: "sin responder"
     AyudaPlegable(
         pregunta = "Ver tus números de uso",
@@ -371,6 +372,9 @@ private fun TarjetaUso(uso: ResumenUso) {
             "Días con registros: ${uso.diasConRegistroUltimos7} de 7 · ${uso.diasConRegistro} de ${uso.diasDesdePrimerUso + 1} desde que empezaste",
             "Registros por día: ${uso.registrosPorDiaActivo}",
             "¿Más fácil que el cuaderno?: $respuesta",
+        ) + listOfNotNull(
+            planes?.gastosConPartida?.let { "Gastos del mes con partida: $it %" },
+            planes?.takeIf { it.metas > 0 }?.let { "Metas con plata este mes: ${it.metasConAbono} de ${it.metas}" },
         ),
     )
 }

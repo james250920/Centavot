@@ -25,16 +25,18 @@ import kotlinx.coroutines.IO
         MetaEntity::class,
         AbonoMetaEntity::class,
     ],
-    version = 5,
+    version = 6,
     // v2: subcategoría del gasto, perfil, contactos, cobros, actividad y notificaciones.
     // v3: ingresos (ventas), eventos de uso, y tipo, adelanto y abonos de los cobros.
     // v4: modo de uso (negocio o personal), retiros para la casa y categoría de los cobros.
     // v5: presupuesto (partidas y montos por mes), metas con sus abonos, y la partida de cada gasto e ingreso.
+    // v6: tipo de cada partida (fijo, variable, prescindible, ahorro), partidas semanales y de deudas.
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6),
     ],
 )
 @ConstructedBy(CentavotDatabaseConstructor::class)

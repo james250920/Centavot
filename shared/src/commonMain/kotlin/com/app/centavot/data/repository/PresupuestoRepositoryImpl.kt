@@ -13,6 +13,7 @@ import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.MontoPresupuesto
 import com.app.centavot.domain.model.Partida
 import com.app.centavot.domain.model.SubcategoriaGasto
+import com.app.centavot.domain.model.TipoGasto
 import com.app.centavot.domain.model.TipoPartida
 import com.app.centavot.domain.repository.MetaRepository
 import com.app.centavot.domain.repository.PresupuestoRepository
@@ -31,6 +32,9 @@ class PresupuestoRepositoryImpl(private val dao: PresupuestoDao) : PresupuestoRe
                 categoria = Categoria.valueOf(it.categoria),
                 subcategoria = it.subcategoria?.let(SubcategoriaGasto::valueOf),
                 orden = it.orden,
+                tipoGasto = it.tipoGasto?.let(TipoGasto::valueOf),
+                semanal = it.semanal,
+                deuda = it.deuda,
             )
         }
     }
@@ -40,7 +44,17 @@ class PresupuestoRepositoryImpl(private val dao: PresupuestoDao) : PresupuestoRe
     }
 
     override suspend fun guardarPartida(partida: Partida) = dao.guardarPartida(
-        PartidaEntity(partida.id, partida.nombre, partida.tipo.name, partida.categoria.name, partida.subcategoria?.name, partida.orden),
+        PartidaEntity(
+            id = partida.id,
+            nombre = partida.nombre,
+            tipo = partida.tipo.name,
+            categoria = partida.categoria.name,
+            subcategoria = partida.subcategoria?.name,
+            orden = partida.orden,
+            tipoGasto = partida.tipoGasto?.name,
+            semanal = partida.semanal,
+            deuda = partida.deuda,
+        ),
     )
 
     override suspend fun fijarMonto(monto: MontoPresupuesto) =

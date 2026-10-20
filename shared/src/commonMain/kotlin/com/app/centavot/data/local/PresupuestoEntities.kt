@@ -1,5 +1,6 @@
 package com.app.centavot.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -20,6 +21,12 @@ data class PartidaEntity(
     val categoria: String,
     val subcategoria: String?,
     val orden: Int,
+    /** v6: FIJO, VARIABLE, PRESCINDIBLE o AHORRO; null = según la subcategoría. */
+    val tipoGasto: String? = null,
+    /** v6: monto por semana. */
+    @ColumnInfo(defaultValue = "0") val semanal: Boolean = false,
+    /** v6: pago de una deuda. */
+    @ColumnInfo(defaultValue = "0") val deuda: Boolean = false,
 )
 
 /** v5: monto de una partida desde un mes ("AAAA-MM"); vale para los siguientes hasta que se cambie. */
