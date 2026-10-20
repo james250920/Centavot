@@ -1,11 +1,15 @@
 # Para continuar
 
-Actualizado el **20 de octubre de 2026**.
+Actualizado el **20 de octubre de 2026** (noche).
 
 - **Dónde está la app:** `main` incluye todo hasta el **paso 34** (marca Andina: colores, letra Sora, logotipo e ícono). Base de datos
   versión 6. Instalada en el teléfono (`com.app.centavot`) desde el 20 de octubre.
 - **GitHub:** subido hasta el paso 32. Los pasos 33 y 34 están solo en este equipo: no subir hasta que se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
+- **Presentación para el jurado:** [Centavot — Presentación](https://claude.ai/artifact/V4JQZd62eBtwsarMRbFJhn).
+  Tiene 12 diapositivas: UX, seguridad, tecnología, costos, marca, anuncios y redes. Una copia de su
+  código está en `presentacion/` del repositorio de documentos.
+- **Marca:** paleta Andina y letra Sora, según `pach de marca/` del repositorio de documentos (desde el paso 34).
 - **Requerimientos y pendientes:** en `Centavot_03_Requerimientos.md` (repositorio de documentos).
   Aquí solo va lo que toca a la app.
 
