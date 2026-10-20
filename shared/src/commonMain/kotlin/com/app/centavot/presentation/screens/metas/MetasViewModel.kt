@@ -52,10 +52,10 @@ fun sugerenciasDe(modo: Modo, presupuesto: PresupuestoMes?): List<SugerenciaMeta
     if (presupuesto == null) return emptyList()
     return when (modo) {
         Modo.PERSONAL -> listOf(3, 6).mapNotNull { meses ->
-            presupuesto.fondoSugerido(modo, meses)?.let { SugerenciaMeta("Fondo de emergencia", "Fondo de emergencia · $meses meses", it) }
+            presupuesto.fondoSugerido(modo, meses)?.let { SugerenciaMeta("Fondo de emergencia", "$meses meses", it) }
         }
         Modo.NEGOCIO -> listOfNotNull(
-            presupuesto.fondoSugerido(modo)?.let { SugerenciaMeta("Colchón del negocio", "Colchón del negocio · 2 semanas", it) },
+            presupuesto.fondoSugerido(modo)?.let { SugerenciaMeta("Colchón del negocio", "2 semanas", it) },
         )
     }
 }

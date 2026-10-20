@@ -19,6 +19,9 @@ private val REGEX_ENTRADA_MONTO = Regex("""\d{0,9}([.,]\d{0,2})?""")
 /** "S/ 1,234.50" */
 fun Monto.formatear(): String = enSoles()
 
+/** "S/ 2,000" cuando no hay céntimos; si los hay, "S/ 1,234.50". Para pantallas con muchos montos. */
+fun Monto.formatearCorto(): String = enSoles().removeSuffix(".00")
+
 /** Texto para precargar el campo de monto al editar: "12.5" → "12.50", "12.00" → "12". */
 fun Monto.comoTextoEditable(): String {
     val soles = centimos / 100

@@ -9,6 +9,47 @@ Actualizado el **20 de octubre de 2026**.
 - **Requerimientos y pendientes:** en `Centavot_03_Requerimientos.md` (repositorio de documentos).
   Aquí solo va lo que toca a la app.
 
+## Dónde me quedé (20 de octubre, en pausa)
+
+**Paso 33 en curso: menos texto y un bloque por grupo en el presupuesto.** Lo pidió el usuario ("se ve
+mucho texto" y que "Arma tu presupuesto" tenga una división entre grupos), con la skill de diseño
+`impeccable` (modo *distill*).
+
+- **Rama:** `ux/presupuesto-bloques`, con un commit de trabajo en curso. Compila y pasan los 134 tests.
+  No está fusionada en `main` ni subida.
+- **Hecho en código:**
+  - `BloqueGrupo.kt` (nuevo): cada grupo va en un bloque blanco con borde, título y total arriba, y
+    una línea fina entre filas.
+  - **Arma tu presupuesto:**
+    - sin el párrafo de arriba;
+    - un bloque por grupo, con su total;
+    - el monto a la derecha, sin caja, como en un cuaderno;
+    - "Agregar" dentro de cada grupo, con un diálogo que solo pide el nombre;
+    - abajo, el balance en corto ("Te sobran S/ 240 · pásalos a tu ahorro").
+  - **Tu presupuesto:**
+    - resumen arriba, con el balance del plan y el aviso de deudas;
+    - la tarjeta "Tu reparto" en filas;
+    - un bloque por grupo, con lo real resaltado y el plan apagado;
+    - sin la pista "Toca una partida…";
+    - en el negocio, el grupo de ingresos se llama "Lo que entra" (antes salía "Ventas" dos veces).
+  - **Montos cortos:** `formatearCorto()` en `Formato.kt` muestra "S/ 2,000" en vez de "S/ 2,000.00".
+    Por ahora solo se usa en el presupuesto y en las metas.
+  - **Metas:**
+    - las sugerencias se ven como "Fondo de emergencia" y, debajo, chips "3 meses · S/ 3,090";
+    - la tarjeta dice "S/ 57 por semana · hasta octubre 2027".
+- **Falta:**
+  1. **Ver en el teléfono:** "Arma tu presupuesto", "Tu presupuesto" y metas. Probé solo que el balance en
+     vivo sale bien ("Te sobran S/ 240"). Para preparar la prueba:
+     1. `scripts/prueba.sh limpia`;
+     2. pasar el primer uso: Rosa, Mi negocio, RUS · Categoría 2;
+     3. `scripts/sembrar.sh`;
+     4. pasar a "Mi plata personal" y llenar el ejemplo del documento 04 §10.
+  2. **Ajustar lo que se vea mal** en una sola pasada y quitar los imports que ya no se usan en
+     `PresupuestoScreen.kt` (`Card`, `CardDefaults`, `LazyListScope`, `heading`…).
+  3. **Revisar el texto de otras pantallas:** inicio, cobros y ajustes. La ayuda ya está corta.
+  4. **Cerrar el paso:** registrarlo en `reporte.md` como paso 33, hacer el commit, fusionar en `main`,
+     actualizar las capturas 35 a 48 y preguntar antes de instalar en la app real o subir a GitHub.
+
 ## Falta por hacer
 
 ### 1. Se puede hacer ya (sin backend y sin esperar a nadie)
@@ -16,11 +57,6 @@ Actualizado el **20 de octubre de 2026**.
 | ID | Qué | Prioridad | Esfuerzo |
 |---|---|---|---|
 | Q2 | Pruebas de interfaz automatizadas (hoy se prueba a mano en el teléfono) | 🟠 | M |
-
-### 1a. Capturas
-
-Las 34 capturas de `capturas-app/` y la galería no muestran lo de los pasos 27–31 (barras en "Tu caja",
-presupuesto, metas, fuentes, menos texto). Hay que volver a tomarlas, en tema claro, y sumar las pantallas nuevas.
 
 ### 1b. Registro automático (reunión con usuarios del 10 de octubre)
 

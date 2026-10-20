@@ -44,13 +44,18 @@ data class ArmarPresupuestoUiState(
     val modo: Modo = Modo.PERSONAL,
     val renglones: List<Renglon> = emptyList(),
     val agregandoOtra: Boolean = false,
+    /** El grupo donde se agrega la partida propia; null = lo que entra. */
+    val grupoOtra: TipoGasto? = null,
     val guardando: Boolean = false,
     val terminado: Boolean = false,
 ) {
     val marcados: Int get() = renglones.count { it.marcado }
 
-    val ingresos: Monto get() = renglones.filter { it.grupo == null }.map { it.montoMensual }.sumar()
-    val ahorro: Monto get() = renglones.filter { it.grupo == TipoGasto.AHORRO }.map { it.montoMensual }.sumar()
+    /** Lo que suma un grupo al mes; null = lo que entra. */
+    fun totalDe(grupo: TipoGasto?): Monto = renglones.filter { it.grupo == grupo }.map { it.montoMensual }.sumar()
+
+    val ingresos: Monto get() = totalDe(null)
+    val ahorro: Monto get() = totalDe(TipoGasto.AHORRO)
     val gastos: Monto get() = renglones.filter { it.grupo != null && it.grupo != TipoGasto.AHORRO }.map { it.montoMensual }.sumar()
 
     /** RP-03: lo que entra menos el ahorro y los gastos. Null mientras no se ponga cuánto entra. */
@@ -94,7 +99,7 @@ class ArmarPresupuestoViewModel(
     private fun cambiar(item: ItemPlantilla, cambio: (Renglon) -> Renglon) =
         _estado.update { estado -> estado.copy(renglones = estado.renglones.map { if (it.item == item) cambio(it) else it }) }
 
-    fun pedirOtra() = _estado.update { it.copy(agregandoOtra = true) }
+    fun pedirOtra(grupo: TipoGasto?) = _estado.update { it.copy(agregandoOtra = true, grupoOtra = grupo) }
 
     fun cancelarOtra() = _estado.update { it.copy(agregandoOtra = false) }
 
