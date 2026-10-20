@@ -2,9 +2,9 @@
 
 Actualizado el **20 de octubre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el **paso 32** (presupuesto según la guía, RP-01 a RP-10). Base de datos
-  versión 6. Instalada en el teléfono (`com.app.centavot`).
-- **GitHub:** `main` subido el 20 de octubre, en la app y en documentos. Subir solo cuando se pida.
+- **Dónde está la app:** `main` incluye todo hasta el **paso 33** (presupuesto en bloques y menos texto). Base de datos
+  versión 6. En el teléfono (`com.app.centavot`) está instalado el paso 32; el 33 falta instalarlo.
+- **GitHub:** subido hasta el paso 32. El paso 33 está solo en este equipo: no subir hasta que se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
 - **Requerimientos y pendientes:** en `Centavot_03_Requerimientos.md` (repositorio de documentos).
   Aquí solo va lo que toca a la app.
@@ -16,11 +16,6 @@ Actualizado el **20 de octubre de 2026**.
 | ID | Qué | Prioridad | Esfuerzo |
 |---|---|---|---|
 | Q2 | Pruebas de interfaz automatizadas (hoy se prueba a mano en el teléfono) | 🟠 | M |
-
-### 1a. Capturas
-
-Las 34 capturas de `capturas-app/` y la galería no muestran lo de los pasos 27–31 (barras en "Tu caja",
-presupuesto, metas, fuentes, menos texto). Hay que volver a tomarlas, en tema claro, y sumar las pantallas nuevas.
 
 ### 1b. Registro automático (reunión con usuarios del 10 de octubre)
 

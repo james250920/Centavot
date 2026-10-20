@@ -59,7 +59,8 @@ import com.app.centavot.presentation.components.Iconos
 import com.app.centavot.presentation.components.comoTextoEditable
 import com.app.centavot.presentation.components.esEntradaDeMontoValida
 import com.app.centavot.presentation.components.formatear
-import com.app.centavot.presentation.components.formatearRelativo
+import com.app.centavot.domain.model.NOMBRES_MES
+import com.app.centavot.presentation.components.formatearCorto
 import kotlinx.datetime.LocalDate
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -145,7 +146,7 @@ private fun TarjetaMeta(progreso: ProgresoMeta, hoy: LocalDate, onAbonar: () -> 
             }
             Row(Modifier.fillMaxWidth()) {
                 Text(
-                    "${progreso.ahorrado.formatear()} de ${meta.objetivo.formatear()}",
+                    "${progreso.ahorrado.formatearCorto()} de ${meta.objetivo.formatearCorto()}",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f),
@@ -156,8 +157,8 @@ private fun TarjetaMeta(progreso: ProgresoMeta, hoy: LocalDate, onAbonar: () -> 
             val nota = when {
                 progreso.cumplida -> "¡La cumpliste!"
                 progreso.porSemana(hoy) != null && meta.fechaLimite != null ->
-                    "${progreso.porSemana(hoy)!!.formatear()} por semana hasta el ${meta.fechaLimite.formatearRelativo(hoy).lowercase()}"
-                else -> "Faltan ${progreso.falta.formatear()}"
+                    "${progreso.porSemana(hoy)!!.formatearCorto()} por semana · hasta ${meta.fechaLimite.mesYAnio(hoy)}"
+                else -> "Faltan ${progreso.falta.formatearCorto()}"
             }
             Text(nota, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (!progreso.cumplida) {
@@ -201,6 +202,7 @@ private fun DialogoEditarMeta(
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 // RP-09: con el presupuesto armado, el fondo de emergencia sale calculado.
                 if (sugerencias.isNotEmpty()) {
+                    Text(sugerencias.first().nombre, style = MaterialTheme.typography.titleSmall)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         sugerencias.forEach { sugerencia ->
                             FilterChip(
@@ -209,7 +211,7 @@ private fun DialogoEditarMeta(
                                     nombre = sugerencia.nombre
                                     monto = sugerencia.monto.comoTextoEditable()
                                 },
-                                label = { Text("${sugerencia.etiqueta}: ${sugerencia.monto.formatear()}") },
+                                label = { Text("${sugerencia.etiqueta} · ${sugerencia.monto.formatearCorto()}") },
                             )
                         }
                     }
@@ -282,4 +284,10 @@ private fun DialogoAbonar(meta: Meta, error: String?, onAbonar: (String) -> Unit
         confirmButton = { TextButton(onClick = { onAbonar(monto) }) { Text("Separar") } },
         dismissButton = { TextButton(onClick = onCancelar) { Text("Cancelar") } },
     )
+}
+
+/** "diciembre" si es este año; "octubre 2027" si no. */
+private fun LocalDate.mesYAnio(hoy: LocalDate): String {
+    val mes = NOMBRES_MES[month.ordinal].lowercase()
+    return if (year == hoy.year) mes else "$mes $year"
 }

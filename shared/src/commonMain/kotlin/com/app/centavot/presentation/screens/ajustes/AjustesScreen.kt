@@ -191,7 +191,7 @@ fun AjustesScreen(
                         prefix = { Text("S/ ") },
                         placeholder = { Text("0.00") },
                         isError = estado.errorIngreso != null,
-                        supportingText = { Text(estado.errorIngreso ?: "Lo que ganas en un mes normal.") },
+                        supportingText = estado.errorIngreso?.let { { Text(it) } },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                         modifier = Modifier.fillMaxWidth(),
@@ -351,7 +351,7 @@ private fun TarjetaPrivacidad() {
             Icon(Iconos.Candado, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             // Lo esencial en una frase; el detalle está en "Ver aviso de privacidad".
             Text(
-                "Todo queda en tu celular. No pedimos claves del banco ni enviamos nada a SUNAT.",
+                "Todo queda en tu celular. Sin banco ni SUNAT.",
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
