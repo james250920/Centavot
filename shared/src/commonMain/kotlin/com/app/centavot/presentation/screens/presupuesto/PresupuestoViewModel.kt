@@ -7,6 +7,7 @@ import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Partida
 import com.app.centavot.domain.model.PresupuestoMes
+import com.app.centavot.domain.model.TipoGasto
 import com.app.centavot.domain.model.TipoPartida
 import com.app.centavot.domain.usecase.AgregarPartidaUseCase
 import com.app.centavot.domain.usecase.EliminarPartidaUseCase
@@ -14,6 +15,7 @@ import com.app.centavot.domain.usecase.FijarMontoPartidaUseCase
 import com.app.centavot.domain.usecase.ObservarModoUseCase
 import com.app.centavot.domain.usecase.ObservarPresupuestoMesUseCase
 import com.app.centavot.domain.usecase.RenombrarPartidaUseCase
+import com.app.centavot.domain.usecase.UsarRealComoPresupuestoUseCase
 import com.app.centavot.presentation.Aviso
 import com.app.centavot.presentation.Avisos
 import com.app.centavot.presentation.components.formatear
@@ -39,7 +41,12 @@ data class PresupuestoUiState(
     val mes: YearMonth,
     val hoy: YearMonth,
     val presupuesto: PresupuestoMes? = null,
+    /** RP-06: el mes anterior, para ver el avance "de menos a más" hacia 50/30/20. */
+    val anterior: PresupuestoMes? = null,
+    val confirmandoCierre: Boolean = false,
 ) {
+    /** RP-07: el cierre de mes se ofrece si hay gasto real y el mes ya empezó. */
+    val puedeCerrar: Boolean get() = mes <= hoy && presupuesto?.realComoPresupuesto()?.isNotEmpty() == true
     /** Se puede mirar hasta el mes que viene, para preparar el presupuesto antes de que empiece. */
     val puedeAvanzar: Boolean get() = mes < hoy.plusMonth()
 }
@@ -57,6 +64,7 @@ class PresupuestoViewModel(
     private val renombrar: RenombrarPartidaUseCase,
     private val eliminarPartida: EliminarPartidaUseCase,
     private val agregarPartida: AgregarPartidaUseCase,
+    private val usarReal: UsarRealComoPresupuestoUseCase,
     private val avisos: Avisos,
     reloj: Reloj,
 ) : ViewModel() {
@@ -64,11 +72,14 @@ class PresupuestoViewModel(
     private val hoy = reloj.hoy().yearMonth
     private val mes = MutableStateFlow(hoy)
     val edicion = MutableStateFlow<Edicion?>(null)
+    private val confirmandoCierre = MutableStateFlow(false)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val estado: StateFlow<PresupuestoUiState> = combine(observarModo(), mes, ::Pair)
         .flatMapLatest { (modo, elegido) ->
-            observarPresupuestoMes(elegido, modo).map { PresupuestoUiState(false, modo, elegido, hoy, it) }
+            combine(observarPresupuestoMes(elegido, modo), observarPresupuestoMes(elegido.minusMonth(), modo), confirmandoCierre) { actual, anterior, cierre ->
+                PresupuestoUiState(false, modo, elegido, hoy, actual, anterior, cierre)
+            }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PresupuestoUiState(mes = hoy, hoy = hoy))
 
@@ -82,11 +93,16 @@ class PresupuestoViewModel(
 
     fun cerrarEdicion() = edicion.update { null }
 
-    /** Guarda el nombre y el monto desde el mes que se está viendo; los meses anteriores no cambian. */
-    fun guardarPartida(partida: Partida, nombre: String, montoTexto: String) {
+    /**
+     * Guarda nombre, tipo, si es semanal, si es deuda y el monto desde el mes que se está viendo; los meses
+     * anteriores no cambian.
+     */
+    fun guardarPartida(partida: Partida, nombre: String, montoTexto: String, tipoGasto: TipoGasto?, semanal: Boolean, deuda: Boolean) {
         val monto = parsearMonto(montoTexto.ifBlank { "0" }) ?: return
         viewModelScope.launch {
-            if (nombre.trim() != partida.nombre && !renombrar(partida, nombre)) {
+            val cambio = nombre.trim() != partida.nombre || tipoGasto != partida.clase || semanal != partida.semanal || deuda != partida.deuda
+            val tipoFinal = if (partida.tipo == TipoPartida.GASTO) tipoGasto else null
+            if (cambio && !renombrar(partida, nombre, tipoFinal, semanal, deuda)) {
                 avisos.mostrar(Aviso("Ese nombre ya está en tu presupuesto"))
                 return@launch
             }
@@ -104,10 +120,12 @@ class PresupuestoViewModel(
         }
     }
 
-    fun agregar(nombre: String, tipo: TipoPartida, montoTexto: String) {
+    /** Una partida nueva; sin [tipoGasto] es una fuente de ingreso. */
+    fun agregar(nombre: String, tipoGasto: TipoGasto?, montoTexto: String, semanal: Boolean, deuda: Boolean) {
         val monto = parsearMonto(montoTexto.ifBlank { "0" }) ?: return
+        val tipo = if (tipoGasto == null) TipoPartida.INGRESO else TipoPartida.GASTO
         viewModelScope.launch {
-            when (agregarPartida(estado.value.modo, nombre, tipo, monto, mes.value)) {
+            when (agregarPartida(estado.value.modo, nombre, tipo, monto, mes.value, tipoGasto, semanal, deuda)) {
                 is AgregarPartidaUseCase.Resultado.Agregada -> {
                     avisos.mostrar(Aviso("Agregaste ${nombre.trim()}"))
                     cerrarEdicion()
@@ -115,6 +133,20 @@ class PresupuestoViewModel(
                 AgregarPartidaUseCase.Resultado.Repetida -> avisos.mostrar(Aviso("Ese nombre ya está en tu presupuesto"))
                 AgregarPartidaUseCase.Resultado.NombreVacio -> Unit
             }
+        }
+    }
+
+    fun pedirCierre() = confirmandoCierre.update { true }
+
+    fun cancelarCierre() = confirmandoCierre.update { false }
+
+    /** RP-07: el mes siguiente queda con lo que de verdad se gastó en cada partida. */
+    fun usarRealComoPresupuesto() {
+        val presupuesto = estado.value.presupuesto ?: return
+        viewModelScope.launch {
+            val cambiadas = usarReal(presupuesto)
+            confirmandoCierre.update { false }
+            avisos.mostrar(Aviso("${nombreMes(presupuesto.mes.plusMonth()).replaceFirstChar { it.uppercase() }}: $cambiadas partidas con lo real"))
         }
     }
 

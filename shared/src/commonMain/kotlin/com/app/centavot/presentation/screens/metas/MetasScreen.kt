@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -42,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -109,6 +113,7 @@ fun MetasScreen(onCerrar: () -> Unit, viewModel: MetasViewModel = koinViewModel(
         is DialogoMeta.Editar -> DialogoEditarMeta(
             meta = actual.meta,
             hoy = estado.hoy,
+            sugerencias = if (actual.meta == null) estado.sugerencias else emptyList(),
             error = error,
             onGuardar = { nombre, monto, fecha -> viewModel.guardar(actual.meta, nombre, monto, fecha) },
             onQuitar = actual.meta?.let { meta -> { viewModel.quitar(meta) } },
@@ -167,6 +172,7 @@ private fun TarjetaMeta(progreso: ProgresoMeta, hoy: LocalDate, onAbonar: () -> 
 private fun DialogoEditarMeta(
     meta: Meta?,
     hoy: LocalDate,
+    sugerencias: List<SugerenciaMeta>,
     error: String?,
     onGuardar: (String, String, LocalDate?) -> Unit,
     onQuitar: (() -> Unit)?,
@@ -192,7 +198,22 @@ private fun DialogoEditarMeta(
         onDismissRequest = onCancelar,
         title = { Text(if (meta == null) "Nueva meta" else "Editar meta") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // RP-09: con el presupuesto armado, el fondo de emergencia sale calculado.
+                if (sugerencias.isNotEmpty()) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        sugerencias.forEach { sugerencia ->
+                            FilterChip(
+                                selected = nombre == sugerencia.nombre && monto == sugerencia.monto.comoTextoEditable(),
+                                onClick = {
+                                    nombre = sugerencia.nombre
+                                    monto = sugerencia.monto.comoTextoEditable()
+                                },
+                                label = { Text("${sugerencia.etiqueta}: ${sugerencia.monto.formatear()}") },
+                            )
+                        }
+                    }
+                }
                 OutlinedTextField(
                     value = nombre,
                     onValueChange = { nombre = it.take(40) },
@@ -207,7 +228,9 @@ private fun DialogoEditarMeta(
                     label = { Text("¿Cuánto quieres juntar?") },
                     prefix = { Text("S/ ") },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    // Si el teclado tapa "Guardar", la tecla "listo" guarda.
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { onGuardar(nombre, monto, fecha) }),
                 )
                 Text("¿Para cuándo?", style = MaterialTheme.typography.titleSmall)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

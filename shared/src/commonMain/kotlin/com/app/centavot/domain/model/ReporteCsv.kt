@@ -187,7 +187,12 @@ fun exportarTodoCsv(
     appendLine(fila("Partida", "De", "Tipo", "Desde el mes", "Monto (S/)"))
     partidas.forEach { partida ->
         val de = if (partida.categoria == Categoria.PERSONAL) "Personal" else "Negocio"
-        val tipo = if (partida.tipo == TipoPartida.GASTO) "Gasto" else "Ingreso"
+        val tipo = when {
+            partida.tipo == TipoPartida.INGRESO -> "Ingreso"
+            partida.semanal -> "${partida.clase.etiqueta} (por semana)"
+            partida.deuda -> "${partida.clase.etiqueta} (deuda)"
+            else -> partida.clase.etiqueta
+        }
         val suyos = montosPresupuesto.filter { it.partidaId == partida.id }.sortedBy { it.mes }
         if (suyos.isEmpty()) appendLine(fila(partida.nombre, de, tipo, "", ""))
         suyos.forEach { appendLine(fila(partida.nombre, de, tipo, it.mes.toString(), it.monto.enDecimal())) }

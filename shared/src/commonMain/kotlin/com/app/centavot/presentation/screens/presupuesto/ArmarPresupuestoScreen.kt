@@ -3,6 +3,8 @@ package com.app.centavot.presentation.screens.presupuesto
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,14 +25,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -45,14 +45,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.centavot.domain.model.Modo
+import com.app.centavot.domain.model.Monto
+import com.app.centavot.domain.model.TipoGasto
 import com.app.centavot.domain.model.TipoPartida
 import com.app.centavot.presentation.components.Iconos
+import com.app.centavot.presentation.components.formatear
 import org.koin.compose.viewmodel.koinViewModel
 
 /** "Arma tu presupuesto": la plantilla con checks, sin tener que escribir. */
@@ -74,11 +78,14 @@ fun ArmarPresupuestoScreen(
             )
         },
         bottomBar = {
-            Button(
-                onClick = viewModel::guardar,
-                enabled = !estado.guardando && estado.marcados > 0,
-                modifier = Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(16.dp).height(48.dp),
-            ) { Text(if (estado.marcados == 0) "Marca al menos una" else "Guardar presupuesto (${estado.marcados})") }
+            Column(Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                estado.balance?.let { LineaBalance(it) }
+                Button(
+                    onClick = viewModel::guardar,
+                    enabled = !estado.guardando && estado.marcados > 0,
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                ) { Text(if (estado.marcados == 0) "Marca al menos una" else "Guardar presupuesto (${estado.marcados})") }
+            }
         },
     ) { padding ->
         if (estado.cargando) {
@@ -98,12 +105,17 @@ fun ArmarPresupuestoScreen(
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
-            if (estado.modo == Modo.PERSONAL) grupo("Lo que te entra", estado.renglones.filter { it.item.tipo == TipoPartida.INGRESO }, viewModel)
+            // El orden de la guía (documento 04 §7): lo que entra, el ahorro primero, y luego los gastos.
+            grupo(if (estado.modo == Modo.PERSONAL) "Lo que te entra" else "Cuánto esperas vender", estado.renglones.filter { it.grupo == null }, null, viewModel)
             grupo(
-                if (estado.modo == Modo.PERSONAL) "En qué gastas" else "En qué gasta tu negocio",
-                estado.renglones.filter { it.item.tipo == TipoPartida.GASTO },
-                viewModel,
+                titulo = "Tu ahorro, primero",
+                renglones = estado.renglones.filter { it.grupo == TipoGasto.AHORRO },
+                sugerencia = estado.ahorroSugerido?.let { "Sugerido: ${it.formatear()} (10 % de lo que entra)" },
+                viewModel = viewModel,
             )
+            listOf(TipoGasto.FIJO, TipoGasto.VARIABLE, TipoGasto.PRESCINDIBLE).forEach { tipo ->
+                grupo(tipo.etiqueta, estado.renglones.filter { it.grupo == tipo }, null, viewModel)
+            }
             item {
                 TextButton(onClick = viewModel::pedirOtra) {
                     Icon(Iconos.Agregar, contentDescription = null)
@@ -114,18 +126,17 @@ fun ArmarPresupuestoScreen(
     }
 
     if (estado.agregandoOtra) {
-        DialogoOtra(conIngreso = estado.modo == Modo.PERSONAL, onAgregar = viewModel::agregarOtra, onCancelar = viewModel::cancelarOtra)
+        DialogoOtra(onAgregar = viewModel::agregarOtra, onCancelar = viewModel::cancelarOtra)
     }
 }
 
-private fun LazyListScope.grupo(titulo: String, renglones: List<Renglon>, viewModel: ArmarPresupuestoViewModel) {
+private fun LazyListScope.grupo(titulo: String, renglones: List<Renglon>, sugerencia: String?, viewModel: ArmarPresupuestoViewModel) {
     if (renglones.isEmpty()) return
     item {
-        Text(
-            titulo,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(top = 12.dp, bottom = 4.dp).semantics { heading() },
-        )
+        Column(Modifier.padding(top = 12.dp, bottom = 4.dp)) {
+            Text(titulo, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            sugerencia?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
     }
     items(renglones, key = { it.item.nombre }) { renglon ->
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -138,7 +149,11 @@ private fun LazyListScope.grupo(titulo: String, renglones: List<Renglon>, viewMo
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(checked = renglon.marcado, onCheckedChange = null)
-                Text(renglon.item.nombre, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 8.dp))
+                Text(
+                    if (renglon.item.semanal) "${renglon.item.nombre} (por semana)" else renglon.item.nombre,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
             }
             OutlinedTextField(
                 value = renglon.montoTexto,
@@ -153,38 +168,49 @@ private fun LazyListScope.grupo(titulo: String, renglones: List<Renglon>, viewMo
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** RP-03: si alcanza. Positivo: asignarlo a ahorro o metas; negativo: recortar prescindibles. */
 @Composable
-private fun DialogoOtra(conIngreso: Boolean, onAgregar: (String, TipoPartida) -> Unit, onCancelar: () -> Unit) {
+private fun LineaBalance(balance: Monto) {
+    val colores = MaterialTheme.colorScheme
+    val (texto, color) = when {
+        balance > Monto.CERO -> "Te sobran ${balance.formatear()}: pásalos a tu ahorro." to colores.primary
+        balance < Monto.CERO -> "Te faltan ${Monto(-balance.centimos).formatear()}: recorta prescindibles." to colores.error
+        else -> "Cada sol tiene destino." to colores.primary
+    }
+    Text(texto, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = color)
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DialogoOtra(onAgregar: (String, TipoGasto?) -> Unit, onCancelar: () -> Unit) {
     var nombre by remember { mutableStateOf("") }
-    var tipo by remember { mutableStateOf(TipoPartida.GASTO) }
+    // null = ingreso.
+    var grupo by remember { mutableStateOf<TipoGasto?>(TipoGasto.PRESCINDIBLE) }
     AlertDialog(
         onDismissRequest = onCancelar,
         title = { Text("Agregar otra") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (conIngreso) {
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        listOf(TipoPartida.GASTO to "Gasto", TipoPartida.INGRESO to "Ingreso").forEachIndexed { i, (valor, etiqueta) ->
-                            SegmentedButton(
-                                selected = tipo == valor,
-                                onClick = { tipo = valor },
-                                shape = SegmentedButtonDefaults.itemShape(i, 2),
-                            ) { Text(etiqueta) }
-                        }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    (listOf<TipoGasto?>(null) + TipoGasto.entries).forEach { opcion ->
+                        FilterChip(
+                            selected = grupo == opcion,
+                            onClick = { grupo = opcion },
+                            label = { Text(opcion?.etiqueta ?: "Ingreso") },
+                        )
                     }
                 }
                 OutlinedTextField(
                     value = nombre,
                     onValueChange = { nombre = it.take(40) },
                     label = { Text("Nombre") },
-                    placeholder = { Text(if (tipo == TipoPartida.INGRESO) "Ej. clases de inglés" else "Ej. pensión de inglés") },
+                    placeholder = { Text(if (grupo == null) "Ej. clases de inglés" else "Ej. pensión de inglés") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 )
             }
         },
-        confirmButton = { TextButton(onClick = { onAgregar(nombre, tipo) }, enabled = nombre.isNotBlank()) { Text("Agregar") } },
+        confirmButton = { TextButton(onClick = { onAgregar(nombre, grupo) }, enabled = nombre.isNotBlank()) { Text("Agregar") } },
         dismissButton = { TextButton(onClick = onCancelar) { Text("Cancelar") } },
     )
 }

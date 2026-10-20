@@ -378,6 +378,7 @@ verificación, para saber en qué nos quedamos.
 | 29 | Fuentes de ingreso | Reunión con usuarios: ingresos variables (clases, comisiones, inversiones) | ✅ |
 | 30 | Metas de ahorro | Reunión con usuarios: metas con avance, abonos parciales y avisos | ✅ |
 | 31 | Menos texto (ronda 3) | "Hay mucho texto", otra vez, tras sumar presupuesto y metas | ✅ |
+| 32 | Presupuesto según la guía (RP-01 a RP-10) | Documentos 03 y 04 del 19 de octubre | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -1178,3 +1179,89 @@ en el código de las pantallas.
   `ReporteScreen.kt` y `ResumenPeriodo.kt`.
 - Se borró `TarjetaEsteMes.kt`.
 - `scripts/demo.py`.
+
+---
+
+# Ronda 4 · Los documentos del 19 de octubre
+
+**Fuente:** `Centavot_01_Proyecto.md` a `Centavot_04_Presupuesto.md`, en el repositorio de documentos.
+Lo que se podía programar sin esperar a nadie eran los requerimientos de presupuesto RP-01 a RP-10
+(documento 03 §3) y los indicadores K6 y K7 (documento 01 §11.2).
+
+**No se programa:**
+
+- **Registro automático (RF-26):** espera que los usuarios aprueben la propuesta.
+- **RMT y "sin RUC" (P4):** esperan al contador.
+- **Videos (RF-27):** no son código.
+- **Ficha por trabajador, web Pro, iOS y "Ruta del Negocio" (RF-28 a RF-31):** quedan para más adelante.
+
+## Paso 32 · Presupuesto según la guía
+
+**Base de datos versión 6.** Las partidas suman tres columnas: `tipoGasto`, `semanal` y `deuda`. La
+migración 5 → 6 es automática.
+
+| Req. | Qué hace la app ahora |
+|---|---|
+| RP-01 | Cada partida de gasto es **ahorro, fijo, variable o prescindible**. Se elige al agregarla o editarla. Las partidas que ya existían toman el tipo de su subcategoría (alquiler y servicios: fijo; comida, mercadería y transporte: variable; otros: prescindible) |
+| RP-02 | "Tu presupuesto" agrupa los gastos por tipo, en el orden de la guía, con el subtotal de cada grupo ("S/ X de S/ Y") |
+| RP-03 | **Balance del plan** = lo que entra − ahorro − gastos. "Tu plan deja S/ 240 sin destino: pásalos a ahorro" o, en rojo, "Tu plan gasta S/ 580 más de lo que entra: recorta prescindibles". En "Arma tu presupuesto" se ve en vivo, abajo |
+| RP-04 | El **ahorro va primero**: grupo propio en la plantilla y en el presupuesto, con el 10 % sugerido de lo que entra. Lo real es lo que se separó para las metas en el mes: cada abono va a la partida de ahorro con el mismo nombre de la meta, o a la primera. No cuenta como gasto |
+| RP-05 | En lo personal, la tarjeta **"Tu reparto frente a 50/30/20"**: necesidades (fijos + variables), estilo de vida (prescindibles) y ahorro, en porcentaje de lo que entra |
+| RP-06 | **"De menos a más":** si el ahorro está bajo el 20 %, la tarjeta compara con el mes anterior ("Ahorras 14 %; el mes pasado, 10 %. Vas bien") o anima a subir de a pocos |
+| RP-07 | **Cierre de mes:** "Usar lo real en noviembre" deja cada partida con gastos con lo que de verdad se gastó (en una semanal, el promedio por semana). Pide confirmar. Los ingresos no se copian, porque la guía pide presupuestarlos con el mes más bajo |
+| RP-08 | **Partidas por semana** ("Gastos menores"): el monto es por semana, se reinicia el lunes y se ve "S/ 25 de S/ 40 esta semana". Al mes cuentan cuatro semanas |
+| RP-09 | Al crear una meta, la app sugiere el **fondo de emergencia** (3 o 6 meses de gastos fijos) o, en el negocio, el **colchón** (2 semanas de gastos fijos), ya calculados |
+| RP-10 | Una partida fija puede marcarse **"Es pago de una deuda"**. Si las cuotas pasan el 30 % de lo que entra, aviso en rojo: "Tus cuotas son el 33 % de lo que entra. Lo sano es hasta el 30 %" |
+
+**Además:**
+
+- **Plantilla nueva (documento 04 §14.3):**
+  - **Personal:** Sueldo, Comisiones, Clases o asesorías, Ganancia de inversiones y Otros ingresos.
+    Ahorro del mes, Fondo de emergencia e Inversión. Alquiler, Luz, Pago de deudas, Seguros y
+    Pensión escolar. Comida, Transporte, Salud y Educación. Salidas, Streaming, Ropa y Gastos menores
+    (por semana).
+  - **Negocio:** Ventas, Colchón del negocio, Alquiler del local, Luz, Sueldos, Cuota del Nuevo RUS,
+    Cuota del préstamo, Mercadería, Transporte y Otros.
+- **Flujo de primer uso (§14.4):** "Arma tu presupuesto" sigue el orden de la guía (lo que entra, el
+  ahorro primero, fijos, variables y prescindibles) con el balance en vivo. Es una sola pantalla, no
+  varios pasos, para no sumar toques.
+- **Ventas en el negocio:** se presupuesta cuánto se espera vender, y las ventas registradas caen solas
+  en esa fuente.
+- **K6 y K7:** en Ajustes › "Ver tus números de uso" aparecen "Gastos del mes con partida: N %" y
+  "Metas con plata este mes: X de Y".
+- **Exportar todos mis datos:** el presupuesto sale con el tipo de cada partida.
+- **Al registrar un gasto** no se ofrecen las partidas de ahorro.
+- **Corregido durante la prueba:**
+  - el resumen decía "te quedan -S/ 458" cuando el exceso venía de gastos sin partida;
+  - en los diálogos altos (partida y meta) el teclado tapaba "Guardar"; ahora la tecla "listo"
+    guarda.
+
+**Verificación.**
+
+- **Tests:** 12 nuevos en `GuiaPresupuestoTest`, uno por requerimiento, con los ejemplos del documento
+  04: S/ 3,000 de ingreso que reparten 50/30/20 exacto, los gastos menores de la semana desde el
+  lunes, el fondo de 3 y 6 meses, las ventas en el negocio, K6 y K7, y la lectura con gastos sin
+  partida. Pasan los 134 tests.
+- **Migración en el teléfono:**
+  1. Copia de prueba con la versión anterior (base 5), la bodega de demostración y un presupuesto
+     armado con la plantilla vieja.
+  2. Actualizada a la nueva: la base pasó a la 6 con las 5,248 ventas, los 94 gastos y las 4 partidas.
+     Las partidas toman su tipo de la subcategoría y salen agrupadas.
+- **Recorrido en el teléfono:**
+  - cierre de mes: noviembre quedó con lo real de octubre en 4 partidas;
+  - plantilla personal llenada con el ejemplo del documento 04 §10: balance en vivo "Te sobran
+    S/ 240.00", que coincide con la cuenta a mano, y reparto 50 / 22 / 20;
+  - un gasto en "Gastos menores": "S/ 25.00 de S/ 40.00 esta semana";
+  - "Pago de deudas" subido a S/ 1,000: balance negativo y aviso del 33 %;
+  - meta "Fondo de emergencia" con la sugerencia de S/ 5,550 y un abono que cayó en su partida de
+    ahorro;
+  - K6 y K7 en Ajustes.
+
+**Archivos.**
+
+- `Presupuesto.kt`, `PresupuestoEntities.kt`, `CentavotDatabase.kt` (v6), `PresupuestoRepositoryImpl.kt`
+  y `PresupuestoUseCases.kt` (`UsarRealComoPresupuestoUseCase`, `ObservarIndicadoresPlanesUseCase`).
+- `ArmarPresupuesto*`, `Presupuesto*`, `Metas*`, `Ajustes*`, `GastoViewModel.kt`, `ReporteCsv.kt` y
+  `Modulos.kt`.
+- Esquema `6.json`.
+- Nuevo `scripts/captura.sh`, que guarda una captura recortada.

@@ -86,7 +86,8 @@ class PresupuestoYMetasTest {
             ),
         )
 
-        assertEquals(listOf(Monto.soles(460), Monto.soles(400)), mes.gastos.map { it.real })
+        // Agrupados por tipo (RP-02): la pensión (fija) va antes que la comida (variable).
+        assertEquals(listOf(Monto.soles(400), Monto.soles(460)), mes.gastos.map { it.real })
         assertEquals(listOf(EstadoLinea.CERCA, EstadoLinea.CERCA), mes.gastos.map { it.estado })
         assertEquals(Monto.soles(50), mes.gastoSinPartida)
         assertEquals(Monto.soles(100), mes.ingresos.single().real)
@@ -104,7 +105,7 @@ class PresupuestoYMetasTest {
             ingresos = emptyList(),
         )
 
-        assertEquals(EstadoLinea.PASADO, mes.gastos.first().estado)
+        assertEquals(EstadoLinea.PASADO, mes.gastos.single { it.partida.id == "comida" }.estado)
         assertEquals("Vas dentro del presupuesto, pero en Alimentación ya te pasaste.", mes.lectura)
     }
 
@@ -117,15 +118,15 @@ class PresupuestoYMetasTest {
         crear(
             Modo.PERSONAL,
             listOf(
-                CrearPresupuestoUseCase.Eleccion(plantilla.first { it.nombre == "Alimentación" }, Monto.soles(600)),
+                CrearPresupuestoUseCase.Eleccion(plantilla.first { it.nombre == "Comida y mercado" }, Monto.soles(600)),
                 CrearPresupuestoUseCase.Eleccion(plantilla.first { it.nombre == "Sueldo" }, Monto.CERO),
-                CrearPresupuestoUseCase.Eleccion(ItemPlantilla("alimentación", TipoPartida.GASTO, null, true), Monto.soles(1)),
+                CrearPresupuestoUseCase.Eleccion(ItemPlantilla("comida y mercado", TipoPartida.GASTO, null, true), Monto.soles(1)),
                 CrearPresupuestoUseCase.Eleccion(ItemPlantilla("Clases de inglés", TipoPartida.INGRESO, null, true), Monto.soles(300)),
             ),
         )
 
         val partidas = repositorio.partidas.value
-        assertEquals(listOf("Alimentación", "Sueldo", "Clases de inglés"), partidas.map { it.nombre })
+        assertEquals(listOf("Comida y mercado", "Sueldo", "Clases de inglés"), partidas.map { it.nombre })
         assertEquals(SubcategoriaGasto.ALIMENTACION, partidas.first().subcategoria)
         assertTrue(partidas.all { it.categoria == Categoria.PERSONAL })
         assertEquals(listOf(Monto.soles(600), Monto.soles(300)), repositorio.montos.value.map { it.monto })
@@ -152,7 +153,7 @@ class PresupuestoYMetasTest {
             partidas.value = listOf(comida, comida.copy(id = "neg", nombre = "Mercadería", categoria = Categoria.NEGOCIO))
         }
         val gastos = FakeGastoRepository(listOf(gasto("1", 80, SubcategoriaGasto.ALIMENTACION, "comida")))
-        val mes = ObservarPresupuestoMesUseCase(presupuesto, gastos, FakeIngresoRepository())(octubre, Modo.PERSONAL).first()
+        val mes = ObservarPresupuestoMesUseCase(presupuesto, gastos, FakeIngresoRepository(), FakeMetaRepository(), reloj)(octubre, Modo.PERSONAL).first()
 
         assertEquals(listOf("Alimentación"), mes.gastos.map { it.partida.nombre })
         assertEquals(Monto.soles(80), mes.realGastos)
