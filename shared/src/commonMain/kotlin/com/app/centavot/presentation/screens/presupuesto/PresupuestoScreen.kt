@@ -150,6 +150,13 @@ fun PresupuestoScreen(
             seccion(if (estado.modo == Modo.PERSONAL) "En qué gastas" else "En qué gasta tu negocio", presupuesto.gastos, viewModel::editar)
             if (presupuesto.gastoSinPartida > Monto.CERO) item { FilaExtra("Sin partida", presupuesto.gastoSinPartida) }
             item {
+                Text(
+                    "Toca una partida para cambiar su monto.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(onClick = viewModel::nueva) {
                         Icon(Iconos.Agregar, contentDescription = null)
@@ -195,18 +202,15 @@ private fun LazyListScope.seccion(titulo: String, lineas: List<LineaPresupuesto>
 @Composable
 private fun FilaLinea(linea: LineaPresupuesto, onEditar: (Partida, Monto) -> Unit) {
     val esIngreso = linea.partida.tipo == TipoPartida.INGRESO
-    val nota = when (linea.estado) {
-        EstadoLinea.SIN_MONTO -> "Toca para ponerle monto"
-        EstadoLinea.PASADO -> if (esIngreso) "Recibiste ${Monto(-linea.diferencia.centimos).formatear()} más" else "Te pasaste ${Monto(-linea.diferencia.centimos).formatear()}"
-        else -> if (esIngreso) "Faltan ${linea.diferencia.formatear()}" else "Te quedan ${linea.diferencia.formatear()}"
-    }
+    // Solo lo que pide atención: pasarse en un gasto. Lo demás lo dicen el monto y la barra.
+    val nota = if (linea.estado == EstadoLinea.PASADO && !esIngreso) "Te pasaste ${Monto(-linea.diferencia.centimos).formatear()}" else null
     // En un ingreso, pasarse es bueno: no se pinta de rojo.
     val color = if (esIngreso && linea.estado != EstadoLinea.SIN_MONTO) MaterialTheme.colorScheme.primary else linea.estado.color()
     Column(
         Modifier
             .fillMaxWidth()
             .clickable(role = Role.Button, onClickLabel = "cambiar") { onEditar(linea.partida, linea.presupuesto) }
-            .padding(vertical = 6.dp),
+            .padding(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -218,12 +222,7 @@ private fun FilaLinea(linea: LineaPresupuesto, onEditar: (Partida, Monto) -> Uni
             )
         }
         BarraAvance(linea.porcentaje, color, "${linea.partida.nombre}: ${linea.porcentaje} por ciento")
-        Text(
-            nota,
-            style = MaterialTheme.typography.bodySmall,
-            color = if (linea.estado == EstadoLinea.PASADO && !esIngreso) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(top = 4.dp))
+        nota?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
     }
 }
 

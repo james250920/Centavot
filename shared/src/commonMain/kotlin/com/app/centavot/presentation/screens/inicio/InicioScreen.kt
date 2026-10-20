@@ -1,6 +1,5 @@
 package com.app.centavot.presentation.screens.inicio
 
-import com.app.centavot.domain.model.lecturaDelMes
 import com.app.centavot.domain.model.ETIQUETA_SIN_CATEGORIA
 import com.app.centavot.domain.model.NivelAlerta
 import com.app.centavot.domain.model.EstadoTope
@@ -55,7 +54,7 @@ import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Periodo
 import com.app.centavot.domain.model.ResumenPeriodo
 import com.app.centavot.domain.model.ResumenUso
-import com.app.centavot.presentation.components.TarjetaEsteMes
+import com.app.centavot.presentation.components.BarraAvance
 import com.app.centavot.presentation.components.FilaMovimiento
 import com.app.centavot.presentation.components.GraficoDistribucion
 import com.app.centavot.presentation.components.Iconos
@@ -166,9 +165,6 @@ fun InicioScreen(
 
             when (pestana) {
                 PestanaInicio.HOY -> {
-                    // Lo primero al abrir: entró vs gastaste en el mes, con una frase (reunión con usuarios, 10 oct).
-                    if (estado.mes.lecturaDelMes(modo) != null) item { TarjetaEsteMes(modo, estado.mes) }
-
                     estado.uso?.takeIf { it.debePreguntarCuaderno }?.let {
                         item { TarjetaPreguntaCuaderno(onResponder = viewModel::responderCuaderno) }
                     }
@@ -241,7 +237,6 @@ fun InicioScreen(
 
                     item { TarjetaMetas(estado.metas, onAbrir = onAbrirMetas) }
 
-                    item { TarjetaAhorro(estado, onAbrirAjustes) }
 
                     estado.gastosMes?.takeIf { it.porSubcategoria.isNotEmpty() }?.let { resumen ->
                         item {
@@ -403,12 +398,12 @@ private fun TarjetaCaja(
                     ) { Text(opcion.etiquetaCorta, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                 }
             }
+            // Entró y gastaste como barras, del periodo elegido: se ve de un vistazo, sin leer (reunión con usuarios, 10 oct).
             when (modo) {
                 Modo.NEGOCIO -> {
-                    FilaCaja("Vendiste", caja.ventas, colores.primary)
-                    FilaCaja("Gastaste en el negocio", caja.gastosNegocio, colores.onSurface)
+                    BarrasCaja("Vendiste", caja.ventas, caja.gastosNegocio)
                     HorizontalDivider(color = colores.outlineVariant)
-                    FilaResultado(caja.ganancia, positivo = "Te quedó (ganancia)", negativo = "Perdiste")
+                    FilaResultado(caja.ganancia, positivo = "Te quedó", negativo = "Perdiste")
                     if (caja.retiros > Monto.CERO) {
                         FilaCaja("Sacaste para la casa", caja.retiros, colores.onSurface)
                         FilaResultado(caja.quedaEnCaja, positivo = "Queda en caja", negativo = "Falta en caja")
@@ -419,14 +414,29 @@ private fun TarjetaCaja(
                     }
                 }
                 Modo.PERSONAL -> {
-                    FilaCaja("Te entró", caja.ingresosPersonales, colores.primary)
-                    FilaCaja("Gastaste", caja.gastosPersonales, colores.onSurface)
+                    BarrasCaja("Te entró", caja.ingresosPersonales, caja.gastosPersonales)
                     HorizontalDivider(color = colores.outlineVariant)
                     FilaResultado(caja.saldoPersonal, positivo = "Te quedó", negativo = "Gastaste de más")
                 }
             }
             uso?.let { LineaConstancia(it) }
         }
+    }
+}
+
+/** Lo que entró y lo que se gastó, cada uno con su barra a la misma escala. */
+@Composable
+private fun BarrasCaja(etiquetaEntrada: String, entro: Monto, gasto: Monto) {
+    val maximo = maxOf(entro.centimos, gasto.centimos).coerceAtLeast(1)
+    BarraCaja(etiquetaEntrada, entro, (entro.centimos * 100 / maximo).toInt(), MaterialTheme.colorScheme.primary)
+    BarraCaja("Gastaste", gasto, (gasto.centimos * 100 / maximo).toInt(), MaterialTheme.colorScheme.outline)
+}
+
+@Composable
+private fun BarraCaja(etiqueta: String, monto: Monto, porcentaje: Int, color: Color) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        FilaCaja(etiqueta, monto, if (color == MaterialTheme.colorScheme.primary) color else MaterialTheme.colorScheme.onSurface)
+        BarraAvance(porcentaje, color, "$etiqueta ${monto.formatear()}")
     }
 }
 
@@ -464,9 +474,9 @@ private fun FilaCaja(titulo: String, monto: Monto, color: Color, destacado: Bool
 private fun LineaConstancia(uso: ResumenUso) {
     val dias = uso.diasConRegistroUltimos7
     val mensaje = when {
-        dias >= 5 -> "¡Bien! Anotaste $dias de los últimos 7 días."
-        dias > 0 -> "Anotaste $dias de los últimos 7 días."
-        else -> "No anotaste nada en los últimos 7 días."
+        dias >= 5 -> "¡Bien! Anotaste $dias de 7 días."
+        dias > 0 -> "Anotaste $dias de 7 días."
+        else -> "Sin anotar en 7 días."
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(Iconos.Calendario, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
@@ -504,44 +514,6 @@ private fun PrimerosPasos(modo: Modo, onAbrirAyuda: () -> Unit) {
                 modifier = Modifier.weight(1f),
             )
             TextButton(onClick = onAbrirAyuda) { Text("Ayuda") }
-        }
-    }
-}
-
-/** La meta de ahorro del mes; lo que te deben ya está en su propia sección. */
-@Composable
-private fun TarjetaAhorro(estado: InicioUiState, onAbrirAjustes: () -> Unit) {
-    val perfil = estado.perfil
-    val tasa = perfil?.tasaAhorro?.formatear() ?: "0 %"
-    val sinMeta = estado.baseAhorro <= Monto.CERO || perfil?.tasaAhorro?.decimas == 0
-    Card(
-        onClick = onAbrirAjustes,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                when {
-                    !estado.baseAhorroEsGanancia -> "Meta de ahorro del mes ($tasa)"
-                    estado.modo == Modo.NEGOCIO -> "Ahorro del mes ($tasa de tu ganancia)"
-                    else -> "Ahorro del mes ($tasa de lo que te entró)"
-                },
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                estado.metaAhorro.formatear(),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            if (sinMeta) {
-                Text(
-                    "Toca para definir tu meta",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
     }
 }

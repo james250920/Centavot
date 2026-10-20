@@ -99,21 +99,3 @@ data class Historial(val meses: List<MesHistorial>) {
     }
 }
 
-/**
- * Una frase que explica el mes en palabras simples, debajo del gráfico "entró vs gastaste" (pedido en la
- * reunión con usuarios del 10 de octubre: "como en la banca, pero que te diga qué significa").
- * Null si todavía no hay nada anotado en el mes.
- */
-fun ResumenPeriodo.lecturaDelMes(modo: Modo): String? {
-    val (entro, gasto) = when (modo) {
-        Modo.NEGOCIO -> ventas to gastosNegocio
-        Modo.PERSONAL -> ingresosPersonales to gastosPersonales
-    }
-    val deLoQue = if (modo == Modo.NEGOCIO) "de lo que vendiste" else "de lo que te entró"
-    return when {
-        entro <= Monto.CERO && gasto <= Monto.CERO -> null
-        entro <= Monto.CERO -> if (modo == Modo.NEGOCIO) "Todavía no anotas ventas este mes." else "Todavía no anotas lo que te entró este mes."
-        gasto > entro -> "Gastaste ${(gasto - entro).enSoles()} más $deLoQue."
-        else -> "Gastaste el ${gasto.centimos * 100 / entro.centimos} % $deLoQue: te quedan ${(entro - gasto).enSoles()}."
-    }
-}

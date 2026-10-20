@@ -138,8 +138,7 @@ fun VentaScreen(
                     ) {
                         Icon(Iconos.Correcto, contentDescription = null)
                         Text(
-                            text = "Guardaste ${venta.monto.formatear()}${venta.descripcion?.let { " ($it)" }.orEmpty()}. " +
-                                "Ya puedes anotar la siguiente.",
+                            text = "Guardaste ${venta.monto.formatear()}${venta.descripcion?.let { " · $it" }.orEmpty()}",
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.weight(1f),
                         )
@@ -281,7 +280,7 @@ private fun textosDe(tipo: TipoEntrada): TextosEntrada = when (tipo) {
         frecuentes = "Tus ventas frecuentes",
         descripcion = "¿Qué vendiste? (opcional)",
         ejemplo = "Ej. gaseosa, menú, arreglo de zapatos",
-        ayudaDescripcion = "Con nombre, la próxima vez es un toque.",
+        ayudaDescripcion = null,
         articulo = "la",
     )
     TipoEntrada.INGRESO -> TextosEntrada(
@@ -292,7 +291,7 @@ private fun textosDe(tipo: TipoEntrada): TextosEntrada = when (tipo) {
         frecuentes = "Tus ingresos frecuentes",
         descripcion = "¿De qué es? (opcional)",
         ejemplo = "Ej. sueldo, propina, cachuelo",
-        ayudaDescripcion = "Con nombre, la próxima vez es un toque.",
+        ayudaDescripcion = null,
         articulo = "el",
     )
     TipoEntrada.RETIRO -> TextosEntrada(

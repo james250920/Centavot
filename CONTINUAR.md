@@ -5,6 +5,7 @@ Actualizado el **13 de octubre de 2026**.
 - **Dónde está la app:** `main` incluye todo hasta el **paso 30** (presupuesto, fuentes de ingreso,
   metas y el gráfico "Este mes", pedidos por los usuarios el 10 de octubre). Base de datos versión 5.
   Instalada en el teléfono (`com.app.centavot`) **desde cero, sin datos**, el 13 de octubre.
+- **Paso 31** (menos texto, ronda 3) en la rama `ux/menos-texto-2`.
 - **GitHub:** desde el 13 de octubre no se sube nada (sin conexión primero y luego por pedido). `main`
   va por delante de GitHub en la app y en documentos: subir cuando se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
@@ -21,8 +22,8 @@ Actualizado el **13 de octubre de 2026**.
 
 ### 1a. Capturas
 
-Las 34 capturas de `capturas-app/` y la galería no muestran lo de los pasos 27–30 (gráfico "Este mes",
-presupuesto, metas, fuentes). Hay que volver a tomarlas, en tema claro, y sumar las pantallas nuevas.
+Las 34 capturas de `capturas-app/` y la galería no muestran lo de los pasos 27–31 (barras en "Tu caja",
+presupuesto, metas, fuentes, menos texto). Hay que volver a tomarlas, en tema claro, y sumar las pantallas nuevas.
 
 ### 1b. Registro automático (reunión con usuarios del 10 de octubre)
 

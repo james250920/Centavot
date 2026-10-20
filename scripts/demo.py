@@ -23,7 +23,7 @@ PRODUCTOS = [("Gaseosa", 350), ("Pan", 50), ("Aceite", 990), ("Arroz", 420), ("L
 # Lo que se vende en un día, por mes, para que el gráfico de mes a mes suba y baje.
 VENTA_DIARIA = {0: 17000, 1: 19000, 2: 16000, 3: 20500, 4: 23500, 5: 51900}
 
-for tabla in ("ingresos", "gastos", "cobros", "contactos", "actividades", "notificaciones"):
+for tabla in ("ingresos", "gastos", "cobros", "contactos", "actividades", "notificaciones", "montos_presupuesto", "partidas", "abonos_meta", "metas"):
     db.execute(f"delete from {tabla}")
 db.execute("delete from eventos_uso where tipo != 'CONSENTIMIENTO_PRIVACIDAD'")
 db.execute("update perfil set nombre='Rosa', rubro='COMERCIO', ingresoMensualCentimos=150000, "
@@ -75,9 +75,10 @@ gastos.append((iid("g"), 1800, hoy, "NEGOCIO", "TRANSPORTE", None, "Mototaxi al 
 ingresos.append((iid("r"), 3000, hoy, "PERSONAL", "Menú del almuerzo", 1))
 gastos.append((iid("g"), 1000, hoy, "PERSONAL", "ALIMENTACION", None, "Pasaje del colegio"))
 
-db.executemany("insert into ingresos values (?,?,?,?,?,?)", [(a, b, str(c), d, e, f) for a, b, c, d, e, f in ingresos])
+db.executemany("insert into ingresos (id, montoCentimos, fecha, categoria, descripcion, retiroDelNegocio) values (?,?,?,?,?,?)", [(a, b, str(c), d, e, f) for a, b, c, d, e, f in ingresos])
 db.executemany(
-    "insert into gastos values (?,?,?,'TEXTO','CONFIRMADO',?,?,?,?,0)",
+    "insert into gastos (id, montoCentimos, fecha, origen, estado, categoria, subcategoria, proveedor, descripcion, corregidoManualmente) "
+    "values (?,?,?,'TEXTO','CONFIRMADO',?,?,?,?,0)",
     [(a, b, str(c), d, e, f, g) for a, b, c, d, e, f, g in gastos],
 )
 db.executemany("insert into eventos_uso (tipo, fechaHora, valor) values (?,?,?)", eventos)

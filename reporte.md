@@ -377,6 +377,7 @@ verificación, para saber en qué nos quedamos.
 | 28 | Presupuesto con plantilla | Reunión con usuarios: plantilla con checks, editable por mes, categorías propias al registrar | ✅ |
 | 29 | Fuentes de ingreso | Reunión con usuarios: ingresos variables (clases, comisiones, inversiones) | ✅ |
 | 30 | Metas de ahorro | Reunión con usuarios: metas con avance, abonos parciales y avisos | ✅ |
+| 31 | Menos texto (ronda 3) | "Hay mucho texto", otra vez, tras sumar presupuesto y metas | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -1122,3 +1123,58 @@ cada vez que se abona.
   - nuevos componentes `TarjetaEsteMes.kt`, `BarraAvance.kt` y `TarjetasPlanes.kt`;
   - cambios en Gasto, Venta, Inicio, Reportes, Ayuda, exportar y borrar datos, la navegación y la
     inyección de dependencias.
+
+---
+
+## Paso 31 · Menos texto (ronda 3)
+
+**Problema.** Los usuarios volvieron a decir que hay mucho texto. Con el presupuesto, las metas y el
+gráfico "Este mes" sumaron tarjetas y frases. Antes de este paso había **2,050 palabras** de interfaz
+en el código de las pantallas.
+
+**Lo que se repetía y se quitó o se juntó.**
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Inicio › Hoy | Tarjeta "Este mes" con barras y una frase, y debajo "Tu caja" con los mismos números en texto | Una sola tarjeta: **"Tu caja"** con barras de lo que entró y lo que se gastó en el periodo elegido (Hoy, Semana o Mes) y "Te quedó". La frase repetía "Te quedó" y se quitó |
+| Tu caja | "Gastaste en el negocio", "Te quedó (ganancia)", "¡Bien! Anotaste 7 de los últimos 7 días." | "Gastaste", "Te quedó", "¡Bien! Anotaste 7 de 7 días." |
+| Inicio › Mi negocio / Mi mes | Seis tarjetas, entre ellas "Ahorro del mes", que se cruzaba con las metas | Sale "Ahorro del mes". La meta de ahorro sigue en Ajustes, y para juntar están las metas |
+| Tarjetas vacías de presupuesto y metas | Una oración cada una | Una fila: el título y "Armar" o "Nueva" |
+| Tarjeta "Tu presupuesto" | Siempre una frase | La frase solo aparece si te pasaste, en rojo |
+| Tu presupuesto | Debajo de cada partida, "Te quedan S/ X" o "Toca para ponerle monto", y una raya | Solo "Te pasaste S/ X" cuando corresponde. Una indicación al final: "Toca una partida para cambiar su monto." |
+| Metas | "Separa S/ 85.00 por semana para llegar al 13 de abril de 2027." | "S/ 85.00 por semana hasta el 13 de abril de 2027" |
+| Registrar venta | "Guardaste S/ 3.50 (Gaseosa). Ya puedes anotar la siguiente." y la ayuda "Con nombre, la próxima vez es un toque." | "Guardaste S/ 3.50 · Gaseosa", sin la ayuda |
+| Ajustes › Tu actividad | Título y una explicación | Solo el título |
+| Ajustes › indicadores de uso | Seis filas a la vista: son para el equipo en el piloto, no para el comerciante | Plegados en "Ver tus números de uso" |
+| Ajustes › Tus datos | Título, tres viñetas y "No se copia a la nube. Si cambias de celular, exporta…" | "Todo queda en tu celular. No pedimos claves del banco ni enviamos nada a SUNAT." y "Si cambias de celular, expórtalos antes." |
+| Reportes › gráfico | Tres frases (mejor mes, mes más flojo y comparación con el mes pasado) | Solo el mejor mes. La comparación con el mes pasado engañaba: con el mes a medias siempre decía "vendes menos" |
+
+**Resultado.**
+
+- Las palabras de interfaz en el código bajan de 2,050 a **1,857**. Esa cuenta incluye los textos
+  plegados, los diálogos y los errores, que no se ven de entrada.
+- Lo visible bajó más: Inicio tiene una tarjeta menos en cada pestaña y las tarjetas vacías ya no tienen
+  frase.
+- No se quitó ninguna función. La meta de ahorro sigue en Ajustes, y los indicadores de uso están a un
+  toque.
+- No se tocó el aviso de privacidad (texto legal).
+
+**Verificación.**
+
+- Pasan los 122 tests.
+- En el teléfono, con la copia de prueba y la bodega de demostración, en tema claro:
+  - Inicio, en las dos pestañas;
+  - armar el presupuesto, con una partida pasada que sale en rojo;
+  - una meta con un abono;
+  - Ajustes;
+  - Reportes.
+- Además, `scripts/demo.py` se actualizó a la base v5: nombra las columnas al insertar y limpia el
+  presupuesto y las metas.
+
+**Archivos.**
+
+- `InicioScreen.kt` y `InicioViewModel.kt` (sin el cálculo del ahorro que ya no se muestra).
+- `TarjetasPlanes.kt`, `PresupuestoScreen.kt`, `MetasScreen.kt`, `VentaScreen.kt`, `AjustesScreen.kt`,
+  `ReporteScreen.kt` y `ResumenPeriodo.kt`.
+- Se borró `TarjetaEsteMes.kt`.
+- `scripts/demo.py`.
