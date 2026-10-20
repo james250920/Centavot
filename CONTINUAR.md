@@ -2,30 +2,12 @@
 
 Actualizado el **20 de octubre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el **paso 33** (presupuesto en bloques y menos texto). Base de datos
-  versión 6. Instalada en el teléfono (`com.app.centavot`) desde el 20 de octubre.
-- **GitHub:** subido hasta el paso 32. El paso 33 está solo en este equipo: no subir hasta que se pida.
+- **Dónde está la app:** `main` incluye todo hasta el **paso 34** (marca Andina: colores, letra Sora, logotipo e ícono). Base de datos
+  versión 6. En el teléfono (`com.app.centavot`) está el paso 33; el 34 falta instalarlo.
+- **GitHub:** subido hasta el paso 32. Los pasos 33 y 34 están solo en este equipo: no subir hasta que se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
 - **Requerimientos y pendientes:** en `Centavot_03_Requerimientos.md` (repositorio de documentos).
   Aquí solo va lo que toca a la app.
-
-## Dónde me quedé (20 de octubre, paso 34 en curso)
-
-**Marca Andina en la app**, según el pack de marca (`/home/james/Proyectos/StartUp/pach de marca`).
-Rama `ux/marca-andina`: compila y pasan los 134 tests. Falta ver la app en el teléfono, que se bloqueó.
-
-- **Hecho:**
-  - **Tema:** paleta Tinta, Lana, Maíz y Carmín, y la letra Sora (en `composeResources/font`, licencia
-    SIL OFL 1.1).
-  - **Logo:** el logotipo oficial, sin girar ni teñir y sin marca de agua.
-  - **Ícono:** la moneda quipu sobre fondo Tinta, con su capa monocromática.
-  - **Gráfico y PDF del contador:** con los colores de la marca.
-- **Falta:**
-  1. Ver todas las pantallas en el teléfono: Sora es más ancha, así que hay que revisar botones y chips.
-  2. Rehacer las 48 capturas.
-  3. Cambiar en la presentación las capturas por las nuevas.
-  4. Registrar el paso 34 en `reporte.md`.
-  5. Fusionar en `main` en este equipo y preguntar antes de instalarlo en la app real.
 
 ## Falta por hacer
 
