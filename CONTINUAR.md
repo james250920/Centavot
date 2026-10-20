@@ -1,6 +1,6 @@
 # Para continuar
 
-Actualizado el **13 de octubre de 2026**.
+Actualizado el **20 de octubre de 2026**.
 
 - **Dónde está la app:** `main` incluye todo hasta el **paso 32** (presupuesto según la guía, RP-01 a RP-10). Base de datos
   versión 6. Instalada en el teléfono (`com.app.centavot`).
