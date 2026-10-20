@@ -4,7 +4,7 @@ Actualizado el **20 de octubre de 2026**.
 
 - **Dónde está la app:** `main` incluye todo hasta el **paso 32** (presupuesto según la guía, RP-01 a RP-10). Base de datos
   versión 6. Instalada en el teléfono (`com.app.centavot`).
-- **GitHub:** no se sube nada hasta que se pida; `main` va por delante en la app y en documentos.
+- **GitHub:** `main` subido el 20 de octubre, en la app y en documentos. Subir solo cuando se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
 - **Requerimientos y pendientes:** en `Centavot_03_Requerimientos.md` (repositorio de documentos).
   Aquí solo va lo que toca a la app.
