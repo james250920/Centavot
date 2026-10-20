@@ -21,7 +21,9 @@ for _ in range(5):
 PRODUCTOS = [("Gaseosa", 350), ("Pan", 50), ("Aceite", 990), ("Arroz", 420), ("Leche", 450),
              ("Azúcar", 380), ("Huevos", 60), ("Abarrotes", 4500), ("Detergente", 650), ("Fideos", 280)]
 # Lo que se vende en un día, por mes, para que el gráfico de mes a mes suba y baje.
-VENTA_DIARIA = {0: 17000, 1: 19000, 2: 16000, 3: 20500, 4: 23500, 5: 51900}
+VENTA_DIARIA = {0: 17000, 1: 19000, 2: 16000, 3: 20500, 4: 23500}
+# El mes en curso queda cerca del 80 % del tope de la Categoría 2 (S/ 6,400), sea el día que sea.
+VENTA_DIARIA[5] = 640000 // max(hoy.day - 1, 1)
 
 for tabla in ("ingresos", "gastos", "cobros", "contactos", "actividades", "notificaciones", "montos_presupuesto", "partidas", "abonos_meta", "metas"):
     db.execute(f"delete from {tabla}")
