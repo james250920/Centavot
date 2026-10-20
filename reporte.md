@@ -1318,7 +1318,8 @@ logotipos, símbolo e ícono) y rehacer las capturas.
 
 **Verificación.**
 
-- **Tests y tamaño:** compila y pasan los 134 tests. La APK de depuración pesa 21.8 MB.
+- **Tests y tamaño:** compila y pasan los 134 tests. La APK de release pesa 7.5 MB (antes 7.7 MB): el
+  logotipo nuevo pesa mucho menos que el dibujo de la mano, aunque se sumaron los cinco pesos de Sora.
 - **Teléfono:** se recorrió toda la app en la copia de prueba, con la bodega de demostración y los dos
   presupuestos. No se cortó ningún texto por el ancho de Sora.
 - **Capturas:** se rehicieron las 48 de `capturas-app/`, y la presentación usa ahora las de la marca
