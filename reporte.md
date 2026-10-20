@@ -379,6 +379,7 @@ verificación, para saber en qué nos quedamos.
 | 30 | Metas de ahorro | Reunión con usuarios: metas con avance, abonos parciales y avisos | ✅ |
 | 31 | Menos texto (ronda 3) | "Hay mucho texto", otra vez, tras sumar presupuesto y metas | ✅ |
 | 32 | Presupuesto según la guía (RP-01 a RP-10) | Documentos 03 y 04 del 19 de octubre | ✅ |
+| 33 | Presupuesto en bloques y menos texto (ronda 4) | "Se ve mucho texto"; "Arma tu presupuesto" sin división entre grupos | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -1265,3 +1266,37 @@ migración 5 → 6 es automática.
   `Modulos.kt`.
 - Esquema `6.json`.
 - Nuevo `scripts/captura.sh`, que guarda una captura recortada.
+
+## Paso 33 · Presupuesto en bloques y menos texto
+
+**Pedido:** "Se ve mucho texto", y que en "Arma tu presupuesto" haya una división entre los grupos. Se
+hizo con la skill de diseño `impeccable` en modo *distill*: quitar lo que no hace falta y separar con
+espacio y bordes, no con más palabras.
+
+**Bloques.** Nuevo `BloqueGrupo.kt`: cada grupo (lo que entra, ahorro, fijos, variables, prescindibles)
+va en un bloque blanco con borde fino, con el título y su total arriba y una línea suave entre filas.
+El fondo de la app es verde muy claro, así que el blanco separa un grupo de otro sin más color.
+
+| Pantalla | Antes | Ahora |
+|---|---|---|
+| Arma tu presupuesto | Un párrafo arriba; grupos solo con un título; cajas de monto con borde; "Agregar otra" al final, con un diálogo de 5 chips para elegir el grupo | Sin párrafo; un bloque por grupo con su total ("S/ 1,030"); el monto en un campo de fondo suave, a la derecha; "Agregar" dentro de cada grupo, y el diálogo solo pide el nombre; abajo, "Te sobran S/ 240 · pásalos a tu ahorro" |
+| Tu presupuesto | Tarjeta del gasto, una frase suelta del balance, tarjeta 50/30/20, grupos con título y "Toca una partida para cambiarla." | Un resumen con lo gastado en grande, la lectura y el balance del plan dentro; "Tu reparto" en filas ("50 % de 50 %"); un bloque por grupo con lo real resaltado y el plan en gris; sin la pista; en el negocio el grupo de ingresos se llama "Lo que entra" (antes "Ventas" salía dos veces) |
+| Montos | "S/ 2,000.00" | "S/ 2,000" en el presupuesto y en las metas (`formatearCorto()`); si hay céntimos se ven |
+| Metas | Chips "Fondo de emergencia · 3 meses: S/ 3,090.00", que se partían en dos líneas; "S/ 57.00 por semana hasta el 20 de octubre de 2027" | "Fondo de emergencia" encima y chips "3 meses · S/ 3,090"; "S/ 57 por semana · hasta octubre 2027" |
+| Cobros | Dos líneas: "Total S/ 300.00 · adelantó S/ 100.00" y "Desde ayer" | Una: "Desde ayer · total S/ 300.00 · adelantó S/ 100.00"; un cobro antiguo dice "Hace 38 días" en ámbar |
+| Ajustes | "Lo que ganas en un mes normal." bajo el ingreso; "No pedimos claves del banco ni enviamos nada a SUNAT." | Sin la ayuda (solo aparece si hay error); "Todo queda en tu celular. Sin banco ni SUNAT." |
+
+La ayuda ya estaba corta desde el paso 31 y no se tocó.
+
+**Verificación.**
+
+- **Tests:** compila y pasan los 134 tests.
+- **Copia de prueba en el teléfono**, con la bodega de demostración, armando los dos presupuestos:
+  - en el personal, el ejemplo del documento 04 §10, que cuadra en "Cada sol tiene destino";
+  - en el negocio, con S/ 7,000 de ventas, sobran S/ 3,260;
+  - "Agregar" en prescindibles abre "Agregar en Gastos prescindibles";
+  - la partida semanal se ve "S/ 8 de S/ 40 /sem";
+  - siguen funcionando el cierre de mes, la edición con tipo y deuda, la meta sugerida y los cobros.
+- **Ajuste durante la prueba:** la línea del campo de monto quedaba encima del separador de la fila.
+  Se cambió por un campo con fondo suave y sin línea.
+- **Capturas:** se rehicieron 16 en el repositorio de documentos: 12, 23, 24, 35 a 37 y 39 a 48.

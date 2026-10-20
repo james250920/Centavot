@@ -280,24 +280,20 @@ private fun FilaCobro(
                 onEliminar = onEliminar,
             )
         }
-        if (cobro.pagado > Monto.CERO) {
-            Text(
-                text = buildString {
-                    append("Total ${cobro.monto.formatear()}")
-                    if (cobro.adelanto > Monto.CERO) append(" · adelantó ${cobro.adelanto.formatear()}")
-                    if (cobro.abonado > Monto.CERO) append(" · abonó ${cobro.abonado.formatear()}")
-                },
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-        // Más de un mes sin pagar: en ámbar, el color de lo que pide atención (P7).
+        // Una sola línea: cuándo empezó y, si ya pagó algo, cuánto. Más de un mes sin pagar va en ámbar (P7).
         val antiguo = cobro.esAntiguo(hoy)
+        val cuando = when {
+            antiguo -> "Hace ${cobro.diasDesde(hoy)} días"
+            cobro.estaPendiente -> "Desde ${cobro.fecha.formatearRelativo(hoy).lowercase()}"
+            else -> "Cobrado ${cobro.fechaCobrado?.formatearRelativo(hoy)?.lowercase().orEmpty()}"
+        }
+        val pagos = buildList {
+            if (cobro.adelanto > Monto.CERO) add("adelantó ${cobro.adelanto.formatear()}")
+            if (cobro.abonado > Monto.CERO) add("abonó ${cobro.abonado.formatear()}")
+            if (isNotEmpty()) add(0, "total ${cobro.monto.formatear()}")
+        }
         Text(
-            text = when {
-                antiguo -> "Desde ${cobro.fecha.formatearRelativo(hoy).lowercase()} · hace ${cobro.diasDesde(hoy)} días"
-                cobro.estaPendiente -> "Desde ${cobro.fecha.formatearRelativo(hoy).lowercase()}"
-                else -> "Cobrado ${cobro.fechaCobrado?.formatearRelativo(hoy)?.lowercase().orEmpty()}"
-            },
+            text = (listOf(cuando) + pagos).joinToString(" · "),
             style = MaterialTheme.typography.bodySmall,
             color = if (antiguo) colores.tertiary else Color.Unspecified,
             fontWeight = if (antiguo) FontWeight.Medium else null,

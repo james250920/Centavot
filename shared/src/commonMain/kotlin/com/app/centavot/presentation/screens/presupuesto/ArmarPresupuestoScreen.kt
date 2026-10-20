@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -177,12 +178,18 @@ private fun FilaRenglon(renglon: Renglon, viewModel: ArmarPresupuestoViewModel) 
             singleLine = true,
             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End, fontWeight = FontWeight.SemiBold),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
+            // Un fondo suave en vez de línea: la fila ya tiene su separador.
+            shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.outlineVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
             ),
-            modifier = Modifier.width(120.dp).semantics { contentDescription = "Monto de ${renglon.item.nombre}" },
+            modifier = Modifier
+                .width(120.dp)
+                .padding(vertical = 4.dp)
+                .semantics { contentDescription = "Monto de ${renglon.item.nombre}" },
         )
     }
 }
