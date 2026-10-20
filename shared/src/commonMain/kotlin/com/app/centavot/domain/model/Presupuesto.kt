@@ -193,6 +193,8 @@ data class PresupuestoMes(
             return when {
                 mayor != null && diferencia < Monto.CERO ->
                     "Te pasaste ${Monto(-diferencia.centimos).enSoles()} del presupuesto; sobre todo en ${mayor.partida.nombre}."
+                // Ninguna partida se pasó, pero sí el total: el exceso viene de gastos sin partida.
+                diferencia < Monto.CERO -> "Te pasaste ${Monto(-diferencia.centimos).enSoles()} del presupuesto con gastos sin partida."
                 mayor != null ->
                     "Vas dentro del presupuesto, pero en ${mayor.partida.nombre} ya te pasaste."
                 else -> "Vas dentro del presupuesto: te quedan ${diferencia.enSoles()} por gastar."

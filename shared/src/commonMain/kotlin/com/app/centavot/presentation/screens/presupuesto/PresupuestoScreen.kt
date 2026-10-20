@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -48,6 +49,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -366,6 +368,10 @@ private fun DialogoPartida(
     var semanal by remember { mutableStateOf(partida?.semanal ?: false) }
     var deuda by remember { mutableStateOf(partida?.deuda ?: false) }
     var confirmarQuitar by remember { mutableStateOf(false) }
+    fun guardar() {
+        val esSemanal = semanal && (grupo == TipoGasto.PRESCINDIBLE || grupo == TipoGasto.VARIABLE)
+        onGuardar(nombre, grupo, monto, esSemanal, deuda && grupo == TipoGasto.FIJO)
+    }
     if (confirmarQuitar && onQuitar != null) {
         AlertDialog(
             onDismissRequest = { confirmarQuitar = false },
@@ -407,7 +413,9 @@ private fun DialogoPartida(
                     placeholder = { Text("0.00") },
                     supportingText = { Text("Desde $desde en adelante") },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    // El diálogo es alto y el teclado tapa "Guardar": la tecla "listo" guarda.
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { if (nombre.isNotBlank()) guardar() }),
                 )
                 if (grupo == TipoGasto.PRESCINDIBLE || grupo == TipoGasto.VARIABLE) {
                     FilaCasilla("Monto por semana", semanal) { semanal = it }
@@ -423,15 +431,7 @@ private fun DialogoPartida(
                 }
             }
         },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val esSemanal = semanal && (grupo == TipoGasto.PRESCINDIBLE || grupo == TipoGasto.VARIABLE)
-                    onGuardar(nombre, grupo, monto, esSemanal, deuda && grupo == TipoGasto.FIJO)
-                },
-                enabled = nombre.isNotBlank(),
-            ) { Text("Guardar") }
-        },
+        confirmButton = { TextButton(onClick = ::guardar, enabled = nombre.isNotBlank()) { Text("Guardar") } },
         dismissButton = { TextButton(onClick = onCancelar) { Text("Cancelar") } },
     )
 }

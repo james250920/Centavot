@@ -242,4 +242,15 @@ class GuiaPresupuestoTest {
         assertEquals(1, indicadores.metasConAbono)
         assertEquals(2, indicadores.metas)
     }
+
+    @Test
+    fun siSeGastaDeMasSinPartidaLaLecturaNoDiceQueQuedaPlataNegativa() {
+        val mes = PresupuestoMes.de(
+            octubre, partidas, montos,
+            gastos = listOf(gasto("1", 400, "comida"), gasto("2", 3_000, null, sub = SubcategoriaGasto.SALUD)),
+            ingresos = emptyList(),
+        )
+
+        assertEquals("Te pasaste S/ 1,000.00 del presupuesto con gastos sin partida.", mes.lectura)
+    }
 }

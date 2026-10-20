@@ -2,14 +2,11 @@
 
 Actualizado el **13 de octubre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el **paso 30** (presupuesto, fuentes de ingreso,
-  metas y el gráfico "Este mes", pedidos por los usuarios el 10 de octubre). Base de datos versión 5.
-  Instalada en el teléfono (`com.app.centavot`) **desde cero, sin datos**, el 13 de octubre.
-- **Paso 31** (menos texto, ronda 3) en la rama `ux/menos-texto-2`.
-- **GitHub:** desde el 13 de octubre no se sube nada (sin conexión primero y luego por pedido). `main`
-  va por delante de GitHub en la app y en documentos: subir cuando se pida.
+- **Dónde está la app:** `main` incluye todo hasta el **paso 32** (presupuesto según la guía, RP-01 a RP-10). Base de datos
+  versión 6. Instalada en el teléfono (`com.app.centavot`).
+- **GitHub:** no se sube nada hasta que se pida; `main` va por delante en la app y en documentos.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
-- **Lista completa de pendientes:** está en `Centavot_Pendientes.md`, en el repositorio de documentos.
+- **Requerimientos y pendientes:** en `Centavot_03_Requerimientos.md` (repositorio de documentos).
   Aquí solo va lo que toca a la app.
 
 ## Falta por hacer
