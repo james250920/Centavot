@@ -38,10 +38,12 @@ private const val MARGEN = 40f
 private const val ALTO_FILA = 18f
 private const val ESPACIO_PIE = 56f
 
-private val VERDE = Color.rgb(0x0B, 0x6E, 0x4F)
-private val GRIS = Color.rgb(0x5A, 0x66, 0x60)
-private val LINEA = Color.rgb(0xD6, 0xE1, 0xDA)
-private val FONDO_ENCABEZADO = Color.rgb(0xE8, 0xF3, 0xED)
+// Paleta Andina del manual de marca.
+private val TINTA = Color.rgb(0x1B, 0x14, 0x10)
+private val MAIZ = Color.rgb(0xF4, 0xB4, 0x00)
+private val GRIS = Color.rgb(0x6B, 0x5D, 0x52)
+private val LINEA = Color.rgb(0xE5, 0xDA, 0xCB)
+private val FONDO_ENCABEZADO = Color.rgb(0xF4, 0xEE, 0xE4)
 
 private fun pincel(tamano: Float, color: Int = Color.BLACK, negrita: Boolean = false) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
     textSize = tamano
@@ -58,9 +60,9 @@ private class Hojas(private val pdf: PdfDocument, private val pie: String) {
     private val anchoUtil = ANCHO - 2 * MARGEN
     private val limite = ALTO - MARGEN - ESPACIO_PIE
 
-    private val titulo = pincel(20f, VERDE, negrita = true)
+    private val titulo = pincel(20f, TINTA, negrita = true)
     private val subtitulo = pincel(12f, GRIS)
-    private val seccion = pincel(13f, VERDE, negrita = true)
+    private val seccion = pincel(13f, TINTA, negrita = true)
     private val texto = pincel(10f)
     private val textoNegrita = pincel(10f, negrita = true)
     private val encabezadoTabla = pincel(9f, GRIS, negrita = true)
@@ -78,7 +80,7 @@ private class Hojas(private val pdf: PdfDocument, private val pie: String) {
         y += 18f
         lienzo.drawText(textoSubtitulo, MARGEN, y, subtitulo)
         y += 10f
-        lienzo.drawLine(MARGEN, y, ANCHO - MARGEN, y, Paint().apply { color = VERDE; strokeWidth = 1.5f })
+        lienzo.drawLine(MARGEN, y, ANCHO - MARGEN, y, Paint().apply { color = MAIZ; strokeWidth = 2f })
         y += 14f
     }
 

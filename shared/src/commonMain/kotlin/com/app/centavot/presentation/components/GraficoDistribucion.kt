@@ -25,10 +25,13 @@ import androidx.compose.ui.unit.dp
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.sumar
 
-/** Colores distinguibles en modo claro y oscuro; el último se repite si hay más partes. */
+/**
+ * Primero los colores de la marca (Tinta, Maíz, Carmín) y luego tonos andinos que se distinguen entre sí
+ * sobre fondo Lana; el último se repite si hay más partes.
+ */
 private val PALETA = listOf(
-    Color(0xFF1B8A5A), Color(0xFF2F74C0), Color(0xFFD98200), Color(0xFFC2185B),
-    Color(0xFF7B5CC4), Color(0xFF00897B), Color(0xFF8D6E63), Color(0xFF5C6BC0), Color(0xFF8A8F8C),
+    Color(0xFF1B1410), Color(0xFFF4B400), Color(0xFFC1121F), Color(0xFF2F6690),
+    Color(0xFF9C5B3B), Color(0xFF3A7D44), Color(0xFF7B5CC4), Color(0xFFB8A48C), Color(0xFF8C7D70),
 )
 
 data class ParteGrafico(val etiqueta: String, val monto: Monto)

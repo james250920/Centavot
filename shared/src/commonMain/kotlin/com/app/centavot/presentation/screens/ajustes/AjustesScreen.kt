@@ -121,25 +121,18 @@ fun AjustesScreen(
             verticalArrangement = Arrangement.spacedBy(32.dp),
         ) {
             if (esPrimeraVez) {
-                // El logo va detrás del saludo, grande y tenue, como marca de agua.
-                Box(Modifier.fillMaxWidth().padding(top = 24.dp)) {
-                    LogoCentavot(
-                        modifier = Modifier.align(Alignment.TopEnd).offset(x = 24.dp, y = (-16).dp),
-                        tamano = 200.dp,
-                        marcaDeAgua = true,
+                // El logotipo arriba del saludo, tal cual el manual de marca (sin teñir ni atenuar).
+                Column(Modifier.fillMaxWidth().padding(top = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LogoCentavot(ancho = 168.dp, modifier = Modifier.padding(bottom = 16.dp))
+                    Text(
+                        text = "Te damos la bienvenida",
+                        style = MaterialTheme.typography.headlineMedium,
                     )
-                    Column(Modifier.padding(top = 48.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = "Te damos la bienvenida a Centavot",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Text(
-                            text = "Tu cuaderno, pero que suma solo.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    Text(
+                        text = "Tu cuaderno, pero que suma solo.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
 
