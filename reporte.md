@@ -1324,3 +1324,38 @@ logotipos, símbolo e ícono) y rehacer las capturas.
   presupuestos. No se cortó ningún texto por el ancho de Sora.
 - **Capturas:** se rehicieron las 48 de `capturas-app/`, y la presentación usa ahora las de la marca
   nueva.
+
+## Verificación general · 20 de octubre de 2026 (después del paso 34)
+
+Prueba completa de la app, sin cambios de código.
+
+**Sin teléfono:**
+
+- 134 tests: 0 fallas, 0 errores y 0 saltados.
+- Lint de debug y revisión de la versión final: sin problemas.
+- APK de release de 7.51 MB.
+- La app no pide permiso de internet; solo tiene `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, que agrega
+  Android.
+- `minSdk` 24, es decir, **Android 7.0 o superior**; los documentos dicen "Android 8+".
+
+**En el teléfono:** copia de prueba, con `scripts/qa.py`. Salieron **28 de 28 casos bien**.
+
+| Área | Casos |
+|---|---|
+| Primer uso | Aviso, nombre, modo y régimen |
+| Negocio sin datos (montos exactos) | Venta de S/ 20; deshacer otra (avisa "Quitaste la venta de S/ 5.00"); gasto de S/ 12.50; S/ 10 para la casa. La caja da S/ 7.50 y "falta en caja" S/ 2.50 |
+| Cobros | Estado vacío; contacto nuevo; fiado de S/ 50; abono de S/ 20 (quedan S/ 30); el recordatorio abre WhatsApp; "Cobrar todo" |
+| Movimientos y reportes | Filtro por tipo. El resumen del contador da ventas S/ 70 (incluye el fiado, que se suma a las ventas), gastos S/ 12.50 y ganancia S/ 57.50; lo sacado para la casa no cuenta. El PDF (83 KB) y el CSV se generan con los montos correctos, y también "Exportar todos mis datos" |
+| Con 6 meses de datos | El aviso del 80 % del tope sale al registrar la venta que lo cruza (al importar datos no se genera). Presupuesto del negocio: "Te sobran S/ 3,260". Presupuesto personal del documento 04: S/ 240 y reparto 50/30/20. El cierre de mes pide confirmar. Meta de S/ 3,090 con S/ 100 separados |
+| Robustez | Girar la pantalla a mitad de un registro (no se pierde el monto). Android cierra la app en segundo plano y al volver sigue igual. **6,500 toques al azar** (monkey, 3 semillas): 0 cierres y 0 ANR. "Borrar todos mis datos" vuelve al aviso y limpia `cache/reportes` |
+| Rendimiento (versión de depuración) | Arranque en frío ≈ 1.2 s con los 6 meses de datos. Memoria PSS de 246 MB después de las rondas al azar |
+
+**Para revisar:**
+
+- **Memoria:** en la versión de depuración, después de las rondas al azar, la memoria (PSS) llegó a
+  246 MB. Hay que medirla en la versión de release, que antes rondaba los 104 MB, sobre todo pensando
+  en teléfonos de 2 GB (Q5).
+- **"Android 8+":** los documentos dicen eso, pero la app instala desde Android 7.0. O se ajustan los
+  documentos o se sube el `minSdk`.
+- **"En Excel":** genera un archivo CSV, que Excel abre bien.
+
