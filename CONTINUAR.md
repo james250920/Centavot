@@ -54,8 +54,8 @@ llevar una propuesta (cómo funcionaría, privacidad y costos) a la siguiente re
 ### 4. Después de la decisión de diciembre
 
 - **Backend (B1–B8):** login, sincronización, notificaciones push, indicadores de todos los usuarios,
-  topes desde el servidor, foto del cuaderno y cifrado. El detalle está en `Centavot_Pendientes.md`
-  §2.
+  topes desde el servidor, foto del cuaderno y cifrado. El detalle está en `Centavot_02_Arquitectura.md`
+  §14 (repositorio de documentos).
 - **Regla hasta diciembre:** no se agregan funciones nuevas. Solo entra lo que sirva para validar con
   usuarios y lo que pidan el contador o el piloto.
 
