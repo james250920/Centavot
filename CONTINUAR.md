@@ -2,7 +2,7 @@
 
 Actualizado el **21 de octubre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el **paso 38** (partidas al registrar y quitar lo agregado). Base de
+- **Dónde está la app:** `main` incluye todo hasta el **paso 39** (fechas de Movimientos sin descuadre). Base de
   datos versión 6. Instalada en el teléfono (`com.app.centavot`) desde el 21 de octubre.
 - **GitHub:** subir solo cuando se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
