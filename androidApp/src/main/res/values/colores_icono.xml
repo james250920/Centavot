@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Lana, de la paleta Andina: el ícono "Alternativo" del manual de marca (moneda sobre fondo claro). -->
-    <color name="ic_launcher_background">#FAF6EF</color>
+    <!-- Maíz, el color de la moneda: con la moneda del mismo color, el ícono entero se ve como la moneda. -->
+    <color name="ic_launcher_background">#F4B400</color>
 </resources>
