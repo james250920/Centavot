@@ -1375,6 +1375,6 @@ Prueba completa de la app, sin cambios de código.
 - **Tests:** compila y pasan los 134.
 - **Teléfono:** la copia de prueba, con los datos de demostración, muestra el ámbar en inicio,
   cobros, movimientos, gasto y "Mi plata". Ningún texto queda sin leerse.
-- **Pendiente:** las 48 capturas de `capturas-app/` y las cuatro de la presentación todavía muestran el
-  amarillo claro.
+- **Capturas e instalación:** el mismo día se instaló en el teléfono del equipo (arrancó sin errores), se
+  rehicieron las 48 capturas de `capturas-app/` y se cambiaron las 4 de la presentación.
 
