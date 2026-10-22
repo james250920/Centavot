@@ -2,7 +2,7 @@
 
 Actualizado el **21 de octubre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el **paso 37** (la moneda ocupa todo el ícono). Base de
+- **Dónde está la app:** `main` incluye todo hasta el **paso 38** (partidas al registrar y quitar lo agregado). Base de
   datos versión 6. Instalada en el teléfono (`com.app.centavot`) desde el 21 de octubre.
 - **GitHub:** subir solo cuando se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
