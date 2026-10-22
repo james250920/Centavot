@@ -2,8 +2,8 @@
 
 Actualizado el **21 de octubre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el **paso 35** (ámbar en vez de amarillo claro). Base de datos
-  versión 6. Instalada en el teléfono (`com.app.centavot`) desde el 21 de octubre.
+- **Dónde está la app:** `main` incluye todo hasta el **paso 36** (ícono sobre fondo Lana, sin el negro). Base de
+  datos versión 6. Instalada en el teléfono (`com.app.centavot`) desde el 21 de octubre.
 - **GitHub:** subir solo cuando se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
 - **Presentación para el jurado:** [Centavot — Presentación](https://claude.ai/artifact/V4JQZd62eBtwsarMRbFJhn).
