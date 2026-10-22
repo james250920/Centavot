@@ -20,7 +20,8 @@ fun EtiquetaCategoria(categoria: Categoria?, modifier: Modifier = Modifier) {
     val colores = MaterialTheme.colorScheme
     val (fondo, texto) = when (categoria) {
         Categoria.NEGOCIO -> colores.primaryContainer to colores.onPrimaryContainer
-        Categoria.PERSONAL -> colores.secondaryContainer to colores.onSecondaryContainer
+        // Negocio en ámbar y personal en Tinta: con los dos en ámbar no se distinguirían.
+        Categoria.PERSONAL -> colores.primary to colores.onPrimary
         null -> colores.surfaceContainerHighest to colores.onSurfaceVariant
     }
     Surface(color = fondo, contentColor = texto, shape = MaterialTheme.shapes.small, modifier = modifier) {
