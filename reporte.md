@@ -385,6 +385,7 @@ verificación, para saber en qué nos quedamos.
 | 36 | Ícono sin el fondo negro | "El ícono tiene ese color negro alrededor; no lo quiero así" | ✅ |
 | 37 | La moneda ocupa todo el ícono | "Pero que el logo ocupe todo" | ✅ |
 | 38 | Quitar lo agregado por error y partidas al registrar | "Si agrego y me equivoco, ¿cómo lo borro?" y "al registrar ingreso o gasto tienen que aparecer esas categorías, con criterio" | ✅ |
+| 39 | Fechas de Movimientos sin descuadre | "En Movimientos la opción para poner fecha descuadra la vista" (con la skill de diseño) | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -1458,4 +1459,44 @@ como antes: en "Tu presupuesto", tocarla → "Quitar del presupuesto".
   - en el negocio con solo "Ventas", la venta no pregunta nada;
   - con "Servicios" agregada aparece "¿Qué tipo de venta?" con "Ventas" marcada: S/ 20 caen en
     Servicios y S/ 10 en Ventas.
+
+## Paso 39 · Fechas de Movimientos sin descuadre
+
+**Pedido:** "En Movimientos la opción para poner fecha descuadra la vista." Se usó la skill de diseño
+`impeccable` en modo *layout*.
+
+**Lo que se encontró en el teléfono:**
+
+1. **El selector de rango de fechas se desarmaba:**
+   - el título por defecto, "Fecha de inicio – Fecha de finalización", no cabía con Sora y se partía
+     letra por letra ("Fe / ch / a / de fin / aliz / aci / ón");
+   - el calendario quedaba cortado en un diálogo de 500 dp, con solo dos semanas y media a la vista;
+   - el segundo toque no siempre tomaba el día.
+2. **"Elegir fechas" quedaba fuera de la pantalla,** al final de una segunda fila de chips deslizable;
+   había que adivinar que estaba ahí.
+3. **Con un rango elegido,** el chip decía "5 de octubre – 12 de octubre", empujaba la fila y quedaba
+   cortado.
+4. **Arriba había dos filas de chips** y un resumen de dos renglones ("Vendiste S/ … · Gastaste S/ … ·
+   Para la casa S/ …").
+
+**El arreglo** (`MovimientosScreen.kt`):
+
+| Antes | Ahora |
+|---|---|
+| Segunda fila de chips: Todo / Hoy / Esta semana / Este mes / Elegir fechas | **Un solo botón de período** ("📅 Todas las fechas ▾") con menú: Todas las fechas, Hoy, Esta semana, Este mes y "Elegir fechas…". El elegido lleva ✓; el botón queda en ámbar cuando hay filtro |
+| Rango largo en el chip | **Rango corto** con `etiquetaRango`: "5 oct", "5 – 12 oct", "27 sep – 3 oct"; el año solo si no es el actual |
+| Selector en diálogo, con el título partido | **Pantalla completa**, el patrón de Material 3 para rangos: barra con ✕ y "Listo", título corto que guía ("Toca el primer día" → "5 oct · toca el último día" → "5 – 12 oct"), sin el cambio a modo texto, fondo Lana único y el rango anterior ya marcado al volver a abrirlo |
+| Fila de tipos con margen dentro del deslizamiento (el último chip se cortaba sin aire) | `LazyRow` con margen de 16 dp a los lados |
+| Resumen en una frase de dos renglones | **Columnas** sobre una superficie suave: Vendiste · Gastaste · Para la casa (o Te entró · Gastaste en lo personal) |
+
+**Verificación.**
+
+- **Tests:** 1 nuevo en `FiltroMovimientosTest` (las etiquetas cortas de rango, incluido el cambio de
+  mes y de año). Pasan los **141**, y el lint sigue sin problemas.
+- **Teléfono:** copia de prueba con 6 meses de datos.
+  - El menú del período abre y marca el elegido.
+  - Un rango del 5 al 12 de octubre filtra: vendiste S/ 2,559.10.
+  - Un rango del 27 de septiembre al 3 de octubre se ve completo en el botón.
+  - En el modo personal salen dos columnas.
+  - Ya no hay texto partido ni elementos fuera de la pantalla.
 
