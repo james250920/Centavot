@@ -382,6 +382,7 @@ verificación, para saber en qué nos quedamos.
 | 33 | Presupuesto en bloques y menos texto (ronda 4) | "Se ve mucho texto"; "Arma tu presupuesto" sin división entre grupos | ✅ |
 | 34 | Marca Andina en la app | Pack de marca del 20 de octubre | ✅ |
 | 35 | Ámbar en vez de amarillo claro | "Hay un color amarillo claro (botón Gasto y otros); cámbialo por ámbar" | ✅ |
+| 36 | Ícono sin el fondo negro | "El ícono tiene ese color negro alrededor; no lo quiero así" | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -1377,4 +1378,21 @@ Prueba completa de la app, sin cambios de código.
   cobros, movimientos, gasto y "Mi plata". Ningún texto queda sin leerse.
 - **Capturas e instalación:** el mismo día se instaló en el teléfono del equipo (arrancó sin errores), se
   rehicieron las 48 capturas de `capturas-app/` y se cambiaron las 4 de la presentación.
+
+## Paso 36 · Ícono sin el fondo negro
+
+**Pedido:** al usuario no le gusta el fondo negro (Tinta) alrededor del ícono en el teléfono.
+
+- **Versión:** el ícono pasa a la versión **"Alternativo"** del manual de marca, la moneda quipu sobre
+  fondo **Lana** `#FAF6EF`.
+- **Tamaño:** la moneda crece del 46 % al 52 % del lienzo adaptativo, para que llene mejor el círculo o
+  el cuadrado del lanzador.
+- **Para Android 7 o menos:** el ícono cuadrado y el redondo también van sobre Lana.
+- **Sin cambio:** la capa monocromática de Android 13+ (la moneda con las cuerdas caladas).
+- **Archivos:**
+  - `values/colores_icono.xml`;
+  - `mipmap-*/ic_launcher_foreground.png`, `ic_launcher.png` e `ic_launcher_round.png`;
+  - el comentario de `mipmap-anydpi-v26/*.xml`.
+- **Verificación:** compila. Una vista previa con las máscaras de círculo, cuadrado redondeado y
+  cuadrado muestra la moneda centrada, sin bordes negros.
 
