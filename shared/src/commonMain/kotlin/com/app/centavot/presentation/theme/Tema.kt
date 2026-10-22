@@ -19,7 +19,8 @@ import org.jetbrains.compose.resources.Font
 
 // Paleta Andina del manual de marca: Tinta, Lana, Maíz y Carmín. Cada color significa una sola cosa:
 // - Tinta (primary): texto, botones principales y avance normal de una barra.
-// - Maíz (contenedores): lo elegido y lo de la marca (modo activo, botones tonales, la pestaña activa).
+// - Maíz, el ámbar de la marca (contenedores): lo elegido y lo de la marca (modo activo, botones tonales,
+//   chips elegidos, la pestaña activa y el aviso de tope). Va siempre con texto Tinta.
 // - Ámbar oscuro (tertiary): atención, solo para avisos de tope (80 % y 90 %) y cobros antiguos.
 // - Carmín (error): tope alcanzado, pasarse del presupuesto o una acción sin vuelta atrás.
 // - Lana y superficies cálidas (surfaceContainer*): todo lo informativo.
@@ -30,12 +31,12 @@ private val EsquemaClaro = lightColorScheme(
     onPrimaryContainer = Color(0xFF1B1410),
     secondary = Color(0xFF6B5D52),
     onSecondary = Color(0xFFFAF6EF),
-    secondaryContainer = Color(0xFFFCE7A8),
+    secondaryContainer = Color(0xFFF4B400),
     onSecondaryContainer = Color(0xFF1B1410),
     tertiary = Color(0xFF8A5A00),
     onTertiary = Color(0xFFFAF6EF),
-    tertiaryContainer = Color(0xFFFCE7A8),
-    onTertiaryContainer = Color(0xFF2E1F00),
+    tertiaryContainer = Color(0xFFF4B400),
+    onTertiaryContainer = Color(0xFF1B1410),
     error = Color(0xFFC1121F),
     onError = Color(0xFFFAF6EF),
     errorContainer = Color(0xFFFFDAD5),

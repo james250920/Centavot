@@ -381,6 +381,7 @@ verificación, para saber en qué nos quedamos.
 | 32 | Presupuesto según la guía (RP-01 a RP-10) | Documentos 03 y 04 del 19 de octubre | ✅ |
 | 33 | Presupuesto en bloques y menos texto (ronda 4) | "Se ve mucho texto"; "Arma tu presupuesto" sin división entre grupos | ✅ |
 | 34 | Marca Andina en la app | Pack de marca del 20 de octubre | ✅ |
+| 35 | Ámbar en vez de amarillo claro | "Hay un color amarillo claro (botón Gasto y otros); cámbialo por ámbar" | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -1358,4 +1359,22 @@ Prueba completa de la app, sin cambios de código.
 - **"Android 8+":** los documentos dicen eso, pero la app instala desde Android 7.0. O se ajustan los
   documentos o se sube el `minSdk`.
 - **"En Excel":** genera un archivo CSV, que Excel abre bien.
+
+## Paso 35 · Ámbar en vez de amarillo claro
+
+**Pedido:** el amarillo claro `#FCE7A8` del botón Gasto y de otros elementos pasa a ser ámbar.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| `secondaryContainer`: botón Gasto y botones tonales (Registrar cobro, Cobrar), chips y segmentos elegidos, pestaña activa abajo, etiqueta "Para la casa", resumen de "Mi plata" | `#FCE7A8` | **`#F4B400`**, el Maíz del manual de marca, con texto Tinta (contraste de 9.6:1) |
+| `tertiaryContainer`: aviso de tope del 80 % | `#FCE7A8` con texto café | **`#F4B400`** con texto Tinta |
+| Etiqueta de categoría "Personal" | Amarillo claro | **Tinta** con texto Lana. Si fuera ámbar, no se distinguiría de "Negocio", que ya es ámbar |
+
+**Verificación.**
+
+- **Tests:** compila y pasan los 134.
+- **Teléfono:** la copia de prueba, con los datos de demostración, muestra el ámbar en inicio,
+  cobros, movimientos, gasto y "Mi plata". Ningún texto queda sin leerse.
+- **Pendiente:** las 48 capturas de `capturas-app/` y las cuatro de la presentación todavía muestran el
+  amarillo claro.
 
