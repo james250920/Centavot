@@ -11,6 +11,8 @@ import com.app.centavot.presentation.components.Movimiento
 import com.app.centavot.presentation.screens.movimientos.FiltroMovimientos
 import com.app.centavot.presentation.screens.movimientos.GrupoDia
 import kotlinx.datetime.LocalDate
+import com.app.centavot.presentation.screens.movimientos.etiquetaRango
+import com.app.centavot.presentation.screens.movimientos.FiltroFechas
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -48,5 +50,15 @@ class FiltroMovimientosTest {
         val enLoPersonal = GrupoDia(hoy, listOf(retiro), Modo.PERSONAL)
         assertEquals(Monto.soles(20), enLoPersonal.entro)
         assertEquals(Monto.CERO, enLoPersonal.salio)
+    }
+
+    @Test
+    fun unRangoElegidoSeMuestraCortoParaQueQuepaEnElBoton() {
+        val hoy = LocalDate(2026, 10, 22)
+        assertEquals("5 oct", etiquetaRango(LocalDate(2026, 10, 5), LocalDate(2026, 10, 5), hoy))
+        assertEquals("5 – 12 oct", etiquetaRango(LocalDate(2026, 10, 5), LocalDate(2026, 10, 12), hoy))
+        assertEquals("28 sep – 3 oct", etiquetaRango(LocalDate(2026, 9, 28), LocalDate(2026, 10, 3), hoy))
+        assertEquals("20 dic 2025 – 5 ene", etiquetaRango(LocalDate(2025, 12, 20), LocalDate(2026, 1, 5), hoy))
+        assertEquals("5 – 12 oct", FiltroFechas.Rango(LocalDate(2026, 10, 5), LocalDate(2026, 10, 12)).etiquetaEn(hoy))
     }
 }

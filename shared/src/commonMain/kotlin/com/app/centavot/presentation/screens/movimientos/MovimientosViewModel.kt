@@ -51,9 +51,27 @@ enum class FiltroMovimientos {
     }
 }
 
+private val MESES_CORTOS = listOf("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
+
+/**
+ * Un rango corto para que quepa en un botón: "5 oct", "5 – 12 oct" o "28 sep – 3 oct". El año solo aparece
+ * si no es el de hoy.
+ */
+fun etiquetaRango(desde: LocalDate, hasta: LocalDate, hoy: LocalDate): String {
+    fun dia(fecha: LocalDate) = "${fecha.day} ${MESES_CORTOS[fecha.month.ordinal]}" + if (fecha.year != hoy.year) " ${fecha.year}" else ""
+    return when {
+        desde == hasta -> dia(desde)
+        desde.month == hasta.month && desde.year == hasta.year -> "${desde.day} – ${dia(hasta)}"
+        else -> "${dia(desde)} – ${dia(hasta)}"
+    }
+}
+
 /** Rango de fechas del filtro: todo, un periodo rápido o fechas elegidas por el usuario. */
 sealed interface FiltroFechas {
     val etiqueta: String
+
+    /** Lo que dice el botón del período; un rango elegido se muestra corto. */
+    fun etiquetaEn(hoy: LocalDate): String = etiqueta
 
     data object Todo : FiltroFechas {
         override val etiqueta = "Todo"
@@ -65,6 +83,8 @@ sealed interface FiltroFechas {
 
     data class Rango(val desde: LocalDate, val hasta: LocalDate) : FiltroFechas {
         override val etiqueta get() = "Otras fechas"
+
+        override fun etiquetaEn(hoy: LocalDate) = etiquetaRango(desde, hasta, hoy)
     }
 
     fun incluye(fecha: LocalDate, hoy: LocalDate): Boolean = when (this) {
