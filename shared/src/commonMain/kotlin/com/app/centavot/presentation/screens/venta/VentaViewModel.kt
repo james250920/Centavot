@@ -10,7 +10,8 @@ import com.app.centavot.domain.model.Categoria
 import com.app.centavot.domain.model.Ingreso
 import com.app.centavot.domain.model.Monto
 import com.app.centavot.domain.model.Partida
-import com.app.centavot.domain.model.TipoPartida
+import com.app.centavot.domain.model.fuentesDeIngreso
+import com.app.centavot.domain.model.fuentesParaVenta
 import com.app.centavot.domain.model.VentaFrecuente
 import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.TipoEntrada
@@ -69,7 +70,10 @@ data class VentaUiState(
     val montoTexto: String = "",
     val descripcion: String = "",
     val frecuentes: List<VentaFrecuente> = emptyList(),
-    /** En un ingreso personal: las fuentes del presupuesto ("Clases", "Comisiones"...) para elegir de dónde vino. */
+    /**
+     * Las fuentes del presupuesto para elegir: en un ingreso personal, de dónde vino ("Clases", "Comisiones"...);
+     * en una venta, qué tipo de venta es, solo si el negocio tiene más de una fuente.
+     */
     val fuentes: List<Partida> = emptyList(),
     val partidaId: String? = null,
     val errorMonto: String? = null,
@@ -118,7 +122,8 @@ class VentaViewModel(
             observarModo().first() == Modo.PERSONAL -> TipoEntrada.INGRESO
             else -> TipoEntrada.VENTA
         }
-        _estado.update { it.copy(cargando = false, tipo = tipo, fuentes = fuentesDe(tipo)) }
+        val fuentes = fuentesDe(tipo)
+        _estado.update { it.copy(cargando = false, tipo = tipo, fuentes = fuentes, partidaId = porDefecto(tipo, fuentes)) }
         if (tipo != TipoEntrada.RETIRO) {
             observarFrecuentes(categoriaDe(tipo)).collect { frecuentes -> _estado.update { it.copy(frecuentes = frecuentes) } }
         }
@@ -143,8 +148,15 @@ class VentaViewModel(
         }
     }
 
-    private suspend fun fuentesDe(tipo: TipoEntrada): List<Partida> =
-        if (tipo == TipoEntrada.INGRESO) observarPartidas(Modo.PERSONAL).first().filter { it.tipo == TipoPartida.INGRESO } else emptyList()
+    private suspend fun fuentesDe(tipo: TipoEntrada): List<Partida> = when (tipo) {
+        TipoEntrada.INGRESO -> observarPartidas(Modo.PERSONAL).first().fuentesDeIngreso()
+        TipoEntrada.VENTA -> observarPartidas(Modo.NEGOCIO).first().fuentesParaVenta()
+        TipoEntrada.RETIRO -> emptyList()
+    }
+
+    /** Una venta nueva ya viene con la primera fuente ("Ventas") marcada; un ingreso personal, sin elegir. */
+    private fun porDefecto(tipo: TipoEntrada, fuentes: List<Partida>): String? =
+        if (tipo == TipoEntrada.VENTA) fuentes.firstOrNull()?.id else null
 
     fun onFuenteElegida(fuente: Partida?) = _estado.update { it.copy(partidaId = fuente?.id) }
 
@@ -200,7 +212,7 @@ class VentaViewModel(
                                 guardando = false,
                                 montoTexto = "",
                                 descripcion = "",
-                                partidaId = null,
+                                partidaId = porDefecto(tipo, it.fuentes),
                                 ultimaGuardada = resultado.ingreso,
                                 ventaQuitada = null,
                                 ventasEnEstaSesion = it.ventasEnEstaSesion + 1,

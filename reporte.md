@@ -384,6 +384,7 @@ verificación, para saber en qué nos quedamos.
 | 35 | Ámbar en vez de amarillo claro | "Hay un color amarillo claro (botón Gasto y otros); cámbialo por ámbar" | ✅ |
 | 36 | Ícono sin el fondo negro | "El ícono tiene ese color negro alrededor; no lo quiero así" | ✅ |
 | 37 | La moneda ocupa todo el ícono | "Pero que el logo ocupe todo" | ✅ |
+| 38 | Quitar lo agregado por error y partidas al registrar | "Si agrego y me equivoco, ¿cómo lo borro?" y "al registrar ingreso o gasto tienen que aparecer esas categorías, con criterio" | ✅ |
 
 **Regla para toda la ronda:** cada pantalla dice una cosa a la vez. Se quita lo que repite el
 título, lo que ya se dijo en otra pantalla y las ayudas que no responden una duda real. No se toca
@@ -1411,4 +1412,50 @@ Prueba completa de la app, sin cambios de código.
 - **Nota de marca:** el manual pide no poner el *logotipo* (la palabra) sobre fondo maíz. Aquí no hay
   logotipo: el ícono es la cara de la moneda.
 - **Verificación:** compila. La vista previa con las tres máscaras no muestra bordes ni uniones.
+
+## Paso 38 · Quitar lo agregado por error y partidas al registrar
+
+**Pedido:**
+
+1. En "Arma tu presupuesto" no se podía borrar una partida agregada por error.
+2. Al registrar un ingreso o un gasto tienen que aparecer las partidas del presupuesto, incluidas las
+   agregadas a mano, cada una donde corresponde y con criterio.
+
+**Antes:**
+
+- **Gasto:** ya mostraba las partidas de gasto, pero mezcladas, en el orden en que se crearon.
+- **Ingreso personal:** ya preguntaba "¿De dónde vino?" con las fuentes.
+- **Venta del negocio:** nunca preguntaba la fuente; todo caía en la primera, "Ventas".
+
+**El criterio**, escrito como funciones del dominio en `Presupuesto.kt`:
+
+| Registro | Qué partidas ofrece | Regla |
+|---|---|---|
+| Gasto (`paraRegistrarGasto`) | Las de gasto: fijos, luego variables, luego prescindibles; dentro de cada grupo, en el orden del presupuesto | El **ahorro no aparece**, porque se separa desde Metas. Las fuentes de ingreso tampoco |
+| Ingreso personal (`fuentesDeIngreso`) | Las fuentes de ingreso, en su orden | Opcional; sin elegir no se marca ninguna |
+| Venta del negocio (`fuentesParaVenta`) | Las fuentes de ingreso, **solo si hay más de una**, bajo "¿Qué tipo de venta?" | Con una sola fuente no se pregunta nada, para no sumar toques. Con varias, la primera ("Ventas") ya viene marcada y vuelve a marcarse después de cada venta |
+| Retiro para la casa | Ninguna | No es ingreso ni gasto del presupuesto |
+
+**Lo que agrega el usuario aparece solo:** una partida propia, agregada al armar o desde "Agregar
+partida", sale en el registro que le toca según su tipo: "Regalos y otros" en Gasto, "Propinas" en
+Ingreso y "Servicios" en Venta.
+
+**Quitar en "Arma tu presupuesto":** las partidas que agrega el usuario llevan un botón **✕ "Quitar"**
+(`Iconos.Quitar`) que las borra de la lista al instante. No pide confirmar, porque todavía no se guardó
+nada. Las de la plantilla no lo llevan: se desmarcan con el check. Una partida ya guardada se quita
+como antes: en "Tu presupuesto", tocarla → "Quitar del presupuesto".
+
+**Verificación.**
+
+- **Tests:** 6 nuevos en `PartidasAlRegistrarTest` (orden de la guía, sin ahorro, tipo deducido de la
+  subcategoría, fuentes del ingreso, venta con una y con dos fuentes). Pasan los **140**.
+- **Teléfono:** copia de prueba, con `scripts/qa.py`. Salieron 9 de 9 casos bien:
+  - "Me equivoque" se agrega y se quita con ✕; las partidas de la plantilla no tienen ✕;
+  - en Gasto, las 7 partidas en orden fijos → variables → prescindibles, con "Regalos y otros" y sin
+    ahorro ni ingresos;
+  - en Ingreso salen Sueldo, Comisiones y Propinas, y un ingreso en Propinas cae ahí ("S/ 50 de
+    S/ 150");
+  - en el negocio con solo "Ventas", la venta no pregunta nada;
+  - con "Servicios" agregada aparece "¿Qué tipo de venta?" con "Ventas" marcada: S/ 20 caen en
+    Servicios y S/ 10 en Ventas.
 

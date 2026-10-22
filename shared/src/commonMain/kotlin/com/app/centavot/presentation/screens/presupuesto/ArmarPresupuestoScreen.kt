@@ -170,6 +170,12 @@ private fun FilaRenglon(renglon: Renglon, viewModel: ArmarPresupuestoViewModel) 
                 modifier = Modifier.padding(start = 12.dp),
             )
         }
+        // Solo lo que agregó el usuario se puede quitar; lo de la plantilla se desmarca con el check.
+        if (renglon.propia) {
+            IconButton(onClick = { viewModel.quitarOtra(renglon.item) }) {
+                Icon(Iconos.Quitar, contentDescription = "Quitar ${renglon.item.nombre}", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
         TextField(
             value = renglon.montoTexto,
             onValueChange = { viewModel.onMonto(renglon.item, it) },
