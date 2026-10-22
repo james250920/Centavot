@@ -74,6 +74,24 @@ const val LIMITE_DEUDAS_PORCENTAJE = 30
 data class MontoPresupuesto(val partidaId: String, val mes: YearMonth, val monto: Monto)
 
 /** El monto de [partidaId] para [mes]: el último que se fijó en ese mes o antes. Enero puede ser distinto de octubre. */
+/**
+ * Las partidas que se ofrecen al registrar un gasto: solo las de gasto, sin las de ahorro (el ahorro se
+ * separa desde Metas), en el orden de la guía (fijos, variables, prescindibles) y dentro de cada grupo
+ * en el orden del presupuesto.
+ */
+fun List<Partida>.paraRegistrarGasto(): List<Partida> =
+    filter { it.tipo == TipoPartida.GASTO && it.clase != TipoGasto.AHORRO }
+        .sortedWith(compareBy<Partida>({ it.clase.ordinal }, { it.orden }))
+
+/** Las fuentes de ingreso del presupuesto, en su orden: de dónde vino un ingreso o qué tipo de venta es. */
+fun List<Partida>.fuentesDeIngreso(): List<Partida> = filter { it.tipo == TipoPartida.INGRESO }.sortedBy { it.orden }
+
+/**
+ * Una venta solo pregunta la fuente si el negocio tiene más de una (por ejemplo "Ventas" y "Servicios"):
+ * con una sola, la venta va a esa sin sumar toques.
+ */
+fun List<Partida>.fuentesParaVenta(): List<Partida> = fuentesDeIngreso().takeIf { it.size > 1 }.orEmpty()
+
 fun List<MontoPresupuesto>.montoPara(partidaId: String, mes: YearMonth): Monto =
     filter { it.partidaId == partidaId && it.mes <= mes }.maxByOrNull { it.mes }?.monto ?: Monto.CERO
 

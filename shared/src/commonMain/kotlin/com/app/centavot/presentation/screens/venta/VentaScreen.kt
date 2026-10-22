@@ -201,9 +201,9 @@ fun VentaScreen(
                 }
             }
 
-            // Ingresos variables (clases, comisiones, asesorías...): de dónde vino, con las fuentes de su presupuesto.
+            // Las fuentes de su presupuesto: de dónde vino un ingreso, o qué tipo de venta es si el negocio tiene varias.
             if (estado.fuentes.isNotEmpty()) {
-                Seccion("¿De dónde vino?") {
+                Seccion(if (estado.tipo == TipoEntrada.VENTA) "¿Qué tipo de venta?" else "¿De dónde vino?") {
                     SelectorChips(
                         opciones = estado.fuentes,
                         seleccionada = estado.fuentes.firstOrNull { it.id == estado.partidaId },

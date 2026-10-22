@@ -25,8 +25,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Un renglón de la plantilla: marcado o no, con su monto escrito (opcional). */
-data class Renglon(val item: ItemPlantilla, val marcado: Boolean, val montoTexto: String = "") {
+/**
+ * Un renglón de la plantilla: marcado o no, con su monto escrito (opcional). [propia] = la agregó el usuario
+ * con "Agregar" (no viene de la plantilla), así que se puede quitar de la lista.
+ */
+data class Renglon(val item: ItemPlantilla, val marcado: Boolean, val montoTexto: String = "", val propia: Boolean = false) {
     /** Ingreso, o el tipo de gasto (ahorro, fijo, variable, prescindible). */
     val grupo: TipoGasto? get() = if (item.tipo == TipoPartida.INGRESO) null else item.tipoGasto ?: tipoGastoPorDefecto(item.subcategoria)
 
@@ -115,10 +118,14 @@ class ArmarPresupuestoViewModel(
                 val sub = if (grupo == TipoGasto.AHORRO) null else SubcategoriaGasto.OTROS
                 ItemPlantilla(limpio, TipoPartida.GASTO, sub, marcado = true, tipoGasto = grupo)
             }
-            val nuevo = Renglon(item, marcado = true)
+            val nuevo = Renglon(item, marcado = true, propia = true)
             estado.copy(renglones = estado.renglones + nuevo, agregandoOtra = false)
         }
     }
+
+    /** Quita una partida propia agregada por error. Las de la plantilla no se quitan: se desmarcan. */
+    fun quitarOtra(item: ItemPlantilla) =
+        _estado.update { estado -> estado.copy(renglones = estado.renglones.filterNot { it.item == item && it.propia }) }
 
     fun guardar() {
         val actual = _estado.value
