@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
+    // Firebase: lee androidApp/google-services.json (proyecto centavot-67f60).
+    alias(libs.plugins.googleServices)
 }
 
 kotlin {
@@ -15,6 +17,10 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.koin.android)
+
+    // Firebase con su BoM: las versiones de cada librería las fija el BoM. Auth es para "Continuar con Google".
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
