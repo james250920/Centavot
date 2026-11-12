@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "510080072024",
+    "project_id": "centavot-67f60",
+    "storage_bucket": "centavot-67f60.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:510080072024:android:487f0b4a109e6c8b7dcd2d",
+        "android_client_info": {
+          "package_name": "com.app.centavot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "510080072024-d7ce43ig1hsqf8i409v2vcaldl363tms.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7VFDE-SgJo0VgfDZifZLM8hIMv1w-lgY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "510080072024-d7ce43ig1hsqf8i409v2vcaldl363tms.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
