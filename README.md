@@ -47,19 +47,21 @@ calculadora** del comerciante, que vende muchas veces al día.
   gastos personales y "me deben". Todo se exporta en CSV para Excel.
 - **Privacidad (Ley 29733):** aviso de privacidad con consentimiento antes de usar la app,
   **"Exportar todos mis datos"** (un archivo para Excel) y **"Borrar todos mis datos"** en Ajustes.
-  Sin banco, nada se envía a SUNAT ni a un servidor, y **sin respaldo automático en la nube**.
+  Sin banco, nada se envía a SUNAT, los movimientos no salen del teléfono y **sin respaldo automático en la nube**.
+- **Ingreso con Google** (Firebase Authentication y Credential Manager): un toque, sin contraseña
+  nueva. Firebase solo guarda la cuenta (nombre y correo); "Cerrar sesión" en Ajustes.
 - **Indicadores de uso** guardados solo en el teléfono: aperturas, registros por día,
   días con registros y la pregunta "¿te resulta más fácil que tu cuaderno?" (a los 7 y 30 días).
 - Guía "Cómo usar Centavot" para la capacitación inicial.
 
-Aún no incluye: foto del cuaderno o de boletas (OCR), voz, PDF, backend ni login.
+Aún no incluye: foto del cuaderno o de boletas (OCR), voz, backend ni sincronización.
 
 Hoja de ruta técnica:
 
 | Fase | Entregable |
 |---|---|
 | 0 | Concierge MVP — validación manual con usuarios reales (en curso) |
-| 1 | Núcleo KMP (`domain` + `data`), autenticación por teléfono + OTP, backend mínimo |
+| 1 | Núcleo KMP (`domain` + `data`) ✅, ingreso con Google ✅ (paso 40), backend mínimo |
 | 2 | Registro por foto (OCR) y texto — Android primero |
 | 3 | Separación automática + reporte SUNAT |
 | 4 | Alertas de tope + notificaciones push |
@@ -75,9 +77,10 @@ Hoja de ruta técnica:
 | Persistencia local | Room (KMP) + SQLite |
 | Inyección de dependencias | Koin |
 | Fechas | kotlinx-datetime |
+| Ingreso | Firebase Authentication + Credential Manager (`google-services.json`, proyecto `centavot-67f60`) |
 | Red | Ktor Client *(planificado)* |
 | Notificaciones | Firebase Cloud Messaging *(planificado)* |
-| Backend | Ktor Server + PostgreSQL, con OCR e IA (GLM Flash / DeepSeek Flash) *(planificado)* |
+| Backend | Ktor Server + PostgreSQL, con OCR e IA (Claude Haiku 5.5) *(planificado)* |
 
 ## Estructura
 

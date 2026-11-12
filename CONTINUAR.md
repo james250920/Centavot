@@ -1,9 +1,12 @@
 # Para continuar
 
-Actualizado el **21 de octubre de 2026**.
+Actualizado el **12 de noviembre de 2026**.
 
-- **Dónde está la app:** `main` incluye todo hasta el **paso 39** (fechas de Movimientos sin descuadre). Base de
-  datos versión 6. Instalada en el teléfono (`com.app.centavot`) desde el 21 de octubre.
+- **Dónde está la app:** `main` incluye todo hasta el **paso 40** (ingreso con Google por Firebase). Base de
+  datos versión 6, 143 tests. Instalada en el teléfono (`com.app.centavot`) el 12 de noviembre, con la sesión de Google iniciada.
+- **Firebase:** proyecto `centavot-67f60`; `androidApp/google-services.json` con la huella SHA-1 de la llave de
+  depuración. Falta registrar `com.app.centavot.prueba` y, al publicar, la huella de la llave de Play Store.
+- **Versión web (PWA):** `frontend/` del repositorio de documentos (Quasar + pnpm), con el mismo proyecto de Firebase.
 - **GitHub:** subir solo cuando se pida.
 - **Lo ya hecho:** está en [`reporte.md`](reporte.md).
 - **Presentación para el jurado:** [Centavot — Presentación](https://claude.ai/artifact/V4JQZd62eBtwsarMRbFJhn).
@@ -53,7 +56,7 @@ llevar una propuesta (cómo funcionaría, privacidad y costos) a la siguiente re
 
 ### 4. Después de la decisión de diciembre
 
-- **Backend (B1–B8):** login, sincronización, notificaciones push, indicadores de todos los usuarios,
+- **Backend (B1–B8):** sincronización, notificaciones push, indicadores de todos los usuarios,
   topes desde el servidor, foto del cuaderno y cifrado. El detalle está en `Centavot_02_Arquitectura.md`
   §14 (repositorio de documentos).
 - **Regla hasta diciembre:** no se agregan funciones nuevas. Solo entra lo que sirva para validar con

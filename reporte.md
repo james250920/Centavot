@@ -1500,3 +1500,46 @@ como antes: en "Tu presupuesto", tocarla → "Quitar del presupuesto".
   - En el modo personal salen dos columnas.
   - Ya no hay texto partido ni elementos fuera de la pantalla.
 
+
+---
+
+## Paso 40 · Ingreso con Google (Firebase)
+
+**Por qué.** El 11 de noviembre se decidió que se entra con **"Continuar con Google"**: un toque, sin
+contraseña nueva, y Google se encarga de recuperar el acceso. Firebase solo sabe quién entra; los
+movimientos siguen en Room, en el teléfono.
+
+**Qué se hizo.**
+
+- **Firebase en el proyecto** `centavot-67f60`: `androidApp/google-services.json` (app `com.app.centavot`,
+  con la huella SHA-1 de la llave de depuración), plugin `com.google.gms.google-services` 4.5.0 y BoM
+  35.1.0 con `firebase-auth`, todo en `libs.versions.toml`.
+- **Ingreso con Credential Manager** (`androidApp/.../SesionFirebase.kt`): la hoja de cuentas del sistema
+  entrega un token de Google, Firebase lo verifica y la sesión queda guardada (sin señal, la app abre igual).
+- **Código compartido:** interfaz `Sesion` en `core/util` (con `SesionLocal` sin ingreso para iOS y
+  pruebas), pantalla `IngresarScreen` y el estado nuevo `SIN_SESION` en `AppViewModel`.
+- **Primer uso:** aviso de privacidad → **Continuar con Google** → bienvenida → régimen.
+- **Ajustes → Tu cuenta:** el correo y "Cerrar sesión", que también olvida la cuenta elegida.
+- **Aviso de privacidad `2026-11`:** apartado nuevo "Cómo entras" y "Tus movimientos, solo en este
+  celular". Por el cambio, la app lo vuelve a pedir.
+- **`scripts/prueba.sh`:** la copia de prueba sigue compilando aunque `com.app.centavot.prueba` no esté
+  registrada en Firebase (usa un `google-services.json` temporal y lo restaura).
+
+**Lo que cambia en seguridad** (revisado en el APK final con R8):
+
+| | Antes (paso 39) | Ahora |
+|---|---|---|
+| Permisos | Ninguno | 5 normales, sin diálogo: internet, estado de la red y servicios de Google (Firebase); biometría y huella (Credential Manager; la app no los usa) |
+| Componentes abiertos a otras apps | 1 (`MainActivity`) | 5: `MainActivity`, 2 pantallas de Firebase Auth (no se usan), 2 protegidos por permisos de Google y del sistema |
+| APK de release | 7.5 MB | 8.4 MB |
+| Copia en la nube | Apagada | Apagada; la sesión de Firebase también queda excluida |
+
+**Verificación.**
+
+- **Tests:** 2 nuevos en `IngresoGoogleTest` (el ingreso va después del aviso y antes de la bienvenida;
+  sin Firebase no se pide). Pasan los **143**.
+- **Teléfono (Samsung A15):** Firebase inicia sin cierres; con el paquete real, el ingreso con Google se
+  completó (Firebase guardó la sesión del usuario).
+
+**Pendiente:** quitar los permisos de biometría y huella, restringir las llaves de Firebase, registrar la
+copia de prueba y, al publicar, la huella SHA-1 de la llave de Play Store.
