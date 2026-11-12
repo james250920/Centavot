@@ -1,5 +1,9 @@
 package com.app.centavot.presentation.screens.ajustes
 
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import org.koin.compose.koinInject
+import com.app.centavot.core.util.Sesion
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -246,6 +250,8 @@ fun AjustesScreen(
                     estado.uso?.takeIf { it.primerUso != null }?.let { uso -> TarjetaUso(uso, estado.planes) }
                 }
 
+                SeccionCuenta()
+
                 SeccionAjustes("Tus datos") {
                     TarjetaPrivacidad()
                     TarjetaTusDatos(
@@ -370,4 +376,28 @@ private fun TarjetaUso(uso: ResumenUso, planes: IndicadoresPlanes?) {
             planes?.takeIf { it.metas > 0 }?.let { "Metas con plata este mes: ${it.metasConAbono} de ${it.metas}" },
         ),
     )
+}
+
+/** La cuenta de Google con la que se entró (solo si hay ingreso). Al cerrar sesión, la app vuelve a "Continuar con Google". */
+@Composable
+private fun SeccionCuenta(sesion: Sesion = koinInject()) {
+    if (!sesion.disponible) return
+    val usuario by sesion.usuario.collectAsStateWithLifecycle()
+    val alcance = rememberCoroutineScope()
+    val cuenta = usuario ?: return
+    SeccionAjustes("Tu cuenta") {
+        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Cuenta de Google", style = MaterialTheme.typography.titleSmall)
+                Text(
+                    cuenta.correo ?: cuenta.nombre.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedButton(onClick = { alcance.launch { sesion.cerrarSesion() } }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Cerrar sesión")
+                }
+            }
+        }
+    }
 }

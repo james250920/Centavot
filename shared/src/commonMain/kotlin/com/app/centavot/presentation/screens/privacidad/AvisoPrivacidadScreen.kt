@@ -36,6 +36,11 @@ private val APARTADOS = listOf(
             "El equipo de Centavot es responsable de cómo la app trata tus datos.",
     ),
     Apartado(
+        "Cómo entras",
+        "Con tu cuenta de Google, a través de Firebase (de Google). Solo sirve para saber que eres tú: " +
+            "Centavot recibe tu nombre y tu correo, nunca tu contraseña.",
+    ),
+    Apartado(
         "Qué datos guarda",
         "Tu nombre y si usas la app para tu plata personal o tu negocio (y, si es negocio, su rubro y tu régimen); " +
             "tus ventas, ingresos, gastos y cobros; los nombres y " +
@@ -43,7 +48,7 @@ private val APARTADOS = listOf(
     ),
     Apartado(
         "Dónde se guardan",
-        "Solo en este celular. No se envían a ningún servidor, banco ni a SUNAT, y no se copian " +
+        "Tus movimientos, solo en este celular. No se envían a ningún servidor, banco ni a SUNAT, y no se copian " +
             "solos a la nube. Si cambias o pierdes el celular, se pierden, salvo que los hayas exportado.",
     ),
     Apartado(

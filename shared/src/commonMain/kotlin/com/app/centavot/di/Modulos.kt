@@ -86,6 +86,8 @@ import com.app.centavot.domain.usecase.RestaurarCobroUseCase
 import com.app.centavot.domain.usecase.RevisarAlertaTopeUseCase
 import com.app.centavot.domain.usecase.RevisarCobrosAntiguosUseCase
 import com.app.centavot.domain.usecase.UsarRealComoPresupuestoUseCase
+import com.app.centavot.core.util.Sesion
+import com.app.centavot.core.util.SesionLocal
 import com.app.centavot.presentation.AppViewModel
 import com.app.centavot.presentation.Avisos
 import com.app.centavot.presentation.screens.actividad.ActividadViewModel
@@ -208,6 +210,8 @@ val moduloDomain = module {
 }
 
 val moduloPresentation = module {
+    // Sin Firebase (iOS, pruebas) la app no pide ingreso; Android la reemplaza por SesionFirebase.
+    single<Sesion> { SesionLocal() }
     viewModelOf(::AppViewModel)
     viewModelOf(::RegimenViewModel)
     viewModelOf(::InicioViewModel)

@@ -17,6 +17,7 @@ import com.app.centavot.presentation.AppViewModel
 import com.app.centavot.presentation.EstadoApp
 import com.app.centavot.presentation.navigation.NavegacionPrincipal
 import com.app.centavot.presentation.screens.ajustes.AjustesScreen
+import com.app.centavot.presentation.screens.ingreso.IngresarScreen
 import com.app.centavot.presentation.screens.privacidad.AvisoPrivacidadScreen
 import com.app.centavot.presentation.screens.regimen.RegimenScreen
 import com.app.centavot.presentation.theme.CentavotTheme
@@ -35,6 +36,11 @@ fun App() {
             ) { LogoCentavot(ancho = 240.dp, animado = true) }
             // Al guardar el perfil (y en modo negocio el régimen), el estado avanza solo hasta LISTA.
             EstadoApp.SIN_CONSENTIMIENTO -> AvisoPrivacidadScreen(onAceptar = viewModel::aceptarAvisoPrivacidad)
+            EstadoApp.SIN_SESION -> {
+                val ingresando by viewModel.ingresando.collectAsStateWithLifecycle()
+                val error by viewModel.errorIngreso.collectAsStateWithLifecycle()
+                IngresarScreen(ingresando = ingresando, error = error, onEntrar = viewModel::entrarConGoogle)
+            }
             EstadoApp.SIN_PERFIL -> AjustesScreen(esPrimeraVez = true, onCerrar = {}, onCambiarRegimen = {})
             EstadoApp.SIN_REGIMEN -> RegimenScreen(esPrimeraVez = true, onCerrar = {}, onUsarModoPersonal = viewModel::usarModoPersonal)
             EstadoApp.LISTA -> NavegacionPrincipal()

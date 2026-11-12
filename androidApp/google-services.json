@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "510080072024-sesadilecth4d0b4vjchm579ctfvsgd2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.centavot",
+            "certificate_hash": "dce12467b30512375ab2f5d03735e3c9cce4d4d9"
+          }
+        },
+        {
           "client_id": "510080072024-d7ce43ig1hsqf8i409v2vcaldl363tms.apps.googleusercontent.com",
           "client_type": 3
         }

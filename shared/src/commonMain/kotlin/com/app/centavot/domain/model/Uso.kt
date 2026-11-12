@@ -24,7 +24,7 @@ enum class TipoEventoUso {
  * Versión vigente del aviso de privacidad. Si el aviso cambia, se sube la versión y la app
  * vuelve a pedir el consentimiento (Ley 29733).
  */
-const val VERSION_AVISO_PRIVACIDAD = "2026-10"
+const val VERSION_AVISO_PRIVACIDAD = "2026-11"
 
 /** Registro anónimo de uso, guardado solo en el teléfono, para medir si la app sirve. */
 data class EventoUso(val tipo: TipoEventoUso, val fechaHora: LocalDateTime, val valor: String? = null)

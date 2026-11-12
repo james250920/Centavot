@@ -21,6 +21,11 @@ dependencies {
     // Firebase con su BoM: las versiones de cada librería las fija el BoM. Auth es para "Continuar con Google".
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    // "Continuar con Google" con Credential Manager (la hoja de cuentas del sistema).
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
