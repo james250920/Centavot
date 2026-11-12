@@ -20,3 +20,7 @@ node_modules/
 
 # Informes locales de revisión UX/UI (skill impeccable)
 .impeccable/
+
+# Firma para Google Play (llave y contraseñas)
+keystore.properties
+*.jks
