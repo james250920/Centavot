@@ -38,7 +38,8 @@ private val APARTADOS = listOf(
     Apartado(
         "Cómo entras",
         "Con tu cuenta de Google, a través de Firebase (de Google). Solo sirve para saber que eres tú: " +
-            "Centavot recibe tu nombre y tu correo, nunca tu contraseña.",
+            "Centavot recibe tu nombre y tu correo, nunca tu contraseña. Tu cuenta (nombre y correo) queda " +
+            "guardada en servidores de Google fuera del Perú; tus movimientos no.",
     ),
     Apartado(
         "Qué datos guarda",
