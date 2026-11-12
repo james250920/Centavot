@@ -1543,3 +1543,33 @@ movimientos siguen en Room, en el teléfono.
 
 **Pendiente:** quitar los permisos de biometría y huella, restringir las llaves de Firebase, registrar la
 copia de prueba y, al publicar, la huella SHA-1 de la llave de Play Store.
+
+---
+
+## Paso 41 · Medidas del informe de seguridad
+
+**Por qué.** El informe de seguridad del 12 de noviembre encontró permisos y pantallas que Firebase y
+Credential Manager agregan y Centavot no usa, y un dato que faltaba en el aviso.
+
+**Qué se hizo.**
+
+- **Manifiesto** (`androidApp/src/main/AndroidManifest.xml`, con `tools:node="remove"`):
+  - se quitaron los permisos `USE_BIOMETRIC` y `USE_FINGERPRINT`;
+  - se quitaron las pantallas `GenericIdpActivity` y `RecaptchaActivity` de Firebase Auth, que quedaban
+    abiertas a otras apps y solo sirven para ingresar por el navegador.
+- **Aviso de privacidad `2026-11b`:** "Tu cuenta (nombre y correo) queda guardada en servidores de Google
+  fuera del Perú; tus movimientos no" (flujo transfronterizo, Ley 29733). La app lo vuelve a pedir.
+
+**Resultado en el APK final con R8.**
+
+| | Paso 40 | Paso 41 |
+|---|---|---|
+| Permisos | 5 | **3**: internet, estado de la red y servicios de Google |
+| Componentes abiertos a otras apps | 5 | **3**: `MainActivity` y 2 protegidos por permisos de Google y del sistema |
+| APK | 8.4 MB | 8.4 MB |
+
+**Verificación.** Pasan los **143** tests. Falta volver a entrar con Google en el teléfono con esta
+versión (Ajustes → Cerrar sesión → Continuar con Google) para confirmar que el ingreso sigue bien.
+
+**Fuera de la app (lo hace el equipo):** restringir las llaves de Firebase en Google Cloud, el correo
+del responsable de los datos (DE7) y, al publicar, la huella SHA-1 de la llave de Play Store.
