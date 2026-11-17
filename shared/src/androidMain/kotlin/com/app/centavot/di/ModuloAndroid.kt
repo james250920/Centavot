@@ -1,5 +1,8 @@
 package com.app.centavot.di
 
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpTimeout
 import com.app.centavot.core.util.AbridorEnlaces
 import com.app.centavot.core.util.AbridorEnlacesAndroid
 import com.app.centavot.core.util.CompartidorArchivos
@@ -16,4 +19,5 @@ val moduloAndroid = module {
     single<CompartidorArchivos> { CompartidorArchivosAndroid(androidContext()) }
     single<AbridorEnlaces> { AbridorEnlacesAndroid(androidContext()) }
     single<GeneradorPdf> { GeneradorPdfAndroid() }
+    single { HttpClient(OkHttp) { install(HttpTimeout) { requestTimeoutMillis = 30_000; connectTimeoutMillis = 10_000 } } }
 }

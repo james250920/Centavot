@@ -22,6 +22,9 @@ interface Sesion {
     val usuario: StateFlow<UsuarioSesion?>
     suspend fun entrarConGoogle(): ResultadoIngreso
     suspend fun cerrarSesion()
+
+    /** Token para llamar al backend (el ID token de Firebase, se renueva solo); null sin sesión. */
+    suspend fun token(): String? = null
 }
 
 /** Sin ingreso: la app funciona como antes (iOS mientras no tenga Firebase, y las pruebas). */

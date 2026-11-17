@@ -128,7 +128,12 @@ class AjustesViewModel(
     fun confirmarBorrado() {
         viewModelScope.launch {
             _estado.update { it.copy(confirmandoBorrado = false, trabajandoConDatos = true) }
-            borrarTodos()
+            try {
+                borrarTodos()
+            } catch (e: IllegalStateException) {
+                _estado.update { it.copy(trabajandoConDatos = false) }
+                avisos.mostrar(Aviso(e.message ?: "No se pudo borrar. Inténtalo otra vez."))
+            }
         }
     }
 

@@ -7,6 +7,13 @@ val propiedadesFirma = Properties().apply {
     if (archivo.exists()) archivo.inputStream().use(::load)
 }
 
+// URL del backend: https://cv.menfroyt-dev.com. Para probar con un backend local, en local.properties (no va a git):
+// centavot.apiUrl=http://localhost:3001 (con adb reverse). Vacía = la app no sincroniza.
+val apiUrl: String = Properties().apply {
+    val archivo = rootProject.file("local.properties")
+    if (archivo.exists()) archivo.inputStream().use(::load)
+}.getProperty("centavot.apiUrl", "https://cv.menfroyt-dev.com")
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
@@ -48,6 +55,10 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "CENTAVOT_API_URL", "\"$apiUrl\"")
+    }
+    buildFeatures {
+        buildConfig = true
     }
     packaging {
         resources {

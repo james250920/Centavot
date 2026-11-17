@@ -3,6 +3,9 @@ package com.app.centavot.di
 import com.app.centavot.core.util.Reloj
 import com.app.centavot.core.util.RelojSistema
 import com.app.centavot.data.local.CentavotDatabase
+import com.app.centavot.data.sync.ApiCentavot
+import com.app.centavot.data.sync.ConfigApi
+import com.app.centavot.data.sync.Sincronizador
 import com.app.centavot.data.repository.ActividadRepositoryImpl
 import com.app.centavot.data.repository.CobroRepositoryImpl
 import com.app.centavot.data.repository.DatosRepositoryImpl
@@ -127,6 +130,11 @@ val moduloData = module {
     single { get<CentavotDatabase>().datosDao() }
     single { get<CentavotDatabase>().presupuestoDao() }
     single { get<CentavotDatabase>().metaDao() }
+    single { get<CentavotDatabase>().syncDao() }
+    // Sin URL no hay sincronización: cada plataforma reemplaza ConfigApi y registra su HttpClient.
+    single { ConfigApi("") }
+    single { ApiCentavot(get(), get()) }
+    single { Sincronizador(get(), get(), get(), get(), get(), get(), get()) }
     single<GastoRepository> { GastoRepositoryImpl(get()) }
     single<RegimenRepository> { RegimenRepositoryImpl(get()) }
     single<PerfilRepository> { PerfilRepositoryImpl(get()) }
@@ -135,7 +143,7 @@ val moduloData = module {
     single<NotificacionRepository> { NotificacionRepositoryImpl(get()) }
     single<IngresoRepository> { IngresoRepositoryImpl(get()) }
     single<UsoRepository> { UsoRepositoryImpl(get()) }
-    single<DatosRepository> { DatosRepositoryImpl(get()) }
+    single<DatosRepository> { DatosRepositoryImpl(get(), get()) }
     single<PresupuestoRepository> { PresupuestoRepositoryImpl(get()) }
     single<MetaRepository> { MetaRepositoryImpl(get()) }
 }

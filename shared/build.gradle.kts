@@ -52,6 +52,10 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.androidx.core.ktx)
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.ktor.client.okhttp)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -70,10 +74,14 @@ kotlin {
             implementation(libs.navigation.compose)
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
+            // Sincronización con el backend (/v1/sync).
+            implementation(libs.ktor.client.core)
+            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.client.mock)
         }
     }
 }

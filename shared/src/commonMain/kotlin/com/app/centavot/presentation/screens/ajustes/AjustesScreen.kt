@@ -268,7 +268,7 @@ fun AjustesScreen(
     if (estado.confirmandoBorrado) {
         DialogoConfirmar(
             titulo = "¿Borrar todos tus datos?",
-            mensaje = "Se borrarán de este celular tus ventas, gastos, cobros, contactos, tu perfil y tu historial. " +
+            mensaje = "Se borrarán de este celular (y de tu cuenta en Centavot) tus ventas, gastos, cobros, contactos, tu perfil y tu historial. " +
                 "No se puede deshacer. Si quieres guardar una copia, primero usa \"Exportar todos mis datos\".",
             textoConfirmar = "Borrar todo",
             onConfirmar = viewModel::confirmarBorrado,

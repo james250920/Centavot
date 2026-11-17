@@ -24,19 +24,23 @@ import kotlinx.coroutines.IO
         MontoPresupuestoEntity::class,
         MetaEntity::class,
         AbonoMetaEntity::class,
+        CambioPendienteEntity::class,
+        AjusteSyncEntity::class,
     ],
-    version = 6,
+    version = 7,
     // v2: subcategoría del gasto, perfil, contactos, cobros, actividad y notificaciones.
     // v3: ingresos (ventas), eventos de uso, y tipo, adelanto y abonos de los cobros.
     // v4: modo de uso (negocio o personal), retiros para la casa y categoría de los cobros.
     // v5: presupuesto (partidas y montos por mes), metas con sus abonos, y la partida de cada gasto e ingreso.
     // v6: tipo de cada partida (fijo, variable, prescindible, ahorro), partidas semanales y de deudas.
+    // v7: cambios pendientes de subir al backend y marcas de la sincronización.
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7),
     ],
 )
 @ConstructedBy(CentavotDatabaseConstructor::class)
@@ -52,6 +56,7 @@ abstract class CentavotDatabase : RoomDatabase() {
     abstract fun datosDao(): DatosDao
     abstract fun presupuestoDao(): PresupuestoDao
     abstract fun metaDao(): MetaDao
+    abstract fun syncDao(): SyncDao
 }
 
 // Room genera la implementación de cada plataforma.
@@ -64,4 +69,5 @@ fun crearDatabase(builder: RoomDatabase.Builder<CentavotDatabase>): CentavotData
     builder
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
+        .addCallback(DisparadoresSync)
         .build()

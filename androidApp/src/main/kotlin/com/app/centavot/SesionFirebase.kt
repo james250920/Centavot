@@ -78,5 +78,8 @@ class SesionFirebase(private val contexto: Context) : Sesion {
         runCatching { CredentialManager.create(contexto).clearCredentialState(ClearCredentialStateRequest()) }
     }
 
+    override suspend fun token(): String? =
+        runCatching { auth.currentUser?.getIdToken(false)?.await()?.token }.getOrNull()
+
     private fun FirebaseUser.aUsuario() = UsuarioSesion(nombre = displayName, correo = email)
 }

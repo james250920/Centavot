@@ -24,8 +24,16 @@ firebaseBom = "35.1.0"
 androidx-credentials = "1.5.0"
 googleid = "1.1.1"
 googleServices = "4.5.0"
+ktor = "3.6.1"
+# La misma que usa Ktor 3.6.1.
+kotlinx-serialization = "1.11.0"
 
 [libraries]
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidx-credentials" }
