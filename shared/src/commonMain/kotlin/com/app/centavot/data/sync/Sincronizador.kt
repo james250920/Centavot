@@ -127,7 +127,8 @@ class Sincronizador(
             api.obtenerPerfil(token)?.let { r ->
                 val p = PerfilEntity(
                     nombre = r.nombre, rubro = r.rubro, ingresoMensualCentimos = r.ingresoMensualCentimos, tasaAhorroDecimas = r.tasaAhorroDecimas,
-                    modo = r.modo, celular = r.celular, aceptaWhatsapp = r.aceptaWhatsapp,
+                    // El modo (negocio o personal) es de cada dispositivo: se conserva el de este teléfono.
+                    modo = local?.modo ?: r.modo, celular = r.celular, aceptaWhatsapp = r.aceptaWhatsapp,
                 )
                 if (local == null || huella(p) != huella(local)) perfilDao.guardar(p)
                 sync.guardarAjuste(AjusteSyncEntity(AJ_PERFIL, huella(p)))
@@ -228,7 +229,8 @@ class Sincronizador(
             "partidas" to "partidas", "contactos" to "contactos", "ingresos" to "ingresos", "gastos" to "gastos",
             "cobros" to "cobros", "metas" to "metas", "abonos_meta" to "abonos",
         )
-        fun huella(p: PerfilEntity) = listOf(p.nombre, p.modo, p.rubro, p.ingresoMensualCentimos, p.tasaAhorroDecimas, p.celular, p.aceptaWhatsapp).joinToString("|")
+        /** Sin el modo: es una preferencia de vista de cada dispositivo, cambiarlo no sube el perfil. */
+        fun huella(p: PerfilEntity) = listOf(p.nombre, p.rubro, p.ingresoMensualCentimos, p.tasaAhorroDecimas, p.celular, p.aceptaWhatsapp).joinToString("|")
     }
 }
 
