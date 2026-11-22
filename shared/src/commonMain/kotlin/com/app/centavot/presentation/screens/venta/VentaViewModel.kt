@@ -1,5 +1,6 @@
 package com.app.centavot.presentation.screens.venta
 
+import com.app.centavot.presentation.screens.compartido.BandejaCompartidos
 import com.app.centavot.presentation.Avisos
 import com.app.centavot.presentation.Aviso
 import com.app.centavot.presentation.components.formatearRelativo
@@ -104,6 +105,7 @@ class VentaViewModel(
     private val observarModo: ObservarModoUseCase,
     private val observarPartidas: ObservarPartidasUseCase,
     reloj: Reloj,
+    private val bandeja: BandejaCompartidos,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(
@@ -124,6 +126,17 @@ class VentaViewModel(
         }
         val fuentes = fuentesDe(tipo)
         _estado.update { it.copy(cargando = false, tipo = tipo, fuentes = fuentes, partidaId = porDefecto(tipo, fuentes)) }
+        // Viene de "Compartir" ("Te yapearon") ya leído: se llena el formulario para revisar y guardar.
+        if (tipo != TipoEntrada.RETIRO) bandeja.tomarBorrador(ingreso = true)?.let { l ->
+            _estado.update { e ->
+                e.copy(
+                    montoTexto = l.monto?.comoTextoEditable() ?: e.montoTexto,
+                    fecha = l.fecha?.takeIf { it <= e.hoy } ?: e.fecha,
+                    descripcion = l.descripcion?.take(MAX_DESCRIPCION) ?: e.descripcion,
+                )
+            }
+            if (l.revisar.isNotEmpty()) avisos.mostrar(Aviso("Revisa: " + l.revisar.joinToString(" ")))
+        }
         if (tipo != TipoEntrada.RETIRO) {
             observarFrecuentes(categoriaDe(tipo)).collect { frecuentes -> _estado.update { it.copy(frecuentes = frecuentes) } }
         }

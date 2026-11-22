@@ -77,4 +77,5 @@ data class LoteDto(
 // OCR de boletas: POST /v1/comprobantes/leer
 @Serializable data class LeerComprobanteDto(val imagenBase64: String, val tipo: String)
 @Serializable data class GastoBorradorDto(val montoCentimos: Long, val fecha: String, val subcategoria: String? = null, val descripcion: String? = null)
-@Serializable data class BorradorDto(val gasto: GastoBorradorDto? = null, val revisar: List<String> = emptyList())
+@Serializable data class IngresoBorradorDto(val montoCentimos: Long, val fecha: String, val descripcion: String? = null)
+@Serializable data class BorradorDto(val gasto: GastoBorradorDto? = null, val ingreso: IngresoBorradorDto? = null, val revisar: List<String> = emptyList())

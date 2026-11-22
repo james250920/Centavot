@@ -27,6 +27,12 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Aparece en "Compartir" de otras apps (constancias de Yape/Plin, fotos de boletas) para anotarlas. -->
+            <intent-filter android:label="Anotar en Centavot">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
         </activity>
 
         <!-- Comparte el reporte exportado sin exponer el resto de archivos de la app. -->

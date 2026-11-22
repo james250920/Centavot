@@ -16,6 +16,7 @@ import com.app.centavot.domain.model.aplicaA
 import com.app.centavot.domain.model.OrigenGasto
 import com.app.centavot.domain.repository.LectorDeBoletas
 import com.app.centavot.domain.repository.LecturaBoleta
+import com.app.centavot.presentation.screens.compartido.BandejaCompartidos
 import com.app.centavot.domain.usecase.EliminarGastoUseCase
 import com.app.centavot.domain.usecase.GuardarGastoUseCase
 import com.app.centavot.domain.usecase.ObtenerGastoUseCase
@@ -70,6 +71,7 @@ class GastoViewModel(
     private val observarPartidas: ObservarPartidasUseCase,
     reloj: Reloj,
     private val lector: LectorDeBoletas,
+    private val bandeja: BandejaCompartidos,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(
@@ -83,7 +85,13 @@ class GastoViewModel(
             val categoriaDelModo = modo.categoria
             val partidas = observarPartidas(modo).first().paraRegistrarGasto()
             _estado.update { it.copy(partidas = partidas) }
-            if (id != null) cargar(id, categoriaDelModo) else _estado.update { it.copy(cargando = false, categoria = categoriaDelModo) }
+            if (id != null) {
+                cargar(id, categoriaDelModo)
+            } else {
+                _estado.update { it.copy(cargando = false, categoria = categoriaDelModo) }
+                // Viene de "Compartir" (constancia de Yape o foto de boleta) ya leída: se llena el formulario.
+                bandeja.tomarBorrador(ingreso = false)?.let(::aplicarLectura)
+            }
         }
     }
 
@@ -130,7 +138,18 @@ class GastoViewModel(
         viewModelScope.launch {
             _estado.update { it.copy(leyendoFoto = true, revisarFoto = emptyList()) }
             when (val lectura = lector.leer(jpeg)) {
-                is LecturaBoleta.Leida -> _estado.update { e ->
+                is LecturaBoleta.Leida -> aplicarLectura(lectura)
+                is LecturaBoleta.Error -> {
+                    _estado.update { it.copy(leyendoFoto = false) }
+                    avisos.mostrar(Aviso(lectura.mensaje))
+                }
+            }
+        }
+    }
+
+    /** Llena el formulario con lo leído (de la foto o de lo compartido); la persona revisa y guarda. */
+    private fun aplicarLectura(lectura: LecturaBoleta.Leida) {
+        _estado.update { e ->
                     e.copy(
                         leyendoFoto = false,
                         deFoto = true,
@@ -142,12 +161,6 @@ class GastoViewModel(
                         descripcion = lectura.descripcion?.take(MAX_DESCRIPCION) ?: e.descripcion,
                         revisarFoto = lectura.revisar,
                     )
-                }
-                is LecturaBoleta.Error -> {
-                    _estado.update { it.copy(leyendoFoto = false) }
-                    avisos.mostrar(Aviso(lectura.mensaje))
-                }
-            }
         }
     }
 

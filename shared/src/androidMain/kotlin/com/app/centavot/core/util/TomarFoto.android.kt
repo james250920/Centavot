@@ -35,7 +35,7 @@ actual fun rememberTomarFoto(alTenerFoto: (ByteArray?) -> Unit): AccionesFoto {
     fun procesar(uri: Uri?) {
         if (uri == null) { alTenerFoto(null); return }
         alcance.launch {
-            val jpeg = withContext(Dispatchers.IO) { runCatching { comprimir(contexto, uri) }.getOrNull() }
+            val jpeg = withContext(Dispatchers.IO) { runCatching { comprimirFoto(contexto, uri) }.getOrNull() }
             alTenerFoto(jpeg)
         }
     }
@@ -62,8 +62,8 @@ actual fun rememberTomarFoto(alTenerFoto: (ByteArray?) -> Unit): AccionesFoto {
     }
 }
 
-/** Abre la foto girada según la cámara (EXIF), la reduce y la pasa a JPEG. */
-private fun comprimir(contexto: Context, uri: Uri): ByteArray {
+/** Abre la foto girada según la cámara (EXIF), la reduce y la pasa a JPEG. También la usa lo que llega por "Compartir". */
+fun comprimirFoto(contexto: Context, uri: Uri): ByteArray {
     val original: Bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         val fuente = ImageDecoder.createSource(contexto.contentResolver, uri)
         ImageDecoder.decodeBitmap(fuente) { decodificador, info, _ ->

@@ -23,6 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
+import com.app.centavot.presentation.screens.compartido.CompartidoScreen
+import com.app.centavot.presentation.screens.compartido.BandejaCompartidos
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -63,6 +66,7 @@ private val ALTO_BOTON_INFERIOR = 80.dp
 @Composable
 fun NavegacionPrincipal() {
     val nav = rememberNavController()
+    val bandejaCompartidos = koinInject<BandejaCompartidos>()
     val entradaActual by nav.currentBackStackEntryAsState()
     val pestanaActual = Pestana.entries.firstOrNull { pestana ->
         entradaActual?.destination?.hasRoute(pestana.ruta::class) == true
@@ -115,6 +119,9 @@ fun NavegacionPrincipal() {
             }
         },
     ) { padding ->
+        // Llegó una imagen desde "Compartir" de otra app: se abre la pantalla que la lee.
+        val compartida by bandejaCompartidos.imagen.collectAsState()
+        LaunchedEffect(compartida) { if (compartida != null) nav.navigate(RutaCompartido) }
         NavHost(
             navController = nav,
             startDestination = RutaInicio,
@@ -193,6 +200,13 @@ fun NavegacionPrincipal() {
                 ReporteScreen(
                     onAbrirGasto = { nav.navigate(RutaGasto(it)) },
                     onAbrirVenta = { nav.navigate(RutaVenta(it)) },
+                )
+            }
+            composable<RutaCompartido> {
+                CompartidoScreen(
+                    onGasto = { nav.navigate(RutaGasto()) { popUpTo<RutaCompartido> { inclusive = true } } },
+                    onIngreso = { nav.navigate(RutaVenta()) { popUpTo<RutaCompartido> { inclusive = true } } },
+                    onCerrar = { nav.popBackStack() },
                 )
             }
             composable<RutaGasto> { entrada ->

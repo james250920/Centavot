@@ -55,3 +55,7 @@ data object RutaArmarPresupuesto
 
 @Serializable
 data object RutaMetas
+
+/** Lo que llega desde "Compartir" de otra app (constancia de Yape, foto de boleta). */
+@Serializable
+data object RutaCompartido

@@ -101,6 +101,8 @@ import com.app.centavot.presentation.screens.cobros.CobroViewModel
 import com.app.centavot.presentation.screens.cobros.CobrosViewModel
 import com.app.centavot.presentation.screens.cobros.ContactosViewModel
 import com.app.centavot.presentation.screens.gasto.GastoViewModel
+import com.app.centavot.presentation.screens.compartido.BandejaCompartidos
+import com.app.centavot.presentation.screens.compartido.CompartidoViewModel
 import com.app.centavot.presentation.screens.inicio.InicioViewModel
 import com.app.centavot.presentation.screens.metas.MetasViewModel
 import com.app.centavot.presentation.screens.movimientos.MovimientosViewModel
@@ -236,8 +238,10 @@ val moduloPresentation = module {
     viewModelOf(::PresupuestoViewModel)
     viewModelOf(::ArmarPresupuestoViewModel)
     viewModelOf(::MetasViewModel)
-    viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { (id: String?, retiro: Boolean) -> VentaViewModel(id, retiro, get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { BandejaCompartidos() }
+    viewModelOf(::CompartidoViewModel)
+    viewModel { (id: String?, retiro: Boolean) -> VentaViewModel(id, retiro, get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { (id: String?) -> CobroViewModel(id, get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 }
 

@@ -21,6 +21,13 @@ class LectorDeBoletasApi(
         val token = sesion.token() ?: return LecturaBoleta.Error("Entra con Google para leer boletas.")
         return try {
             val b = api.leerComprobante(token, Base64.encode(jpeg))
+            // Le pagaron (Yape recibido): el backend manda un ingreso en lugar de un gasto.
+            b.ingreso?.let { i ->
+                return LecturaBoleta.Leida(
+                    monto = Monto(i.montoCentimos), fecha = runCatching { LocalDate.parse(i.fecha) }.getOrNull(),
+                    subcategoria = null, descripcion = i.descripcion, revisar = b.revisar, esIngreso = true,
+                )
+            }
             val g = b.gasto
             LecturaBoleta.Leida(
                 monto = g?.let { Monto(it.montoCentimos) },
