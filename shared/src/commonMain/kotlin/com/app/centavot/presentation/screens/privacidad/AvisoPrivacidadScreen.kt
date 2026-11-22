@@ -39,7 +39,7 @@ private val APARTADOS = listOf(
         "Cómo entras",
         "Con tu cuenta de Google, a través de Firebase (de Google). Solo sirve para saber que eres tú: " +
             "Centavot recibe tu nombre y tu correo, nunca tu contraseña. Tu cuenta (nombre y correo) queda " +
-            "guardada en servidores de Google fuera del Perú; tus movimientos no.",
+            "guardada en servidores de Google fuera del Perú.",
     ),
     Apartado(
         "Qué datos guarda",
@@ -49,8 +49,15 @@ private val APARTADOS = listOf(
     ),
     Apartado(
         "Dónde se guardan",
-        "Tus movimientos, solo en este celular. No se envían a ningún servidor, banco ni a SUNAT, y no se copian " +
-            "solos a la nube. Si cambias o pierdes el celular, se pierden, salvo que los hayas exportado.",
+        "Primero en este celular, así funciona sin internet. Cuando hay conexión, se copian al servidor de " +
+            "Centavot, protegidos con tu cuenta de Google: así no los pierdes si cambias de celular y los ves también " +
+            "en la web. Cada persona solo puede ver sus propios datos. No se envían a bancos, a SUNAT ni a nadie más, " +
+            "y no se venden.",
+    ),
+    Apartado(
+        "Datos sensibles",
+        "Lo que ganas y vendes es un dato sensible según la Ley 29733. Al tocar «Entiendo y acepto» das tu " +
+            "consentimiento expreso para guardarlo y copiarlo al servidor con los fines de este aviso.",
     ),
     Apartado(
         "Para qué se usan",
@@ -65,7 +72,8 @@ private val APARTADOS = listOf(
     Apartado(
         "Tus derechos (Ley 29733)",
         "Puedes ver y llevarte tus datos (Ajustes → Exportar todos mis datos), corregirlos (editando " +
-            "cada registro) y borrarlos (Ajustes → Borrar todos mis datos).",
+            "cada registro) y borrarlos (Ajustes → Borrar todos mis datos). Borrar también los elimina del " +
+            "servidor de Centavot.",
     ),
     Apartado(
         "Si el aviso cambia",

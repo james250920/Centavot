@@ -56,7 +56,7 @@ fun IngresarScreen(ingresando: Boolean, error: String?, onEntrar: () -> Unit) {
         }
         Spacer(Modifier.height(16.dp))
         Text(
-            "Sin contraseña nueva: usas la cuenta de Google de tu celular. Tus movimientos se quedan en tu celular.",
+            "Sin contraseña nueva: usas la cuenta de Google de tu celular. Tus movimientos se guardan en tu cuenta, también en la web.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

@@ -350,7 +350,7 @@ private fun TarjetaPrivacidad() {
             Icon(Iconos.Candado, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             // Lo esencial en una frase; el detalle está en "Ver aviso de privacidad".
             Text(
-                "Todo queda en tu celular. Sin banco ni SUNAT.",
+                "En tu celular y en tu cuenta de Centavot. Sin banco ni SUNAT.",
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

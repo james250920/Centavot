@@ -62,6 +62,10 @@ class Sincronizador(
         if (!config.activa) return
         if (candado.isLocked) return
         candado.withLock {
+            // Ley 29733: nada sale del teléfono hasta aceptar la versión vigente del aviso (que explica la sincronización).
+            val aceptado = eventos.observarTodos().first()
+                .any { it.tipo == TipoEventoUso.CONSENTIMIENTO_PRIVACIDAD.name && it.valor == VERSION_AVISO_PRIVACIDAD }
+            if (!aceptado) return
             val token = sesion.token() ?: return
             _estado.value = _estado.value.copy(ocupado = true)
             _estado.value = try {
