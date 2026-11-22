@@ -27,6 +27,8 @@ fun PerfilEntity.toDomain() = Perfil(
     ingresoMensual = Monto(ingresoMensualCentimos),
     tasaAhorro = TasaAhorro(tasaAhorroDecimas),
     modo = Modo.valueOf(modo),
+    celular = celular,
+    aceptaWhatsapp = aceptaWhatsapp,
 )
 
 fun Perfil.toEntity() = PerfilEntity(
@@ -35,6 +37,8 @@ fun Perfil.toEntity() = PerfilEntity(
     ingresoMensualCentimos = ingresoMensual.centimos,
     tasaAhorroDecimas = tasaAhorro.decimas,
     modo = modo.name,
+    celular = celular,
+    aceptaWhatsapp = aceptaWhatsapp && celular != null,
 )
 
 fun ContactoEntity.toDomain() = Contacto(id = id, nombre = nombre, telefono = telefono)

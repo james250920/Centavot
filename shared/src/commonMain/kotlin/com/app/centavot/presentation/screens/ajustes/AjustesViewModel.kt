@@ -40,6 +40,10 @@ data class AjustesUiState(
     val modo: Modo? = null,
     val ingresoTexto: String = "",
     val tasaTexto: String = "",
+    /** Celular sin el +51, como lo escribe la persona. */
+    val celularTexto: String = "",
+    val aceptaWhatsapp: Boolean = false,
+    val errorCelular: String? = null,
     val regimen: RegimenTributario? = null,
     val uso: ResumenUso? = null,
     val planes: IndicadoresPlanes? = null,
@@ -80,6 +84,8 @@ class AjustesViewModel(
                     modo = perfil?.modo,
                     ingresoTexto = perfil?.ingresoMensual?.takeIf { m -> m > Monto.CERO }?.comoTextoEditable().orEmpty(),
                     tasaTexto = perfil?.tasaAhorro?.takeIf { t -> t.decimas > 0 }?.comoTextoEditable().orEmpty(),
+                    celularTexto = perfil?.celular?.removePrefix("+51").orEmpty(),
+                    aceptaWhatsapp = perfil?.aceptaWhatsapp ?: false,
                 )
             }
         }
@@ -98,6 +104,14 @@ class AjustesViewModel(
     fun onNombreCambiado(texto: String) = _estado.update { it.copy(nombre = texto.take(MAX_NOMBRE), errorNombre = null) }
 
     fun onRubroElegido(rubro: Rubro?) = _estado.update { it.copy(rubro = rubro) }
+
+    fun onCelularCambiado(texto: String) {
+        val filtrado = texto.filter { it.isDigit() || it == ' ' || it == '+' }.take(16)
+        // Sin celular no se puede dar el permiso de WhatsApp.
+        _estado.update { it.copy(celularTexto = filtrado, errorCelular = null, aceptaWhatsapp = it.aceptaWhatsapp && filtrado.isNotBlank()) }
+    }
+
+    fun onWhatsappCambiado(acepta: Boolean) = _estado.update { it.copy(aceptaWhatsapp = acepta && it.celularTexto.isNotBlank()) }
 
     fun onModoElegido(modo: Modo) = _estado.update { it.copy(modo = modo, errorModo = null) }
 
@@ -156,7 +170,7 @@ class AjustesViewModel(
 
         viewModelScope.launch {
             _estado.update { it.copy(guardando = true) }
-            val perfil = Perfil(actual.nombre, actual.rubro, ingreso, tasa, modo)
+            val perfil = Perfil(actual.nombre, actual.rubro, ingreso, tasa, modo, actual.celularTexto, actual.aceptaWhatsapp)
             _estado.update {
                 when (guardarPerfil(perfil)) {
                     is GuardarPerfilUseCase.Resultado.Guardado -> {
@@ -165,6 +179,8 @@ class AjustesViewModel(
                     }
                     GuardarPerfilUseCase.Resultado.NombreVacio ->
                         it.copy(guardando = false, errorNombre = "Escribe cómo quieres que te llamemos")
+                    GuardarPerfilUseCase.Resultado.CelularInvalido ->
+                        it.copy(guardando = false, errorCelular = "Escribe tu celular de 9 dígitos (por ejemplo 987 654 321)")
                 }
             }
         }

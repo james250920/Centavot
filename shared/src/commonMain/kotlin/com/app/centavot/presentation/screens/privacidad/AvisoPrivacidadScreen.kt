@@ -65,6 +65,12 @@ private val APARTADOS = listOf(
             "te deben. Nada más.",
     ),
     Apartado(
+        "Mensajes por WhatsApp",
+        "Solo si pones tu celular y marcas aparte «Acepto que el equipo de Centavot me escriba por WhatsApp», el " +
+            "equipo podrá escribirte para avisos y novedades del piloto. Es opcional y puedes quitarlo cuando quieras " +
+            "en Ajustes; sin ese permiso nadie te escribe.",
+    ),
+    Apartado(
         "Datos de otras personas",
         "Si guardas el celular de un cliente, hazlo con su permiso. Solo se usa para abrir WhatsApp " +
             "cuando tú decides enviarle un recordatorio.",

@@ -12,6 +12,7 @@ data class PerfilDto(
     val celular: String? = null,
     val ingresoMensualCentimos: Long = 0,
     val tasaAhorroDecimas: Int = 0,
+    val aceptaWhatsapp: Boolean = false,
 )
 
 @Serializable data class RegimenDto(val tipo: String, val nombre: String, val topeCentimos: Long, val periodo: String)

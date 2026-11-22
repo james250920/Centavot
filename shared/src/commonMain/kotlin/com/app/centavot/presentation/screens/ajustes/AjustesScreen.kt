@@ -22,6 +22,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -166,6 +169,34 @@ fun AjustesScreen(
                             onSeleccionar = viewModel::onRubroElegido,
                         )
                     }
+                }
+
+                OutlinedTextField(
+                    value = estado.celularTexto,
+                    onValueChange = viewModel::onCelularCambiado,
+                    label = { Text("Tu celular (opcional)") },
+                    isError = estado.errorCelular != null,
+                    supportingText = { Text(estado.errorCelular ?: "9 dígitos. No sirve para entrar.") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                // Consentimiento propio para WhatsApp (Ley 29733): sin marcar por defecto y solo con celular.
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().toggleable(
+                        value = estado.aceptaWhatsapp,
+                        enabled = estado.celularTexto.isNotBlank(),
+                        role = Role.Checkbox,
+                        onValueChange = viewModel::onWhatsappCambiado,
+                    ),
+                ) {
+                    Checkbox(checked = estado.aceptaWhatsapp, onCheckedChange = null, enabled = estado.celularTexto.isNotBlank())
+                    Text(
+                        "Acepto que el equipo de Centavot me escriba por WhatsApp (avisos y novedades del piloto). " +
+                            "Puedo quitarlo cuando quiera.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
             }
 

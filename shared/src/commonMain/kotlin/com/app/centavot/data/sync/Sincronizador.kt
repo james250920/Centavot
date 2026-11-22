@@ -118,13 +118,17 @@ class Sincronizador(
         val local = perfilDao.observar().first()
         val enviado = sync.ajuste(AJ_PERFIL)
         if (local != null && huella(local) != enviado) {
-            // El celular se anota en la web; el teléfono no lo tiene, así que se conserva el del servidor.
-            val celular = api.obtenerPerfil(token)?.celular
-            api.guardarPerfil(token, PerfilDto(local.nombre, local.modo, local.rubro, celular, local.ingresoMensualCentimos, local.tasaAhorroDecimas))
+            api.guardarPerfil(
+                token,
+                PerfilDto(local.nombre, local.modo, local.rubro, local.celular, local.ingresoMensualCentimos, local.tasaAhorroDecimas, local.aceptaWhatsapp),
+            )
             sync.guardarAjuste(AjusteSyncEntity(AJ_PERFIL, huella(local)))
         } else {
             api.obtenerPerfil(token)?.let { r ->
-                val p = PerfilEntity(nombre = r.nombre, rubro = r.rubro, ingresoMensualCentimos = r.ingresoMensualCentimos, tasaAhorroDecimas = r.tasaAhorroDecimas, modo = r.modo)
+                val p = PerfilEntity(
+                    nombre = r.nombre, rubro = r.rubro, ingresoMensualCentimos = r.ingresoMensualCentimos, tasaAhorroDecimas = r.tasaAhorroDecimas,
+                    modo = r.modo, celular = r.celular, aceptaWhatsapp = r.aceptaWhatsapp,
+                )
                 if (local == null || huella(p) != huella(local)) perfilDao.guardar(p)
                 sync.guardarAjuste(AjusteSyncEntity(AJ_PERFIL, huella(p)))
             }
@@ -224,7 +228,7 @@ class Sincronizador(
             "partidas" to "partidas", "contactos" to "contactos", "ingresos" to "ingresos", "gastos" to "gastos",
             "cobros" to "cobros", "metas" to "metas", "abonos_meta" to "abonos",
         )
-        fun huella(p: PerfilEntity) = listOf(p.nombre, p.modo, p.rubro, p.ingresoMensualCentimos, p.tasaAhorroDecimas).joinToString("|")
+        fun huella(p: PerfilEntity) = listOf(p.nombre, p.modo, p.rubro, p.ingresoMensualCentimos, p.tasaAhorroDecimas, p.celular, p.aceptaWhatsapp).joinToString("|")
     }
 }
 

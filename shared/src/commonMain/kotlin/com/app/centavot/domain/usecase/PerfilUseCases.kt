@@ -1,5 +1,6 @@
 package com.app.centavot.domain.usecase
 
+import com.app.centavot.domain.model.normalizarCelular
 import com.app.centavot.core.util.Reloj
 import com.app.centavot.domain.model.Modo
 import com.app.centavot.domain.model.Perfil
@@ -41,12 +42,15 @@ class GuardarPerfilUseCase(
     sealed interface Resultado {
         data class Guardado(val perfil: Perfil) : Resultado
         data object NombreVacio : Resultado
+        data object CelularInvalido : Resultado
     }
 
     suspend operator fun invoke(perfil: Perfil): Resultado {
         val nombre = perfil.nombre.trim()
         if (nombre.isEmpty()) return Resultado.NombreVacio
-        val limpio = perfil.copy(nombre = nombre)
+        val celular = try { normalizarCelular(perfil.celular) } catch (e: IllegalArgumentException) { return Resultado.CelularInvalido }
+        // Sin celular no hay permiso de WhatsApp.
+        val limpio = perfil.copy(nombre = nombre, celular = celular, aceptaWhatsapp = perfil.aceptaWhatsapp && celular != null)
         repositorio.guardar(limpio)
         actividades.registrar("Actualizaste tu perfil y ajustes financieros.", reloj.ahora())
         return Resultado.Guardado(limpio)

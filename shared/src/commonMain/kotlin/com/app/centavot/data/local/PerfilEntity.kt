@@ -15,6 +15,10 @@ data class PerfilEntity(
     val tasaAhorroDecimas: Int,
     /** v4: NEGOCIO o PERSONAL. Quien ya usaba la app sigue en modo negocio. */
     @ColumnInfo(defaultValue = "NEGOCIO") val modo: String = "NEGOCIO",
+    /** v8: celular en formato internacional (+51987654321), sin verificar. */
+    val celular: String? = null,
+    /** v8: aceptó que el equipo le escriba por WhatsApp (consentimiento propio, Ley 29733). */
+    @ColumnInfo(defaultValue = "0") val aceptaWhatsapp: Boolean = false,
 ) {
     companion object {
         const val ID_UNICO = 0

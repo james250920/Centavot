@@ -27,13 +27,14 @@ import kotlinx.coroutines.IO
         CambioPendienteEntity::class,
         AjusteSyncEntity::class,
     ],
-    version = 7,
+    version = 8,
     // v2: subcategoría del gasto, perfil, contactos, cobros, actividad y notificaciones.
     // v3: ingresos (ventas), eventos de uso, y tipo, adelanto y abonos de los cobros.
     // v4: modo de uso (negocio o personal), retiros para la casa y categoría de los cobros.
     // v5: presupuesto (partidas y montos por mes), metas con sus abonos, y la partida de cada gasto e ingreso.
     // v6: tipo de cada partida (fijo, variable, prescindible, ahorro), partidas semanales y de deudas.
     // v7: cambios pendientes de subir al backend y marcas de la sincronización.
+    // v8: celular del perfil y permiso para recibir mensajes por WhatsApp.
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -41,6 +42,7 @@ import kotlinx.coroutines.IO
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8),
     ],
 )
 @ConstructedBy(CentavotDatabaseConstructor::class)

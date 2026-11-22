@@ -25,7 +25,8 @@ enum class TipoEventoUso {
  * vuelve a pedir el consentimiento (Ley 29733).
  */
 // 2026-11c: los movimientos se copian al servidor de Centavot (sincronización).
-const val VERSION_AVISO_PRIVACIDAD = "2026-11c"
+// 2026-11d: mensajes por WhatsApp solo con un permiso aparte.
+const val VERSION_AVISO_PRIVACIDAD = "2026-11d"
 
 /** Registro anónimo de uso, guardado solo en el teléfono, para medir si la app sirve. */
 data class EventoUso(val tipo: TipoEventoUso, val fechaHora: LocalDateTime, val valor: String? = null)
