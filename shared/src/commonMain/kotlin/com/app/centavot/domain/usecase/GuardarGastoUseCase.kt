@@ -40,6 +40,8 @@ class GuardarGastoUseCase(
         descripcion: String?,
         subcategoria: SubcategoriaGasto? = null,
         partidaId: String? = null,
+        /** De dónde salió un gasto nuevo: escrito a mano o leído de la foto de una boleta. */
+        origen: OrigenGasto = OrigenGasto.TEXTO,
     ): Resultado {
         if (monto <= Monto.CERO) return Resultado.MontoInvalido
         if (fecha > reloj.hoy()) return Resultado.FechaFutura
@@ -50,7 +52,7 @@ class GuardarGastoUseCase(
                 id = generarId(),
                 monto = monto,
                 fecha = fecha,
-                origen = OrigenGasto.TEXTO,
+                origen = origen,
                 estado = EstadoGasto.CONFIRMADO,
             )
         } else {

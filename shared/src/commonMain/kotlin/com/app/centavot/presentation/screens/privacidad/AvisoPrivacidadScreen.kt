@@ -65,6 +65,12 @@ private val APARTADOS = listOf(
             "te deben. Nada más.",
     ),
     Apartado(
+        "Lectura de boletas",
+        "Si le tomas foto a una boleta o factura, la foto se envía a Google (Gemini, en EE. UU.) solo para leer el " +
+            "monto, la fecha y quién la emitió. Centavot no guarda la foto: tú revisas lo leído y decides si lo guardas. " +
+            "Es opcional; puedes anotar todo a mano.",
+    ),
+    Apartado(
         "Mensajes por WhatsApp",
         "Solo si pones tu celular y marcas aparte «Acepto que el equipo de Centavot me escriba por WhatsApp», el " +
             "equipo podrá escribirte para avisos y novedades del piloto. Es opcional y puedes quitarlo cuando quieras " +

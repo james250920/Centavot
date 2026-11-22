@@ -26,7 +26,8 @@ enum class TipoEventoUso {
  */
 // 2026-11c: los movimientos se copian al servidor de Centavot (sincronización).
 // 2026-11d: mensajes por WhatsApp solo con un permiso aparte.
-const val VERSION_AVISO_PRIVACIDAD = "2026-11d"
+// 2026-11e: la foto de la boleta se envía a Google (Gemini) para leerla.
+const val VERSION_AVISO_PRIVACIDAD = "2026-11e"
 
 /** Registro anónimo de uso, guardado solo en el teléfono, para medir si la app sirve. */
 data class EventoUso(val tipo: TipoEventoUso, val fechaHora: LocalDateTime, val valor: String? = null)

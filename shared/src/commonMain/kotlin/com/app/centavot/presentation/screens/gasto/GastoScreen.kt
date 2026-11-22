@@ -36,7 +36,17 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.centavot.core.util.AccionesFoto
+import com.app.centavot.core.util.rememberTomarFoto
 import com.app.centavot.domain.model.Categoria
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import com.app.centavot.domain.model.SubcategoriaGasto
 import com.app.centavot.domain.model.para
 import com.app.centavot.presentation.components.CampoFecha
@@ -53,6 +63,7 @@ fun GastoScreen(
     viewModel: GastoViewModel = koinViewModel { parametersOf(id) },
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
+    val fotos = rememberTomarFoto(viewModel::onFotoTomada)
 
     LaunchedEffect(estado.terminado) {
         if (estado.terminado) onCerrar()
@@ -77,7 +88,7 @@ fun GastoScreen(
         bottomBar = {
             Button(
                 onClick = viewModel::guardar,
-                enabled = !estado.guardando && !estado.cargando,
+                enabled = !estado.guardando && !estado.cargando && !estado.leyendoFoto,
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
@@ -103,6 +114,11 @@ fun GastoScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
+            // OCR: con la foto de la boleta se llena el formulario; la persona revisa y guarda.
+            if (!estado.esEdicion && fotos.disponible) {
+                TarjetaFotoBoleta(estado.leyendoFoto, estado.revisarFoto, fotos)
+            }
+
             OutlinedTextField(
                 value = estado.montoTexto,
                 onValueChange = viewModel::onMontoCambiado,
@@ -176,5 +192,45 @@ private fun Seccion(titulo: String, contenido: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(titulo, style = MaterialTheme.typography.titleSmall)
         contenido()
+    }
+}
+
+/** "¿Tienes la boleta?": tomar foto o elegirla de la galería, el aviso mientras se lee y lo que hay que revisar. */
+@Composable
+private fun TarjetaFotoBoleta(leyendo: Boolean, revisar: List<String>, fotos: AccionesFoto) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("¿Tienes la boleta o factura?", style = MaterialTheme.typography.titleMedium)
+            if (leyendo) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                ) {
+                    CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 3.dp)
+                    Text("Leyendo la boleta… puede tardar hasta un minuto.", style = MaterialTheme.typography.bodyMedium)
+                }
+            } else {
+                Text("Tómale una foto y Centavot llena el gasto por ti. Revisa antes de guardar.", style = MaterialTheme.typography.bodyMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    Button(onClick = fotos.tomarFoto, modifier = Modifier.weight(1f).height(48.dp)) {
+                        Icon(Iconos.Camara, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Text("  Tomar foto")
+                    }
+                    OutlinedButton(onClick = fotos.elegirDeGaleria, modifier = Modifier.weight(1f).height(48.dp)) {
+                        Text("De la galería")
+                    }
+                }
+            }
+            if (revisar.isNotEmpty()) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                ) {
+                    Text("Revisa antes de guardar:", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error)
+                    revisar.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+                }
+            }
+        }
     }
 }

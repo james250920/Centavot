@@ -13,6 +13,9 @@ import com.app.centavot.domain.model.Partida
 import com.app.centavot.domain.model.paraRegistrarGasto
 import com.app.centavot.domain.model.SubcategoriaGasto
 import com.app.centavot.domain.model.aplicaA
+import com.app.centavot.domain.model.OrigenGasto
+import com.app.centavot.domain.repository.LectorDeBoletas
+import com.app.centavot.domain.repository.LecturaBoleta
 import com.app.centavot.domain.usecase.EliminarGastoUseCase
 import com.app.centavot.domain.usecase.GuardarGastoUseCase
 import com.app.centavot.domain.usecase.ObtenerGastoUseCase
@@ -48,6 +51,12 @@ data class GastoUiState(
     val guardando: Boolean = false,
     val confirmandoEliminar: Boolean = false,
     val terminado: Boolean = false,
+    /** Se está leyendo la foto de una boleta (puede tardar hasta un minuto). */
+    val leyendoFoto: Boolean = false,
+    /** Lo que la persona debe revisar después de leer la boleta. */
+    val revisarFoto: List<String> = emptyList(),
+    /** Los datos vinieron de la foto de una boleta. */
+    val deFoto: Boolean = false,
 )
 
 /** Registrar un gasto nuevo ([id] null) del modo actual, o editar uno existente. */
@@ -60,6 +69,7 @@ class GastoViewModel(
     private val observarModo: ObservarModoUseCase,
     private val observarPartidas: ObservarPartidasUseCase,
     reloj: Reloj,
+    private val lector: LectorDeBoletas,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(
@@ -110,6 +120,37 @@ class GastoViewModel(
     fun onDescripcionCambiada(texto: String) =
         _estado.update { it.copy(descripcion = texto.take(MAX_DESCRIPCION)) }
 
+    /** Llena el formulario con lo leído de la foto; la persona revisa y guarda. [jpeg] null = no se pudo abrir la foto. */
+    fun onFotoTomada(jpeg: ByteArray?) {
+        if (_estado.value.leyendoFoto) return
+        if (jpeg == null) {
+            avisos.mostrar(Aviso("No se pudo abrir la foto. Inténtalo otra vez."))
+            return
+        }
+        viewModelScope.launch {
+            _estado.update { it.copy(leyendoFoto = true, revisarFoto = emptyList()) }
+            when (val lectura = lector.leer(jpeg)) {
+                is LecturaBoleta.Leida -> _estado.update { e ->
+                    e.copy(
+                        leyendoFoto = false,
+                        deFoto = true,
+                        montoTexto = lectura.monto?.comoTextoEditable() ?: e.montoTexto,
+                        errorMonto = null,
+                        fecha = lectura.fecha?.takeIf { it <= e.hoy } ?: e.fecha,
+                        errorFecha = null,
+                        subcategoria = lectura.subcategoria?.takeIf { it.aplicaA(e.categoria) } ?: e.subcategoria,
+                        descripcion = lectura.descripcion?.take(MAX_DESCRIPCION) ?: e.descripcion,
+                        revisarFoto = lectura.revisar,
+                    )
+                }
+                is LecturaBoleta.Error -> {
+                    _estado.update { it.copy(leyendoFoto = false) }
+                    avisos.mostrar(Aviso(lectura.mensaje))
+                }
+            }
+        }
+    }
+
     fun onFechaElegida(fecha: LocalDate) = _estado.update { it.copy(fecha = fecha, errorFecha = null) }
 
     fun guardar() {
@@ -123,7 +164,8 @@ class GastoViewModel(
 
         viewModelScope.launch {
             _estado.update { it.copy(guardando = true) }
-            val resultado = guardarGasto(id, monto, categoria, actual.fecha, actual.descripcion, actual.subcategoria, actual.partidaId)
+            val origen = if (actual.deFoto) OrigenGasto.FOTO else OrigenGasto.TEXTO
+            val resultado = guardarGasto(id, monto, categoria, actual.fecha, actual.descripcion, actual.subcategoria, actual.partidaId, origen)
             if (resultado is GuardarGastoUseCase.Resultado.Guardado) avisarGuardado(resultado.gasto)
             _estado.update {
                 when (resultado) {

@@ -6,6 +6,8 @@ import com.app.centavot.data.local.CentavotDatabase
 import com.app.centavot.data.sync.ApiCentavot
 import com.app.centavot.data.sync.ConfigApi
 import com.app.centavot.data.sync.Sincronizador
+import com.app.centavot.data.sync.LectorDeBoletasApi
+import com.app.centavot.domain.repository.LectorDeBoletas
 import com.app.centavot.data.repository.ActividadRepositoryImpl
 import com.app.centavot.data.repository.CobroRepositoryImpl
 import com.app.centavot.data.repository.DatosRepositoryImpl
@@ -135,6 +137,7 @@ val moduloData = module {
     single { ConfigApi("") }
     single { ApiCentavot(get(), get()) }
     single { Sincronizador(get(), get(), get(), get(), get(), get(), get()) }
+    single<LectorDeBoletas> { LectorDeBoletasApi(get(), get(), get()) }
     single<GastoRepository> { GastoRepositoryImpl(get()) }
     single<RegimenRepository> { RegimenRepositoryImpl(get()) }
     single<PerfilRepository> { PerfilRepositoryImpl(get()) }
@@ -233,7 +236,7 @@ val moduloPresentation = module {
     viewModelOf(::PresupuestoViewModel)
     viewModelOf(::ArmarPresupuestoViewModel)
     viewModelOf(::MetasViewModel)
-    viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { (id: String?) -> GastoViewModel(id, get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { (id: String?, retiro: Boolean) -> VentaViewModel(id, retiro, get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { (id: String?) -> CobroViewModel(id, get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 }

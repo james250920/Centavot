@@ -1,5 +1,7 @@
 package com.app.centavot.di
 
+import com.app.centavot.domain.repository.LectorDeBoletas
+import com.app.centavot.domain.repository.LecturaBoleta
 import com.app.centavot.core.util.AbridorEnlaces
 import com.app.centavot.core.util.CompartidorArchivos
 import com.app.centavot.core.util.GeneradorPdf
@@ -64,6 +66,7 @@ class ModulosTest {
 
     private val moduloFakes = module {
         single<GastoRepository> { FakeGastoRepository() }
+        single<LectorDeBoletas> { LectorDeBoletas { LecturaBoleta.Error("sin lector en pruebas") } }
         single<IngresoRepository> { FakeIngresoRepository() }
         single<RegimenRepository> { FakeRegimenRepository() }
         single<PerfilRepository> {
