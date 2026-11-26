@@ -7,6 +7,9 @@ import com.app.centavot.data.sync.ApiCentavot
 import com.app.centavot.data.sync.ConfigApi
 import com.app.centavot.data.sync.Sincronizador
 import com.app.centavot.data.sync.LectorDeBoletasApi
+import com.app.centavot.data.sync.LimpiadorLocal
+import com.app.centavot.data.sync.CuentaLocalImpl
+import com.app.centavot.domain.repository.CuentaLocal
 import com.app.centavot.domain.repository.LectorDeBoletas
 import com.app.centavot.data.repository.ActividadRepositoryImpl
 import com.app.centavot.data.repository.CobroRepositoryImpl
@@ -138,7 +141,9 @@ val moduloData = module {
     // Sin URL no hay sincronización: cada plataforma reemplaza ConfigApi y registra su HttpClient.
     single { ConfigApi("") }
     single { ApiCentavot(get(), get()) }
-    single { Sincronizador(get(), get(), get(), get(), get(), get(), get()) }
+    single { LimpiadorLocal(get(), get()) }
+    single { Sincronizador(get(), get(), get(), get(), get(), get(), get(), get()) }
+    single<CuentaLocal> { CuentaLocalImpl(get(), get(), get(), get()) }
     single<LectorDeBoletas> { LectorDeBoletasApi(get(), get(), get()) }
     single<GastoRepository> { GastoRepositoryImpl(get()) }
     single<RegimenRepository> { RegimenRepositoryImpl(get()) }

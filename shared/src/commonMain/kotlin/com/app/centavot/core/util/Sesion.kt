@@ -4,7 +4,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /** Quién entró. Solo se usa para saber que es la misma persona: los movimientos siguen en el teléfono. */
-data class UsuarioSesion(val nombre: String?, val correo: String?)
+/** [uid] identifica la cuenta: los datos del teléfono son de una sola cuenta. */
+data class UsuarioSesion(val nombre: String?, val correo: String?, val uid: String = "")
 
 sealed interface ResultadoIngreso {
     data object Listo : ResultadoIngreso

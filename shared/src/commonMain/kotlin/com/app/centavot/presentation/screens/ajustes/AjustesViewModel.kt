@@ -1,5 +1,6 @@
 package com.app.centavot.presentation.screens.ajustes
 
+import com.app.centavot.domain.repository.CuentaLocal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.centavot.core.util.CompartidorArchivos
@@ -55,6 +56,9 @@ data class AjustesUiState(
     val terminado: Boolean = false,
     val confirmandoBorrado: Boolean = false,
     val trabajandoConDatos: Boolean = false,
+    /** Cambios sin subir al pedir cerrar sesión: se pide confirmar, porque se borrarán del teléfono. */
+    val confirmandoSalida: Int? = null,
+    val saliendo: Boolean = false,
 )
 
 /** Perfil (nombre, modo de uso y rubro) y ajustes financieros (ingreso mensual y tasa de ahorro). */
@@ -68,6 +72,7 @@ class AjustesViewModel(
     private val borrarTodos: BorrarTodosLosDatosUseCase,
     private val compartidor: CompartidorArchivos,
     private val avisos: Avisos,
+    private val cuentaLocal: CuentaLocal,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(AjustesUiState())
@@ -133,6 +138,29 @@ class AjustesViewModel(
             _estado.update { it.copy(trabajandoConDatos = false) }
         }
     }
+
+    /** Cerrar sesión: sube lo pendiente y borra lo del teléfono; si algo no subió (sin señal), pide confirmar. */
+    fun cerrarSesion() {
+        if (_estado.value.saliendo) return
+        viewModelScope.launch {
+            _estado.update { it.copy(saliendo = true) }
+            val pendientes = cuentaLocal.subirYContarPendientes()
+            if (pendientes > 0) {
+                _estado.update { it.copy(saliendo = false, confirmandoSalida = pendientes) }
+            } else {
+                cuentaLocal.cerrarSesionYLimpiar()
+            }
+        }
+    }
+
+    fun confirmarSalida() {
+        viewModelScope.launch {
+            _estado.update { it.copy(confirmandoSalida = null, saliendo = true) }
+            cuentaLocal.cerrarSesionYLimpiar()
+        }
+    }
+
+    fun cancelarSalida() = _estado.update { it.copy(confirmandoSalida = null) }
 
     fun pedirBorrado() = _estado.update { it.copy(confirmandoBorrado = true) }
 

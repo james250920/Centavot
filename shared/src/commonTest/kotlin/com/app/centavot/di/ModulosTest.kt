@@ -1,6 +1,7 @@
 package com.app.centavot.di
 
 import com.app.centavot.domain.repository.LectorDeBoletas
+import com.app.centavot.domain.repository.CuentaLocal
 import com.app.centavot.domain.repository.LecturaBoleta
 import com.app.centavot.core.util.AbridorEnlaces
 import com.app.centavot.core.util.CompartidorArchivos
@@ -66,6 +67,7 @@ class ModulosTest {
 
     private val moduloFakes = module {
         single<GastoRepository> { FakeGastoRepository() }
+        single<CuentaLocal> { object : CuentaLocal { override suspend fun subirYContarPendientes() = 0; override suspend fun cerrarSesionYLimpiar() = Unit } }
         single<LectorDeBoletas> { LectorDeBoletas { LecturaBoleta.Error("sin lector en pruebas") } }
         single<IngresoRepository> { FakeIngresoRepository() }
         single<RegimenRepository> { FakeRegimenRepository() }

@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.foundation.selection.toggleable
@@ -281,7 +282,7 @@ fun AjustesScreen(
                     estado.uso?.takeIf { it.primerUso != null }?.let { uso -> TarjetaUso(uso, estado.planes) }
                 }
 
-                SeccionCuenta()
+                SeccionCuenta(saliendo = estado.saliendo, onCerrarSesion = viewModel::cerrarSesion)
 
                 SeccionAjustes("Tus datos") {
                     TarjetaPrivacidad()
@@ -294,6 +295,21 @@ fun AjustesScreen(
                 }
             }
         }
+    }
+
+    estado.confirmandoSalida?.let { pendientes ->
+        AlertDialog(
+            onDismissRequest = viewModel::cancelarSalida,
+            title = { Text("Hay cambios sin subir") },
+            text = {
+                Text(
+                    "$pendientes ${if (pendientes == 1) "cambio no llegó" else "cambios no llegaron"} a tu cuenta (¿sin señal?). " +
+                        "Si cierras sesión ahora, se borran de este celular y no se recuperan.",
+                )
+            },
+            confirmButton = { TextButton(onClick = viewModel::confirmarSalida) { Text("Cerrar igual") } },
+            dismissButton = { TextButton(onClick = viewModel::cancelarSalida) { Text("Esperar") } },
+        )
     }
 
     if (estado.confirmandoBorrado) {
@@ -411,10 +427,9 @@ private fun TarjetaUso(uso: ResumenUso, planes: IndicadoresPlanes?) {
 
 /** La cuenta de Google con la que se entró (solo si hay ingreso). Al cerrar sesión, la app vuelve a "Continuar con Google". */
 @Composable
-private fun SeccionCuenta(sesion: Sesion = koinInject()) {
+private fun SeccionCuenta(saliendo: Boolean, onCerrarSesion: () -> Unit, sesion: Sesion = koinInject()) {
     if (!sesion.disponible) return
     val usuario by sesion.usuario.collectAsStateWithLifecycle()
-    val alcance = rememberCoroutineScope()
     val cuenta = usuario ?: return
     SeccionAjustes("Tu cuenta") {
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
@@ -425,8 +440,8 @@ private fun SeccionCuenta(sesion: Sesion = koinInject()) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                OutlinedButton(onClick = { alcance.launch { sesion.cerrarSesion() } }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Cerrar sesión")
+                OutlinedButton(onClick = onCerrarSesion, enabled = !saliendo, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (saliendo) "Subiendo tus cambios…" else "Cerrar sesión")
                 }
             }
         }

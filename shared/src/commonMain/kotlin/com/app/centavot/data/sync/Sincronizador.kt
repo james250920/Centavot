@@ -52,6 +52,7 @@ class Sincronizador(
     private val perfilDao: PerfilDao,
     private val regimenDao: RegimenDao,
     private val eventos: EventoUsoDao,
+    private val limpiador: LimpiadorLocal,
 ) {
     private val _estado = MutableStateFlow(EstadoSync())
     val estado: StateFlow<EstadoSync> = _estado.asStateFlow()
@@ -66,6 +67,9 @@ class Sincronizador(
             val aceptado = eventos.observarTodos().first()
                 .any { it.tipo == TipoEventoUso.CONSENTIMIENTO_PRIVACIDAD.name && it.valor == VERSION_AVISO_PRIVACIDAD }
             if (!aceptado) return
+            // Nunca subir datos de otra cuenta: los datos del teléfono deben ser de quien entró.
+            val uid = sesion.usuario.value?.uid
+            if (!uid.isNullOrEmpty() && sync.ajuste(AJ_DUENO) != uid) return
             val token = sesion.token() ?: return
             _estado.value = _estado.value.copy(ocupado = true)
             _estado.value = try {
@@ -74,6 +78,8 @@ class Sincronizador(
                 bajar(token)
                 EstadoSync(ultimo = ahoraIso())
             } catch (e: ErrorApi) {
+                // 403: el servidor no tiene el consentimiento de esta cuenta: se reenvía en la próxima sincronización.
+                if (e.estado == 403) sync.guardarAjuste(AjusteSyncEntity(AJ_CONSENTIMIENTO, ""))
                 EstadoSync(error = if (e.estado == 401) "La sesión venció: vuelve a entrar con Google." else e.message)
             } catch (e: Exception) {
                 EstadoSync(error = "No se pudo conectar con el servidor.")
@@ -88,6 +94,18 @@ class Sincronizador(
         return runCatching { api.borrarCuenta(token) }.isSuccess
     }
 
+    /**
+     * Los datos del teléfono son de una sola cuenta. Sin dueño (teléfonos de antes de este cambio) pasan a ser de esta
+     * cuenta; si eran de otra, se borran y la app vuelve al aviso de privacidad para la nueva persona.
+     */
+    suspend fun asegurarDueno(uid: String) {
+        if (uid.isEmpty()) return
+        val dueno = sync.ajuste(AJ_DUENO)
+        if (dueno == uid) return
+        if (dueno != null) limpiador.limpiar()
+        sync.guardarAjuste(AjusteSyncEntity(AJ_DUENO, uid))
+    }
+
     /** Olvida lo pendiente y las marcas (después de borrar todos los datos del teléfono). */
     suspend fun reiniciar() {
         sync.vaciarPendientes()
@@ -99,7 +117,10 @@ class Sincronizador(
     fun iniciar(alcance: CoroutineScope) {
         if (!config.activa) return
         alcance.launch {
-            sesion.usuario.distinctUntilChanged { a, b -> a?.correo == b?.correo }.filter { it != null }.collect { sincronizar() }
+            sesion.usuario.distinctUntilChanged { a, b -> a?.uid == b?.uid }.filter { it != null }.collect { u ->
+                asegurarDueno(u!!.uid)
+                sincronizar()
+            }
         }
         alcance.launch {
             sync.observarPendientes().filter { it > 0 }.debounce(3_000).collect { sincronizar() }
@@ -219,6 +240,7 @@ class Sincronizador(
     private companion object {
         const val LOTE = 500
         const val AJ_CURSOR = "cursor"
+        const val AJ_DUENO = "duenoDatos"
         const val AJ_INICIAL = "subidaInicial"
         const val AJ_PERFIL = "perfilEnviado"
         const val AJ_REGIMEN = "regimenEnviado"
