@@ -1,5 +1,20 @@
 # Reporte de mejoras UX/UI
 
+<!-- red-centavot:inicio -->
+> **Red de Centavot.** Este archivo es parte de un proyecto de cinco piezas. Antes de cambiar algo, lee el
+> `AGENTS.md` de la carpeta donde trabajas: dice cómo se conectan y qué reglas seguir.
+
+| Parte | Carpeta local | Repositorio | Dónde corre |
+|---|---|---|---|
+| Documentos (raíz) | `/home/james/Proyectos/StartUp` | [Centavot-docs](https://github.com/james250920/Centavot-docs) | — |
+| Backend (API) | `/home/james/Proyectos/StartUp/backend` | [centavot_bk](https://github.com/james250920/centavot_bk) | https://cv.menfroyt-dev.com (puerto 3939) |
+| Web (PWA) | `/home/james/Proyectos/StartUp/frontend` | [centavot_frontend](https://github.com/james250920/centavot_frontend) | https://centavot.menfroyt-dev.com (puerto 4231) |
+| Landing | `/home/james/Proyectos/StartUp/WEB` | [Centavot-web](https://github.com/james250920/Centavot-web) | https://landing.menfroyt-dev.com (puerto 4335) |
+| App Android ← **estás aquí** | `/home/james/ESAN/Startup/App` | [Centavot](https://github.com/james250920/Centavot) | Google Play (prueba interna) · `com.app.centavot` |
+
+Se conectan así: **landing → web** (enlaces) · **web y app → backend** (API `/v1` con el token de Google) · **backend → PostgreSQL** (esquema `centavot`, script en `Centavot-docs/base de datos/`).
+<!-- red-centavot:fin -->
+
 Mejoras que salieron de la revisión UX/UI del 10 de octubre de 2026 (heurísticas de Nielsen, puntaje
 inicial **28/40**). Se aplican una por una en la rama `feat/mejoras-ux`; cada paso queda registrado
 aquí al terminarlo. Las pruebas en teléfono se hacen con una copia aparte (`com.app.centavot.prueba`)
